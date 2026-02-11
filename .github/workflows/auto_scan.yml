@@ -1,47 +1,104 @@
-name: Auto Market Scanner
+name: Auto Market Scanner (Every 30min)
 
 on:
-  workflow_dispatch:  # Manuel başlatmak için butonu aktif eder
   schedule:
-    # UTC saatiyle 05:00 - 20:00 arası (TR saatiyle 08:00 - 23:00)
-    # Her saat başı ve buçukta çalışır
-    - cron: "0,30 5-20 * * *"
+    # Her yarım saatte bir (UTC saatiyle - Türkiye saati UTC+3)
+    # Sabah 08:00 - 23:30 TR saati = 05:00 - 20:30 UTC
+    - cron: "0,30 5-20 * * *"   # Her saat başı ve 30. dakika
+  workflow_dispatch:  # Manuel tetikleme için
 
 jobs:
-  scan-job:
+  scan-all-markets:
     runs-on: ubuntu-latest
-    timeout-minutes: 60  # İşlem 60 dakikayı geçerse durdur
-
+    # 3 ayrı tarama (4H, 1D, 1W) yapılacağı için süreyi uzattık (Garanti olsun diye 2 saat)
+    timeout-minutes: 120  
+    
     steps:
-      - name: 📥 Kodları Çek (Checkout)
+      - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🐍 Python 3.11 Kurulumu
+      - name: 🐍 Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: 'pip'
 
-      - name: 📦 Kütüphaneleri Yükle
+      - name: 📦 Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
+          pip install git+https://github.com/rongardF/tvdatafeed.git
 
-      - name: 🔍 Taramayı Başlat
+      - name: ⏰ Check Turkish timezone (08:00-23:30)
+        id: time_check
+        run: |
+          TR_HOUR=$(TZ='Europe/Istanbul' date +%H)
+          TR_MIN=$(TZ='Europe/Istanbul' date +%M)
+          TR_TIME=$(TZ='Europe/Istanbul' date '+%H:%M')
+          
+          echo "🕐 Türkiye Saati: $TR_TIME"
+          
+          # Saat 08:00 - 23:30 arası mı kontrol et
+          if [ $TR_HOUR -ge 8 ] && [ $TR_HOUR -le 23 ]; then
+            if [ $TR_HOUR -eq 23 ] && [ $TR_MIN -gt 30 ]; then
+              echo "⏸️ Tarama saati dışında (23:30 sonrası)"
+              echo "skip=true" >> $GITHUB_OUTPUT
+            else
+              echo "✅ Tarama yapılacak"
+              echo "skip=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "⏸️ Tarama saati dışında (08:00 öncesi)"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🔍 Run Market Scan (ALL PERIODS)
+        if: steps.time_check.outputs.skip == 'false'
         env:
           TV_USER: ${{ secrets.TV_USER }}
           TV_PASS: ${{ secrets.TV_PASS }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TG_MAX_ITEMS: "25"
+          TG_SLEEP_BETWEEN_PHOTOS: "1.5"
         run: |
-          # Yeni tara.py dosyasını çalıştırır
-          python tara.py tarama 1D bist
+          echo "🚀 ÇOKLU TARAMA BAŞLIYOR..."
+          
+          echo "⏳ --- 4 SAATLİK TARAMA BAŞLIYOR ---"
+          python tara.py tarama 4H all
+          
+          echo "📅 --- GÜNLÜK TARAMA BAŞLIYOR ---"
+          python tara.py tarama 1D all
+          
+          echo "📆 --- HAFTALIK TARAMA BAŞLIYOR ---"
+          python tara.py tarama 1W all
 
-      - name: 📊 Sonuçları Kaydet (Artifacts)
+      - name: 📊 Upload scan results
+        if: steps.time_check.outputs.skip == 'false'
         uses: actions/upload-artifact@v4
         with:
-          name: tarama-sonuclari
+          name: scan-results-${{ github.run_number }}
           path: |
             *.csv
-            *.png
-          retention-days: 3 # Dosyaları 3 gün sakla
+            market_tarama.db
+            outputs/charts/*.png
+          retention-days: 7  # 7 gün sakla
+
+      - name: 📧 Send completion notification
+        if: steps.time_check.outputs.skip == 'false' && always()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+            TR_TIME=$(TZ='Europe/Istanbul' date '+%Y-%m-%d %H:%M')
+            if [ "${{ job.status }}" == "success" ]; then
+              MESSAGE="✅ Tüm Taramalar Tamamlandı! (4H + 1D + 1W)%0A🕐 $TR_TIME%0A📁 Sonuçlar GitHub Actions'ta"
+            else
+              MESSAGE="❌ Tarama HATALI!%0A🕐 $TR_TIME%0A⚠️ Lütfen kontrol edin"
+            fi
+            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -d "chat_id=${TELEGRAM_CHAT_ID}" \
+              -d "text=${MESSAGE}" \
+              -d "parse_mode=HTML" || true
+          fi
