@@ -12,6 +12,10 @@ import requests
 import mplfinance as mpf
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import logging
+
+# Log seviyesini ayarla (hata mesajlarını görmek için)
+logging.basicConfig(level=logging.INFO)
 
 # Yardımcı dosyalar
 try:
@@ -147,11 +151,22 @@ def save_result(row):
 # HESAPLAMALAR
 # =========================
 def make_tv():
+    """
+    TradingView bağlantısını oluşturur.
+    Giriş başarısız olursa otomatik olarak misafir moduna geçer.
+    """
     if TV_USER and TV_PASS:
-        try: return TvDatafeed(username=TV_USER, password=TV_PASS)
-        except: return TvDatafeed()
+        try:
+            print(f"🔑 {TV_USER} hesabı ile giriş yapılıyor...")
+            # Otomatik giriş denemesi
+            return TvDatafeed(username=TV_USER, password=TV_PASS)
+        except Exception as e:
+            print(f"❌ Giriş hatası: {e}")
+            print("⚠️ Otomatik giriş yapılamadı (Recaptcha veya hatalı bilgi). Misafir moduyla devam ediliyor...")
+            return TvDatafeed()
     return TvDatafeed()
 
+# Global tv nesnesi
 tv = make_tv()
 
 def ema(s, l): return s.ewm(span=l, adjust=False).mean()
@@ -173,6 +188,7 @@ def process_symbol(sym, exchange, interval, n_bars, period_str):
     except:
         time.sleep(2)
         try:
+            # Bağlantı koptuysa veya nologin uyarısı sonrası veri gelmiyorsa yenile
             tv = make_tv()
             df = tv.get_hist(sym, exchange, interval=interval, n_bars=n_bars)
         except: return None, "CONNECTION_ERROR"
@@ -241,7 +257,7 @@ if __name__ == "__main__":
     SLEEP_BETWEEN_BATCH = 5
     TG_MAX_ITEMS = 50 
 
-    # LİSTELER (Buraya kendi uzun listeni yapıştırabilirsin)
+    # LİSTELER
     BIST_STOCKS = [
         "AKBNK", "ALARK", "ARCLK", "ASELS", "ASTOR", "BIMAS", "BRSAN", "DOAS", "EGEEN", 
         "EKGYO", "ENKAI", "EREGL", "FROTO", "GARAN", "GUBRF", "HEKTS", "ISCTR", "KCHOL", 
@@ -297,49 +313,35 @@ if __name__ == "__main__":
                f"🟡 SMI Alım: {len(smi_buys)}\n"
                f"📂 Dosya: {csv_name}")
         
+        print("\n" + msg)
         tg_send_message(msg)
+        
+        # Tam alım sinyallerini raporla ve grafiklerini gönder
+        if not full_buys.empty:
+            tg_send_message("🚀 --- TAM ALIM SİNYALLERİ ---")
+            for _, r in full_buys.iterrows():
+                info = f"📈 {r['Symbol']} ({r['Exchange']})\n💰 Fiyat: {r['Close']:.2f}\n📊 Değişim: %{r['Change']:.2f}"
+                print(info)
+                
+                # Grafik oluştur ve gönder
+                img_path = f"charts/{r['Symbol']}_{PERIOD}.png"
+                # Yeniden veri çek (grafik için daha fazla bar)
+                df_chart = tv.get_hist(r['Symbol'], r['Exchange'], interval=INTERVAL, n_bars=100)
+                if df_chart is not None:
+                    # MA200 ekle
+                    df_chart['MA200'] = df_chart['close'].rolling(200).mean()
+                    # SMI ekle
+                    s, se = calc_smi(df_chart)
+                    df_chart['SMI'], df_chart['SMI_EMA'] = s, se
+                    # MACD ekle
+                    m = ema(df_chart['close'], 12) - ema(df_chart['close'], 26)
+                    sig = ema(m, 9)
+                    df_chart['MACD'], df_chart['Signal'], df_chart['Hist'] = m, sig, m - sig
+                    
+                    make_candle_chart(df_chart, img_path, f"{r['Symbol']} - {PERIOD}")
+                    tg_send_photo(img_path, caption=info)
+        
         tg_send_document(csv_name)
-        
-        all_signals = pd.concat([full_buys, smi_buys]).drop_duplicates(subset=['Symbol'])
-        
-        if not all_signals.empty:
-            tg_send_message(f"📊 {PERIOD} SİNYALLERİ ({len(all_signals)} adet):")
-            
-            count = 0
-            for _, r in all_signals.iterrows():
-                if count >= TG_MAX_ITEMS: break
-                
-                sym = r["Symbol"]
-                # Grafik verisini tekrar çek
-                df_chart = tv.get_hist(sym, r["Exchange"], interval=INTERVAL, n_bars=300)
-                
-                if df_chart is not None and not df_chart.empty:
-                    try:
-                        smi, smi_ema = calc_smi(df_chart)
-                        df_chart['SMI'] = smi; df_chart['SMI_EMA'] = smi_ema
-                        
-                        macd = ema(df_chart["close"], 12) - ema(df_chart["close"], 26)
-                        signal = ema(macd, 9); hist = macd - signal
-                        df_chart['MACD'] = macd; df_chart['Signal'] = signal; df_chart['Hist'] = hist
-                        
-                        df_chart['MA200'] = df_chart['close'].rolling(200).mean()
-                        
-                        df_plot = df_chart.tail(120)
-                        img_path = f"outputs/charts/{sym}_{PERIOD}.png"
-                        title_text = f"{sym} ({PERIOD}) %{r['Change']:.2f} - {r['Close']:.2f}"
-                        
-                        make_candle_chart(df_plot, img_path, title_text)
-                        tg_send_photo(img_path, caption=f"#{sym} ({PERIOD}) | Fiyat: {r['Close']}")
-                        time.sleep(1.5)
-                        count += 1
-                    except Exception as e: print(f"Hata {sym}: {e}")
-
     else:
-        print("\n❌ Veri yok.")
-        tg_send_message(f"⚠️ {MARKET_NAME} ({PERIOD}) başarısız.")
-
-    print("\nİşlem Tamam.")
-
-elif KOMUT == "backtest": print("Backtest Modu")
-elif KOMUT == "rapor": print("Rapor Modu")
-else: print("Geçersiz komut.")
+        print("\nSinyal bulunamadı.")
+        tg_send_message(f"ℹ️ {MARKET_NAME} taramasında sinyal bulunamadı.")
