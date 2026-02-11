@@ -1,0 +1,47 @@
+name: Auto Market Scanner
+
+on:
+  workflow_dispatch:  # Manuel başlatmak için butonu aktif eder
+  schedule:
+    # UTC saatiyle 05:00 - 20:00 arası (TR saatiyle 08:00 - 23:00)
+    # Her saat başı ve buçukta çalışır
+    - cron: "0,30 5-20 * * *"
+
+jobs:
+  scan-job:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60  # İşlem 60 dakikayı geçerse durdur
+
+    steps:
+      - name: 📥 Kodları Çek (Checkout)
+        uses: actions/checkout@v4
+
+      - name: 🐍 Python 3.11 Kurulumu
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: 📦 Kütüphaneleri Yükle
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔍 Taramayı Başlat
+        env:
+          TV_USER: ${{ secrets.TV_USER }}
+          TV_PASS: ${{ secrets.TV_PASS }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          # Yeni tara.py dosyasını çalıştırır
+          python tara.py tarama 1D bist
+
+      - name: 📊 Sonuçları Kaydet (Artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tarama-sonuclari
+          path: |
+            *.csv
+            *.png
+          retention-days: 3 # Dosyaları 3 gün sakla
