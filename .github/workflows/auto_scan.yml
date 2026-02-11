@@ -32,6 +32,12 @@ jobs:
           python -c "from tvDatafeed import TvDatafeed; print('✅ tvdatafeed installed successfully')" || \
           echo "⚠️ tvdatafeed import failed"
 
+      - name: 📁 Create necessary directories
+        run: |
+          mkdir -p outputs/charts
+          ls -la outputs/
+          echo "✅ Directories created"
+
       - name: ⏰ Check Turkish timezone (08:00-23:30)
         id: time_check
         run: |
@@ -89,19 +95,35 @@ jobs:
           TG_SLEEP_BETWEEN_PHOTOS: "1.5"
         run: |
           echo "🚀 ÇOKLU TARAMA BAŞLIYOR..."
+          echo "Working directory: $(pwd)"
+          echo "Python version: $(python --version)"
           
+          echo ""
           echo "⏳ --- 4 SAATLİK TARAMA BAŞLIYOR ---"
-          python tara.py tarama 4H all || echo "⚠️ 4H tarama hatası - devam ediliyor"
+          python tara.py tarama 4H all 2>&1 | tee 4h_log.txt || echo "⚠️ 4H tarama hatası - devam ediliyor"
+          echo "4H tarama tamamlandı. Dosyalar:"
+          ls -lh tarama_*.csv 2>/dev/null || echo "Henüz CSV yok"
           
           sleep 10
           
+          echo ""
           echo "📅 --- GÜNLÜK TARAMA BAŞLIYOR ---"
-          python tara.py tarama 1D all || echo "⚠️ 1D tarama hatası - devam ediliyor"
+          python tara.py tarama 1D all 2>&1 | tee 1d_log.txt || echo "⚠️ 1D tarama hatası - devam ediliyor"
+          echo "1D tarama tamamlandı. Dosyalar:"
+          ls -lh tarama_*.csv 2>/dev/null || echo "Henüz CSV yok"
           
           sleep 10
           
+          echo ""
           echo "📆 --- HAFTALIK TARAMA BAŞLIYOR ---"
-          python tara.py tarama 1W all || echo "⚠️ 1W tarama hatası"
+          python tara.py tarama 1W all 2>&1 | tee 1w_log.txt || echo "⚠️ 1W tarama hatası"
+          echo "1W tarama tamamlandı. Dosyalar:"
+          ls -lh tarama_*.csv 2>/dev/null || echo "Henüz CSV yok"
+          
+          echo ""
+          echo "=== GENEL ÖZET ==="
+          echo "Oluşturulan dosyalar:"
+          find . -name "tarama_*.csv" -o -name "*.png" | head -20
 
       - name: 📊 Upload scan results
         if: steps.time_check.outputs.skip == 'false' && always()
@@ -109,11 +131,26 @@ jobs:
         with:
           name: scan-results-${{ github.run_number }}
           path: |
-            *.csv
+            tarama_*.csv
             market_tarama.db
             outputs/charts/*.png
           retention-days: 7
-          if-no-files-found: warn
+          if-no-files-found: ignore
+
+      - name: 📋 List generated files
+        if: steps.time_check.outputs.skip == 'false' && always()
+        run: |
+          echo "=== CSV Dosyaları ==="
+          ls -lh *.csv 2>/dev/null || echo "CSV dosyası bulunamadı"
+          echo ""
+          echo "=== Database ==="
+          ls -lh *.db 2>/dev/null || echo "DB dosyası bulunamadı"
+          echo ""
+          echo "=== Grafikler ==="
+          ls -lh outputs/charts/*.png 2>/dev/null || echo "Grafik bulunamadı"
+          echo ""
+          echo "=== Toplam Dosya Sayısı ==="
+          find . -name "tarama_*.csv" -o -name "*.db" -o -name "*.png" | wc -l
 
       - name: 📧 Send completion notification
         if: steps.time_check.outputs.skip == 'false' && always()
