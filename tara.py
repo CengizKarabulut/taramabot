@@ -48,15 +48,22 @@ def tg_send_message(text: str):
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
         requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "HTML"})
-    except: pass
+    except Exception as e:
+        print(f"Telegram mesaj hatası: {e}")
 
 def tg_send_photo(image_path: str, caption: str = ""):
     if not tg_enabled(): return
+    if not os.path.exists(image_path):
+        print(f"Hata: Gönderilecek dosya bulunamadı: {image_path}")
+        return
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
         with open(image_path, "rb") as f:
-            requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "HTML"}, files={"photo": f})
-    except: pass
+            r = requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "HTML"}, files={"photo": f})
+            if r.status_code != 200:
+                print(f"Telegram fotoğraf gönderme hatası: {r.text}")
+    except Exception as e:
+        print(f"Telegram fotoğraf hatası: {e}")
 
 def tg_send_document(file_path: str):
     if not tg_enabled(): return
@@ -73,6 +80,7 @@ def tg_send_document(file_path: str):
 # =========================
 def make_candle_chart(df, out_png: str, title: str):
     try:
+        # Klasörün var olduğundan emin ol
         os.makedirs(os.path.dirname(out_png), exist_ok=True)
         
         # Siyah Tema Ayarları
@@ -107,8 +115,11 @@ def make_candle_chart(df, out_png: str, title: str):
             savefig=dict(fname=out_png, dpi=120, bbox_inches='tight', facecolor='black'),
             tight_layout=True, datetime_format='%b %d', xrotation=20
         )
+        print(f"Grafik oluşturuldu: {out_png}")
+        return True
     except Exception as e:
         print(f"Grafik hatası ({title}): {e}")
+        return False
 
 # =========================
 # VERİTABANI
@@ -298,8 +309,8 @@ if __name__ == "__main__":
                 sig = ema(m, 9)
                 df_chart['MACD'], df_chart['Signal'], df_chart['Hist'] = m, sig, m - sig
                 
-                make_candle_chart(df_chart, img_path, f"{r['Symbol']} - {PERIOD}")
-                tg_send_photo(img_path, caption=info_msg)
+                if make_candle_chart(df_chart, img_path, f"{r['Symbol']} - {PERIOD}"):
+                    tg_send_photo(img_path, caption=info_msg)
                 time.sleep(1)
     else:
         tg_send_message(f"ℹ️ {MARKET_NAME} ({PERIOD}) taramasında sinyal bulunamadı.")
