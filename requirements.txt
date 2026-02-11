@@ -3,4 +3,4 @@ python-dotenv
 requests
 matplotlib
 mplfinance
-git+https://github.com/StreamAlpha/tvdatafeed.git
+tvdatafeed
