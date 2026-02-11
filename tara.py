@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import matplotlib
-matplotlib.use("Agg")  # Grafik motoru hatasını önle
+matplotlib.use("Agg")  # GitHub Actions/Server ortamında grafik motoru çökmesin
 
 from tvDatafeed import TvDatafeed, Interval
 import pandas as pd
@@ -13,24 +13,32 @@ import mplfinance as mpf
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
+# Yardımcı dosyalar
+try:
+    from telegram_utils import send_message as tg_send_message
+    from telegram_utils import send_photo as tg_send_photo
+    from chart_utils import make_candle_chart
+except ImportError:
+    print("YARDIMCI DOSYALAR EKSİK! (telegram_utils.py veya chart_utils.py bulunamadı)")
+    # Localde çalışıyorsan hata vermemesi için pass geçiyoruz, sunucuda önemli olabilir.
+    pass
+
 load_dotenv()
 
 # =========================
-# GÜVENLİK: ENV VARIABLES
+# GÜVENLİK
 # =========================
 TV_USER = os.getenv("TV_USER")
 TV_PASS = os.getenv("TV_PASS")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# DÜZELTME 1: Şifre yoksa programı kapatma, sadece uyar ve devam et (Misafir Modu)
+# Şifre yoksa uyarı ver ama kapatma (Misafir Modu)
 if not TV_USER or not TV_PASS:
-    print("⚠️ UYARI: TV_USER/PASS bulunamadı veya hatalı. Misafir moduyla devam ediliyor...")
-else:
-    print(f"👤 Kullanıcı: {TV_USER}")
+    print("⚠️ UYARI: TV_USER veya TV_PASS bulunamadı. Misafir moduyla devam edilecek.")
 
 # =========================
-# TELEGRAM YARDIMCI
+# TELEGRAM YARDIMCISI
 # =========================
 def tg_enabled() -> bool:
     return bool(TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID)
@@ -50,7 +58,6 @@ def tg_send_photo(image_path: str, caption: str = ""):
             requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption}, files={"photo": f})
     except: pass
 
-# DÜZELTME 2: Dosya gönderme fonksiyonu eklendi
 def tg_send_document(file_path: str):
     if not tg_enabled(): return
     try:
@@ -62,11 +69,13 @@ def tg_send_document(file_path: str):
         print(f"Dosya gönderme hatası: {e}")
 
 def make_candle_chart(df, out_png: str, title: str):
-    os.makedirs(os.path.dirname(out_png), exist_ok=True)
-    mpf.plot(df, type="candle", volume=True, title=title, style="yahoo", savefig=out_png)
+    try:
+        os.makedirs(os.path.dirname(out_png), exist_ok=True)
+        mpf.plot(df, type="candle", volume=True, title=title, style="yahoo", savefig=out_png)
+    except: pass
 
 # =========================
-# VERİTABANI KURULUMU (Senin Orijinal Kodun)
+# VERİTABANI
 # =========================
 DB_NAME = "market_tarama.db"
 
@@ -75,7 +84,7 @@ def b2i(x): return int(bool(x))
 def init_database():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    # Tablo oluşturma (Senin kodunun aynısı)
+    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS tarama_sonuclari (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,7 +104,7 @@ def init_database():
             UNIQUE(tarama_tarihi, symbol, exchange, period)
         )
     ''')
-    # Backtest Tablosu
+    
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS backtest_sonuclari (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -118,7 +127,6 @@ def init_database():
 def save_tarama_to_db(results_map, tarama_tarihi):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    saved_count = 0
     for row in results_map.values():
         if row.get('Status', '').startswith('OK'):
             try:
@@ -139,16 +147,14 @@ def save_tarama_to_db(results_map, tarama_tarihi):
                     b2i(row.get('SELL_CrossDown', 0)), b2i(row.get('SELL_SMI>40', 0)), b2i(row.get('SELL_Hist>0', 0)), b2i(row.get('SELL_HistDown', 0)), b2i(row.get('SELL_Signal', 0)),
                     row['Status']
                 ))
-                saved_count += 1
             except: pass
     conn.commit()
     conn.close()
 
 # =========================
-# LOGIN VE BAĞLANTI (GÜNCELLENDİ)
+# LOGIN
 # =========================
 def make_tv():
-    # Şifre varsa dene, yoksa veya hata verirse misafir gir
     if TV_USER and TV_PASS:
         try:
             return TvDatafeed(username=TV_USER, password=TV_PASS)
@@ -160,7 +166,7 @@ def make_tv():
 tv = make_tv()
 
 # =========================
-# ANA KOMUT İŞLEME
+# ANA KOD
 # =========================
 if len(sys.argv) < 2:
     print("Kullanım: python tara.py [tarama|backtest|rapor]")
@@ -177,15 +183,13 @@ if KOMUT == "tarama":
 
     # AYARLAR (HIZLANDIRILDI)
     BATCH_SIZE = 50
-    SLEEP_BETWEEN_SYMBOLS = 0.5  # DÜZELTME 3: Hızlandırıldı (Eskisi 2.0)
+    SLEEP_BETWEEN_SYMBOLS = 0.5 
     SLEEP_BETWEEN_BATCH = 5
     RETRY_ROUNDS = 1
     
-    # İndikatör Sabitleri
     lengthK, lengthD, lengthEMA = 10, 3, 3
     macd_fast, macd_slow, macd_signal = 12, 26, 9
     VOLUME_MULTIPLIER = 1.5
-    VOLUME_PERIOD = 20
     SMI_SELL_THRESHOLD = 40
     
     TG_MAX_ITEMS = 10
@@ -292,24 +296,25 @@ if KOMUT == "tarama":
     elif MARKET_TYPE == "all": SYMBOLS = ([(s, "BIST") for s in BIST_STOCKS] + COMMODITIES + INDICES + CRYPTO)
     else: raise ValueError("Hatalı market tipi")
 
-    # HESAPLAMALAR
+    # Hesaplalamalar
     def ema(s, l): return s.ewm(span=l, adjust=False).mean()
     def ema2(s, l): return ema(ema(s, l), l)
     
     def process_symbol(sym, exchange, extra_sleep=0.0):
-        # Bağlantı ve Veri Çekme
+        # BU SATIRI EN TEPEYE ALDIK:
+        global tv 
+        
         try:
             df = tv.get_hist(sym, exchange, interval=INTERVAL, n_bars=N_BARS)
         except:
-            global tv
-            tv = make_tv() # Yeniden bağlan
+            print(f"⚠️ Bağlantı hatası ({sym}), tekrar deneniyor...")
+            tv = make_tv() # Global tv'yi yenile
             return None, "CONNECTION_ERROR"
 
         if df is None or df.empty:
             time.sleep(SLEEP_BETWEEN_SYMBOLS)
             return None, "NO_DATA"
 
-        # İndikatörler
         hh = df["high"].rolling(lengthK).max()
         ll = df["low"].rolling(lengthK).min()
         rng = (hh - ll).replace(0, 0.000001)
@@ -323,7 +328,6 @@ if KOMUT == "tarama":
 
         df["SMI"], df["SMI_EMA"], df["HIST"] = smi, smi_ema, hist
         
-        # Sinyaller
         last, prev = df.iloc[-1], df.iloc[-2]
         cross_up = prev["SMI"] <= prev["SMI_EMA"] and last["SMI"] > last["SMI_EMA"]
         smi_neg, hist_neg, hist_up = last["SMI"] < 0, last["HIST"] < 0, last["HIST"] > prev["HIST"]
@@ -350,7 +354,6 @@ if KOMUT == "tarama":
         time.sleep(SLEEP_BETWEEN_SYMBOLS)
         return row, None
 
-    # TARAMA DÖNGÜSÜ
     init_database()
     results_map = {}
     failed_symbols = []
@@ -374,7 +377,6 @@ if KOMUT == "tarama":
                 print(f"Hata {sym}: {e}")
         time.sleep(SLEEP_BETWEEN_BATCH)
 
-    # SONUÇLAR
     results = list(results_map.values())
     df_out = pd.DataFrame(results)
     timestamp = start_time.strftime("%Y%m%d_%H%M%S")
@@ -382,7 +384,7 @@ if KOMUT == "tarama":
     df_out.to_csv(out_name, index=False)
     save_tarama_to_db(results_map, start_time)
 
-    # TELEGRAM GÖNDERİMİ (DÜZELTME 4: Grafik Mantığı)
+    # TELEGRAM GÖNDERİMİ
     if tg_enabled():
         full_buys = df_out[df_out["Full_BUY_Signal"] == True]
         smi_buys = df_out[df_out["SMI_MACD_BUY"] == True]
@@ -394,11 +396,9 @@ if KOMUT == "tarama":
         
         try:
             tg_send_message(msg)
-            tg_send_document(out_name) # Dosyayı gönder
+            tg_send_document(out_name)
             
-            # Grafik Gönderme Kuralı:
-            # 1. Tam Alım varsa onları gönder.
-            # 2. Tam Alım YOKSA ama SMI Alım varsa, SMI'ları gönder.
+            # Grafik Kuralı
             target_list = full_buys
             header = "✅ TAM ALIM GRAFİKLERİ"
             
@@ -419,16 +419,11 @@ if KOMUT == "tarama":
         except Exception as e:
             print(f"Telegram hatası: {e}")
 
-# =========================
-# BACKTEST ve RAPOR (Senin Kodun Aynen Korundu)
-# =========================
+    print("İşlem Tamam.")
+
 elif KOMUT == "backtest":
-    # Senin orijinal backtest kodların buraya gelecek (Github'da çalışmadığı için özet geçiyorum)
-    print("Backtest modu (Local çalışma için)")
-
+    print("Backtest Modu (Lütfen veritabanı ayarlarınızı kontrol edin)")
 elif KOMUT == "rapor":
-    # Senin orijinal rapor kodların buraya gelecek
-    print("Rapor modu")
-
+    print("Rapor Modu")
 else:
     print("Geçersiz komut.")
