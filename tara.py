@@ -324,7 +324,7 @@ if __name__ == "__main__":
                 print(info)
                 
                 # Grafik oluştur ve gönder
-                img_path = f"charts/{r['Symbol']}_{PERIOD}.png"
+                img_path = f"outputs/charts/{r['Symbol']}_{PERIOD}.png"
                 # Yeniden veri çek (grafik için daha fazla bar)
                 df_chart = tv.get_hist(r['Symbol'], r['Exchange'], interval=INTERVAL, n_bars=100)
                 if df_chart is not None:

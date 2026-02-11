@@ -3,4 +3,4 @@ python-dotenv
 requests
 matplotlib
 mplfinance
-tvdatafeed
+git+https://github.com/rongardF/tvdatafeed.git
