@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import matplotlib
-matplotlib.use("Agg")  # Grafik motoru hatasını önle
+matplotlib.use("Agg")  # GitHub Actions/Server ortamında grafik motoru çökmesin
 
 from tvDatafeed import TvDatafeed, Interval
 import pandas as pd
@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 try:
     from telegram_utils import send_message as tg_send_message
     from telegram_utils import send_photo as tg_send_photo
-    from chart_utils import make_candle_chart
+    from chart_utils import make_candle_chart as utils_make_candle_chart
 except ImportError:
     pass
 
@@ -31,7 +31,6 @@ TV_PASS = os.getenv("TV_PASS")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# Şifre yoksa uyarı ver (Misafir Modu)
 if not TV_USER or not TV_PASS:
     print("⚠️ UYARI: TV_USER veya TV_PASS bulunamadı. Misafir moduyla devam edilecek.")
 
@@ -67,10 +66,55 @@ def tg_send_document(file_path: str):
         print(f"Dosya gönderme hatası: {e}")
 
 def make_candle_chart(df, out_png: str, title: str):
+    """Gelişmiş grafik çizimi: MA, SMI, MACD ekler"""
     try:
         os.makedirs(os.path.dirname(out_png), exist_ok=True)
-        mpf.plot(df, type="candle", volume=True, title=title, style="yahoo", savefig=out_png)
-    except: pass
+        
+        addplots = []
+        # MA200 (Mavi Çizgi)
+        if 'MA200' in df.columns:
+            # Hata önlemek için boş veri kontrolü
+            if not df['MA200'].isnull().all():
+                addplots.append(mpf.make_addplot(df['MA200'], color='blue', width=1.5))
+
+        # SMI (Panel 2 - Hacim altı)
+        if 'SMI' in df.columns and 'SMI_EMA' in df.columns:
+            addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='green', width=1.5, ylabel='SMI'))
+            addplots.append(mpf.make_addplot(df['SMI_EMA'], panel=2, color='red', width=1.5))
+
+        # MACD (Panel 3)
+        if 'MACD' in df.columns and 'Signal' in df.columns:
+            addplots.append(mpf.make_addplot(df['MACD'], panel=3, color='blue', width=1.5, ylabel='MACD'))
+            addplots.append(mpf.make_addplot(df['Signal'], panel=3, color='orange', width=1.5))
+            if 'Hist' in df.columns:
+                 addplots.append(mpf.make_addplot(df['Hist'], panel=3, type='bar', color='gray', alpha=0.5))
+
+        # Panel Oranları
+        panels = 2 
+        if 'SMI' in df.columns: panels += 1
+        if 'MACD' in df.columns: panels += 1
+        
+        ratios = (4, 1)
+        if panels == 3: ratios = (4, 1, 2)
+        elif panels == 4: ratios = (4, 1, 1.5, 1.5)
+
+        mpf.plot(
+            df,
+            type="candle",
+            volume=True,
+            title=title,
+            style="yahoo",
+            savefig=out_png,
+            addplot=addplots,
+            panel_ratios=ratios,
+            tight_layout=True
+        )
+    except Exception as e:
+        print(f"Grafik çizim hatası ({title}): {e}")
+        # Hata olursa basit grafik çiz
+        try:
+            mpf.plot(df, type="candle", volume=True, title=title, style="yahoo", savefig=out_png)
+        except: pass
 
 # =========================
 # VERİTABANI
@@ -190,180 +234,54 @@ if KOMUT == "tarama":
     VOLUME_MULTIPLIER = 1.5
     SMI_SELL_THRESHOLD = 40
     
-    TG_MAX_ITEMS = 10
+    # Grafik Sayısı Artırıldı
+    TG_MAX_ITEMS = 25 
     TG_SLEEP_BETWEEN_PHOTOS = 1.0
 
     # LİSTELER
     BIST_STOCKS = [
-        "DMRGD", "BINHO", "AVOD", "A1CAP", "A1YEN", "ACSEL", "ADEL", "ADESE", "ADGYO", "AFYON",
-        "AGHOL", "AGESA", "AHGAZ", "AKBNK", "AKYHO", "AKENR", "AKFGY", "AKFYE", "ATEKS", "AKMGY",
-        "AKSA", "AKSEN", "AKSUE", "AKGRT", "AKCNS", "AKSGY", "ALCAR", "ALGYO", "ALARK", "ALBRK",
-        "ALCTL", "ALFAS", "ALKIM", "ALKA", "AYCES", "ANSGR", "AEFES", "ANHYT", "ASUZU", "ANGEN",
-        "ANELE", "ARDYZ", "ARENA", "ARFYE", "ARSAN", "ARZUM", "ARCLK", "ASGYO", "ASELS", "ASTOR",
-        "ATAGY", "ATAKP", "AGYO", "ATSYH", "ATLAS", "ATATP", "AVGYO", "AVTUR", "AVHOL", "AYDEM",
-        "AYEN", "AYES", "AYGAZ", "AZTEK", "AGROT", "AHSGY", "AKFIS", "ALTNY", "ALKLC", "ALVES",
-        "ARMGD", "ARTMS", "AVPGY", "BAGFS", "BAKAB", "BALAT", "BNTAS", "BANVT", "BARMA", "BSOKE",
-        "BTCIM", "BYDNR", "BAYRK", "BASGZ", "BASCM", "BERA", "BRKSN", "BESLR", "BEYAZ", "BJKAS",
-        "BIENY", "BIGTK", "BLUME", "BMSTL", "BMSCH", "BRSAN", "BRYAT", "BFREN", "BOSSA", "BOBET",
-        "BRISA", "BVSAN", "BUCIM", "BURCE", "BURVA", "BIGCH", "BAHKM", "BALSU", "BEGYO", "BINBN",
-        "BIGEN", "BORSK", "BORLS", "BULGS", "BLCYT", "BIMAS", "BIOEN", "BRKO", "BRLSM", "BRMEN",
-        "BRKVY", "BIZIM", "CRFSA", "CASA", "CEOEM", "CCOLA", "CONSE", "COSMO", "CRDFA", "CVKMD",
-        "CWENE", "CEMZY", "DAGI", "DAPGM", "DARDL", "DGATE", "DMSAS", "DENGE", "DZGYO", "DERHL",
-        "DERIM", "DESA", "DESPC", "DEVA", "DOCO", "DOFRB", "DOHOL", "DGNMO", "ARASE", "DOGUB",
-        "DGGYO", "DOAS", "DUNYH", "DURDO", "DYOBY", "DCTTR", "DSTKF", "DOFER", "DURKN", "DOKTA",
-        "DNISI", "DIRIT", "DITAS", "EDATA", "ECZYT", "EDIP", "EFOR", "EGEEN", "EGGUB", "EGPRO",
-        "EGSER", "EPLAS", "EKSUN", "EKIZ", "ELITE", "EMKEL", "EKGYO", "EMNIS", "ENJSA", "ENERY",
-        "ENKAI", "ENSRI", "ERBOS", "ERCB", "EREGL", "KIMMR", "ERSU", "ESCAR", "ESCOM", "ESEN",
-        "ETILR", "EUKYO", "EUYO", "ETYAT", "EUHOL", "TEZOL", "EUREN", "EUPWR", "EYGYO", "EBEBK",
-        "ECOGR", "EGEGY", "EKOS", "ENDAE", "ECILC", "FADE", "FMIZP", "FENER", "FLAP", "FONET",
-        "FROTO", "FORMT", "FRMPL", "FORTE", "FRIGO", "FZLGY", "GWIND", "GSRAY", "GARFA", "GRNYO",
-        "GEDIK", "GEDZA", "GLCVY", "GENIL", "GENTS", "GEREL", "GZNMI", "GLBMD", "GLYHO", "GOKNR",
-        "GOODY", "GRTHO", "GSDDE", "GSDHO", "GOLTS", "GOZDE", "GUBRF", "GLRYH", "GRSEL", "GLRMK",
-        "GUNDG", "GMTAS", "GESAN", "GIPTA", "SAHOL", "HLGYO", "HATEK", "HDFGS", "HEDEF", "HEKTS",
-        "HUBVC", "HUNER", "HRKET", "HATSN", "HOROZ", "HURGZ", "HKTM", "HTTBT", "ICBCT", "ICUGS",
-        "INGRM", "INTEK", "INVEO", "INVES", "IZENR", "ENTRA", "ISKPL", "IEYHO", "JANTS", "KFEIN",
-        "KLKIM", "KLSER", "KAPLM", "KRDMA", "KRDMB", "KRDMD", "KAREL", "KARSN", "KRTEK", "KARTN",
-        "KTLEV", "KATMR", "KAYSE", "KENT", "KRVGD", "KERVN", "KZBGY", "KLMSN", "KCAER", "KLSYN",
-        "KNFRT", "KONTR", "KONKA", "KONYA", "KGYO", "KORDS", "KRPLS", "KOPOL", "KCHOL", "KRONT",
-        "KRSTL", "KUVVA", "KUYAS", "KZGYO", "KSTUR", "KLYPV", "KOTON", "KOCMT", "KBORU", "KRGYO",
-        "KUTPO", "KTSKR", "KLGYO", "KLRHO", "KMPUR", "TCKRC", "LIDER", "LOGO", "LKMNH", "LRSHO",
-        "LYDHO", "LYDYE", "LILAK", "LMKDC", "LUKSK", "LIDFA", "LINK", "MACKO", "MAKIM", "MAKTK",
-        "MANAS", "MAGEN", "MARKA", "MARMR", "MAALT", "MRSHL", "MRGYO", "MARTI", "MTRKS", "MAVI",
-        "MZHLD", "MEDTR", "MEGAP", "MNDRS", "MEPET", "MERCN", "MERKO", "MERIT", "METRO", "MTRYO",
-        "MEYSU", "MHRGY", "MPARK", "MMCAS", "MOBTL", "MNDTR", "MEGMT", "MEKAG", "MOGAN", "MOPAS",
-        "MIATK", "MGROS", "MSGYO", "EGEPO", "NATEN", "NTGAZ", "NTHOL", "NETAS", "NUHCM", "NUGYO",
-        "NIBAS", "OBASE", "ODAS", "OFSYM", "ONCSM", "ORGE", "ORMA", "ORCAY", "OSMEN", "OSTIM",
-        "OTKAR", "OTTO", "OYYAT", "OYAYO", "OYAKC", "OYLUM", "OBAMS", "ODINE", "ONRYT", "PAMEL",
-        "PNLSN", "PAGYO", "PAPIL", "PRDGS", "PRKME", "PARSN", "PASEU", "PAHOL", "PSGYO", "PCILT",
-        "PGSUS", "PEKGY", "PENGD", "PENTA", "PSDTC", "PETKM", "PKENT", "PETUN", "PINSU", "PNSUT",
-        "PKART", "PLTUR", "POLHO", "POLTK", "PRZMA", "PATEK", "QNBFK", "QUAGR", "RALYH", "RAYSG",
-        "RNPOL", "RYGYO", "RYSAS", "RODRG", "ROYAL", "RTALB", "RUBNS", "RUZYE", "REEDR", "RGYAS",
-        "SAFKR", "SANEL", "SANKO", "SNICA", "SANFM", "SAMAT", "SARKY", "SASA", "SAYAS", "SDTTR",
-        "SEKUR", "SELVA", "SELEC", "SNKRN", "SRVGY", "SEYKM", "SKYLP", "SMRTG", "SMART", "SODSN",
-        "SOKE", "SUMAS", "SUNTK", "SUWEN", "SERNT", "SEGMN", "SURGY", "SKTAS", "SONME", "SNPAM",
-        "SILVR", "SNGYO", "TNZTP", "TARKM", "TATGD", "TATEN", "TAVHL", "TEKTU", "TKFEN", "TKNSA",
-        "TMPOL", "TRHOL", "TERA", "TEHOL", "TGSAS", "TOASO", "TRGYO", "TRMET", "TRENJ", "TLMAN",
-        "TSPOR", "TDGYO", "TSGYO", "TUKAS", "TRCAS", "TUREX", "TRALT", "TRILC", "TCELL", "TUCLK",
-        "TABGD", "MARBL", "TMSN", "TUPRS", "THYAO", "PRKAB", "TTKOM", "TTRAK", "TBORG", "TURGG",
-        "GARAN", "HALKB", "KLNMA", "TSKB", "TURSG", "VAKBN", "ISCTR", "SISE", "UCAYM", "UFUK",
-        "ULAS", "ULUFA", "ULUSE", "ULUUN", "UMPAS", "USAK", "VAKFA", "VAKFN", "VKGYO", "VKFYO",
-        "VAKKO", "VANGD", "VBTYZ", "VERUS", "VERTU", "VESBE", "VESTL", "VRGYO", "VSNMD", "VKING",
-        "YKBNK", "YAPRK", "YATAS", "YYLGD", "YAYLA", "YGGYO", "YEOTK", "YGYO", "YYAPI", "YESIL",
-        "YONGA", "YIGIT", "YKSLN", "YUNSA", "YBTAS", "ZGYO", "ZEDUR", "ZOREN", "ZRGYO", "CANTE",
-        "CLEBI", "CELHA", "CEMAS", "CEMTS", "CUSAN", "CATES", "CGCAM", "CMBTN", "CMENT", "CIMSA",
-        "OZKGY", "OZGYO", "OZRDN", "OZSUB", "OZATD", "OZYSR", "ULKER", "UNLU", "IDGYO", "IHEVA",
-        "IHLGM", "IHGZT", "IHAAS", "IHLAS", "IHYAY", "IMASM", "INDES", "INFO", "INTEM", "ISDMR",
-        "IZINV", "IZMDC", "IZFAS", "ISFIN", "ISGYO", "ISGSY", "ISMEN", "ISYAT", "ISBIR", "ISSEN",
-        "SEKFK", "SEGYO", "SKBNK", "SOKM", "SKYMD"
+        "MNDTR ", "ALARK", "ARCLK", "ASELS", "ASTOR", "BIMAS", "ASGYO", "DOAS", "EGEEN", 
+        "EKGYO", "ENKAI", "EREGL", "FROTO", "BNTAS", "GRSEL", "HEKTS", "ISCTR", "KCHOL", 
+        "KONTR", "KOZAL", "KRDMD", "ODAS", "OYAKC", "FRMPL", "KZGYO", "SAHOL", "SASA", 
+        "SISE", "TCELL", "THYAO", "TOASO", "TSKB", "TTKOM", "OBASE", "VAKBN", "YKBNK",
+        "CANTE", "EUPWR", "GESAN", "SMRTG", "YEOTK", "MIATK", "ALFAS", "CWENE", "SDTTR",
+        "ONCSM", "KMPUR", "KLSER", "KCAER", "AGROT", "KBORU", "TARKM", "MEGMT", "CVKMD",
+        "ZOREN", "VESTL", "TKFEN", "SOKM", "SKBNK", "OTKAR", "MGROS", "KOZAA", "KORDS",
+        "ULKER", "TKNSA", "TRGYO", "ISGYO", "PSGYO", "GWIND", "MAVI", "ALKA", "RALYH"
+        # Not: Buraya kendi uzun BIST listenizi ekleyebilirsiniz.
     ]
-    
-    COMMODITIES = [
-        ("XAUUSD", "OANDA"),   # Altın
-        ("XAGUSD", "OANDA"),   # Gümüş
-        ("XPTUSD", "OANDA"),   # Platin
-        ("XPDUSD", "OANDA"),   # Paladyum
-        ("WTICOUSD", "OANDA"), # Ham Petrol (WTI)
-        ("BCOUSD", "OANDA"),   # Brent Petrol
-        ("NATGASUSD", "OANDA"),# Doğalgaz
-        ("COPPERUSD", "OANDA"),# Bakır
-        ("XCUUSD", "OANDA"),   # Bakır (alternatif yaygın sembol)
-        ("SUGARUSD", "OANDA"), # Şeker
-        ("WHEATUSD", "OANDA"), # Buğday
-        ("CORNUSD", "OANDA"),  # Mısır
-        ("SOYBEANUSD", "OANDA"), # Soya Fasulyesi
-        ("COFFEEUSD", "OANDA"),# Kahve
-        ("COTTONUSD", "OANDA"),# Pamuk
-    ]
+    COMMODITIES = [("XAUUSD", "OANDA"), ("XAGUSD", "OANDA"), ("WTICOUSD", "OANDA"), ("BCOUSD", "OANDA")]
+    INDICES = [("XU100", "BIST"), ("XU030", "BIST")]
+    CRYPTO = [("BTCUSD", "BINANCE"), ("ETHUSD", "BINANCE"), ("SOLUSD", "BINANCE")]
 
-    
-    INDICES = [
-        ("XU100", "BIST"),
-        ("XU030", "BIST"),
-        ("XU050", "BIST"),
-        ("XU500", "BIST"),
-        ("XUTUM", "BIST"),
-        ("XYUZO", "BIST"),
-        ("XBANA", "BIST"),
-        ("XBANK", "BIST"),
-        ("XUMAL", "BIST"),
-        ("XUSIN", "BIST"),
-        ("XUHIZ", "BIST"),
-        ("XUTEK", "BIST"),
-        ("XGIDA", "BIST"),
-        ("XTRZM", "BIST"),
-        ("XULAS", "BIST"),
-        ("XELKT", "BIST"),
-        ("XHOLD", "BIST"),
-        ("XKMYA", "BIST"),
-        ("XMANA", "BIST"),
-        ("XMESY", "BIST"),
-        ("XTAST", "BIST"),
-        ("XILTM", "BIST"),
-        ("XSPOR", "BIST"),
-        ("XSGRT", "BIST"),
-        ("XFINK", "BIST"),
-        ("XTEKS", "BIST"),
-        ("XKAGT", "BIST"),
-        ("XBLSM", "BIST"),
-        ("XINSA", "BIST"),
-        ("XK100", "BIST"),
-        ("XKTUM", "BIST"),
-        ("XK050", "BIST"),
-        ("XSDT", "BIST"),
-        ("XTUMY", "BIST"),
-        ("XHARZ", "BIST"),
-        ("XUGRA", "BIST"),
-        ("XKURY", "BIST"),
-        ("XSIST", "BIST"),
-        ("XSIZM", "BIST"),
-        ("XHIZM", "BIST"),
-    ]
-    
-    CRYPTO = [
-        ("BTCUSD", "BINANCE"),   # Bitcoin
-        ("ETHUSD", "BINANCE"),   # Ethereum
-        ("BNBUSD", "BINANCE"),   # Binance Coin
-        ("SOLUSD", "BINANCE"),   # Solana
-        ("XRPUSD", "BINANCE"),   # Ripple
-        ("ADAUSD", "BINANCE"),   # Cardano
-        ("DOGEUSD","BINANCE"),   # Dogecoin
-        ("AVAXUSD","BINANCE"),   # Avalanche
-        ("DOTUSD", "BINANCE"),   # Polkadot
-        ("MATICUSD","BINANCE"),  # Polygon
-        ("LINKUSD","BINANCE"),   # Chainlink
-        ("ATOMUSD","BINANCE"),   # Cosmos
-        ("LTCUSD", "BINANCE"),   # Litecoin
-        ("TRXUSD", "BINANCE"),   # Tron
-        ("UNIUSD", "BINANCE"),   # Uniswap
-        ("NEARUSD","BINANCE"),   # Near Protocol
-        ("APTUSD", "BINANCE"),   # Aptos
-        ("OPUSD",  "BINANCE"),   # Optimism
-        ("ARBUSD", "BINANCE"),   # Arbitrum
-    ]
-
-    # DÜZELTİLEN BÖLÜM: MARKET_NAME TANIMLAMALARI EKLENDİ
     if MARKET_TYPE == "bist": 
         SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]
         MARKET_NAME = "BIST Hisseleri"
     elif MARKET_TYPE == "emtia": 
-        SYMBOLS = COMMODITIES
-        MARKET_NAME = "Emtialar"
+        SYMBOLS = COMMODITIES; MARKET_NAME = "Emtialar"
     elif MARKET_TYPE == "endeks": 
-        SYMBOLS = INDICES
-        MARKET_NAME = "Endeksler"
+        SYMBOLS = INDICES; MARKET_NAME = "Endeksler"
     elif MARKET_TYPE == "kripto": 
-        SYMBOLS = CRYPTO
-        MARKET_NAME = "Kripto Paralar"
+        SYMBOLS = CRYPTO; MARKET_NAME = "Kripto Paralar"
     elif MARKET_TYPE == "all": 
         SYMBOLS = ([(s, "BIST") for s in BIST_STOCKS] + COMMODITIES + INDICES + CRYPTO)
         MARKET_NAME = "Tüm Piyasalar"
-    else: 
-        raise ValueError("Hatalı market tipi")
+    else: raise ValueError("Hatalı market tipi")
 
     # Hesaplalamalar
     def ema(s, l): return s.ewm(span=l, adjust=False).mean()
     def ema2(s, l): return ema(ema(s, l), l)
     
+    # SMI Hesaplama (İndikatör fonksiyonu olarak tekrar kullanabilmek için)
+    def calc_smi(df):
+        hh = df["high"].rolling(lengthK).max()
+        ll = df["low"].rolling(lengthK).min()
+        rng = (hh - ll).replace(0, 0.000001)
+        rel = df["close"] - (hh + ll) / 2
+        smi = 200 * (ema2(rel, lengthD) / ema2(rng, lengthD))
+        smi_ema = ema(smi, lengthEMA)
+        return smi, smi_ema
+
     def process_symbol(sym, exchange, extra_sleep=0.0):
         global tv 
         
@@ -378,12 +296,7 @@ if KOMUT == "tarama":
             time.sleep(SLEEP_BETWEEN_SYMBOLS)
             return None, "NO_DATA"
 
-        hh = df["high"].rolling(lengthK).max()
-        ll = df["low"].rolling(lengthK).min()
-        rng = (hh - ll).replace(0, 0.000001)
-        rel = df["close"] - (hh + ll) / 2
-        smi = 200 * (ema2(rel, lengthD) / ema2(rng, lengthD))
-        smi_ema = ema(smi, lengthEMA)
+        smi, smi_ema = calc_smi(df)
         
         macd = ema(df["close"], macd_fast) - ema(df["close"], macd_slow)
         signal = ema(macd, macd_signal)
@@ -471,10 +384,37 @@ if KOMUT == "tarama":
             
             if not target_list.empty:
                 tg_send_message(f"{header} (İlk {TG_MAX_ITEMS} adet):")
+                
+                # --- GRAFİK DÖNGÜSÜ (GÜNCELLENDİ) ---
                 for _, r in target_list.head(TG_MAX_ITEMS).iterrows():
                     sym = r["Symbol"]
-                    df_chart = tv.get_hist(sym, r["Exchange"], interval=INTERVAL, n_bars=120)
-                    if df_chart is not None:
+                    
+                    # Grafiği yeniden çek (daha uzun periyot ile, MA200 için)
+                    df_chart = tv.get_hist(sym, r["Exchange"], interval=INTERVAL, n_bars=300)
+                    
+                    if df_chart is not None and not df_chart.empty:
+                        # İndikatörleri Hesapla ve Grafiğe Ekle
+                        try:
+                            # SMI
+                            smi, smi_ema = calc_smi(df_chart)
+                            df_chart['SMI'] = smi
+                            df_chart['SMI_EMA'] = smi_ema
+                            
+                            # MACD
+                            macd = ema(df_chart["close"], macd_fast) - ema(df_chart["close"], macd_slow)
+                            signal = ema(macd, macd_signal)
+                            hist = macd - signal
+                            df_chart['MACD'] = macd
+                            df_chart['Signal'] = signal
+                            df_chart['Hist'] = hist
+                            
+                            # MA200
+                            df_chart['MA200'] = df_chart['close'].rolling(200).mean()
+                            
+                            # Gösterim için son 150 bar yeterli
+                            df_chart = df_chart.tail(150)
+                        except: pass
+
                         img_path = f"outputs/charts/{sym}.png"
                         make_candle_chart(df_chart, img_path, f"{sym} ({PERIOD})")
                         tg_send_photo(img_path, caption=f"#{sym} - {r['Close']}")
@@ -485,7 +425,7 @@ if KOMUT == "tarama":
     print("İşlem Tamam.")
 
 elif KOMUT == "backtest":
-    print("Backtest Modu (Lütfen veritabanı ayarlarınızı kontrol edin)")
+    print("Backtest Modu")
 elif KOMUT == "rapor":
     print("Rapor Modu")
 else:
