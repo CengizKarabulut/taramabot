@@ -46,47 +46,53 @@ def tg_send_message(text: str):
 
 def tg_send_photo(image_path: str, caption: str = ""):
     if not tg_enabled(): return
-    if not os.path.exists(image_path):
-        print(f"HATA: Gönderilecek görsel dosyası bulunamadı: {image_path}")
+    
+    # Mutlak yolu al ve kontrol et
+    abs_path = os.path.abspath(image_path)
+    if not os.path.exists(abs_path):
+        print(f"HATA: Dosya bulunamadı -> {abs_path}")
         return
+
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-        with open(image_path, "rb") as f:
+        with open(abs_path, "rb") as f:
             r = requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "HTML"}, files={"photo": f})
-            if r.status_code != 200:
-                print(f"Telegram Fotoğraf Gönderme Hatası: {r.text}")
+            
+        if r.status_code != 200:
+            print(f"Telegram Fotoğraf Hatası: {r.text}")
+            # Fotoğraf olarak gitmezse döküman olarak dene
+            url_doc = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
+            with open(abs_path, "rb") as f:
+                requests.post(url_doc, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption}, files={"document": f})
+        else:
+            print(f"BAŞARILI: Görsel gönderildi -> {abs_path}")
     except Exception as e:
-        print(f"Telegram Fotoğraf Hatası: {e}")
+        print(f"Telegram Gönderim Hatası: {e}")
 
 # =========================
 # 🎨 GELİŞMİŞ GRAFİK ÇİZİMİ
 # =========================
 def make_candle_chart(df, out_png: str, title: str):
     try:
-        # KLASÖR YÖNETİMİ: Kesin çözüm için klasörü burada oluşturuyoruz
-        dir_path = os.path.dirname(out_png)
-        if dir_path and not os.path.exists(dir_path):
+        abs_out = os.path.abspath(out_png)
+        dir_path = os.path.dirname(abs_out)
+        if not os.path.exists(dir_path):
             os.makedirs(dir_path, exist_ok=True)
         
-        # Profesyonel Siyah Tema
         mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in', ohlc='i')
         s = mpf.make_mpf_style(base_mpf_style='nightclouds', marketcolors=mc, gridstyle=':', y_on_right=True, facecolor='#000000', edgecolor='#222222', gridcolor='#222222')
 
         addplots = []
-
-        # SMA 20 (Sarı), SMA 50 (Mavi), SMA 200 (Pembe)
         if 'SMA20' in df.columns: addplots.append(mpf.make_addplot(df['SMA20'], color='#FFD700', width=0.8, alpha=0.8))
         if 'SMA50' in df.columns: addplots.append(mpf.make_addplot(df['SMA50'], color='#00BFFF', width=1.0, alpha=0.8))
         if 'SMA200' in df.columns: addplots.append(mpf.make_addplot(df['SMA200'], color='#E377C2', width=1.5))
 
-        # SMI Panel
         if 'SMI' in df.columns:
             addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='#00FF00', width=1.0, ylabel='SMI'))
             addplots.append(mpf.make_addplot(df['SMI_EMA'], panel=2, color='#FFA500', width=1.0))
             addplots.append(mpf.make_addplot([40]*len(df), panel=2, color='#333333', linestyle='--', width=0.5))
             addplots.append(mpf.make_addplot([-40]*len(df), panel=2, color='#333333', linestyle='--', width=0.5))
 
-        # MACD Panel
         if 'MACD' in df.columns:
             addplots.append(mpf.make_addplot(df['MACD'], panel=3, color='#00FFFF', width=1.0, ylabel='MACD'))
             addplots.append(mpf.make_addplot(df['Signal'], panel=3, color='#FF4500', width=1.0))
@@ -96,7 +102,7 @@ def make_candle_chart(df, out_png: str, title: str):
         mpf.plot(
             df, type="candle", style=s, title=dict(title=title, color='white', fontsize=11),
             volume=True, addplot=addplots, panel_ratios=(4, 1, 1, 1),
-            savefig=dict(fname=out_png, dpi=150, bbox_inches='tight', facecolor='black'),
+            savefig=dict(fname=abs_out, dpi=150, bbox_inches='tight', facecolor='black'),
             tight_layout=True, datetime_format='%d %b', xrotation=0
         )
         return True
@@ -207,7 +213,6 @@ if __name__ == "__main__":
         time.sleep(1.2)
 
     if results:
-        # Özet Liste Mesajı
         full_list = [f"🚀 <b>{r['Symbol']}</b> | %{r['Change']:.2f} | {r['Close']:.2f}" for r in results if r['Full_BUY_Signal']]
         smi_list = [f"🟡 <b>{r['Symbol']}</b> | %{r['Change']:.2f} | {r['Close']:.2f}" for r in results if not r['Full_BUY_Signal']]
         
@@ -216,12 +221,10 @@ if __name__ == "__main__":
         if smi_list: summary_msg += "🟡 <b>SMI ALIM SİNYALLERİ:</b>\n" + "\n".join(smi_list)
         
         tg_send_message(summary_msg)
-        time.sleep(1)
+        time.sleep(2)
 
-        # Görselleri Tek Tek Gönder
         for r in results:
             caption = f"#{r['Symbol']} ({r['Period']}) | Fiyat: {r['Close']:.2f}"
-            # Dosya adını ve yolunu basitleştiriyoruz (Klasör sorununu aşmak için)
             img_name = f"{r['Symbol']}_{PERIOD}.png"
             img_path = os.path.join(os.getcwd(), "outputs", img_name)
             
@@ -230,7 +233,6 @@ if __name__ == "__main__":
                 df_chart['SMA20'] = df_chart['close'].rolling(20).mean()
                 df_chart['SMA50'] = df_chart['close'].rolling(50).mean()
                 df_chart['SMA200'] = df_chart['close'].rolling(200).mean()
-                
                 s, se = calc_smi(df_chart)
                 df_chart['SMI'], df_chart['SMI_EMA'] = s, se
                 m = ema(df_chart['close'], 12) - ema(df_chart['close'], 26)
@@ -240,6 +242,6 @@ if __name__ == "__main__":
                 chart_title = f"{r['Symbol']} ({r['Period']}) %{r['Change']:.2f} - {r['Close']:.2f}"
                 if make_candle_chart(df_chart, img_path, chart_title):
                     tg_send_photo(img_path, caption=caption)
-                    time.sleep(1.5) # Telegram spam filtresine takılmamak için süreyi artırdık
+                    time.sleep(2.0)
     else:
         tg_send_message(f"ℹ️ {PERIOD} taramasında sinyal bulunamadı.")
