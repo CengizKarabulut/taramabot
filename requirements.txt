@@ -1,0 +1,6 @@
+pandas
+python-dotenv
+requests
+matplotlib
+mplfinance
+git+https://github.com/rongardF/tvdatafeed.git
