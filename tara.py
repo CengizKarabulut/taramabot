@@ -46,19 +46,27 @@ def tg_send_message(text: str):
 
 def tg_send_photo(image_path: str, caption: str = ""):
     if not tg_enabled(): return
-    if not os.path.exists(image_path): return
+    if not os.path.exists(image_path):
+        print(f"HATA: Gönderilecek görsel dosyası bulunamadı: {image_path}")
+        return
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
         with open(image_path, "rb") as f:
-            requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "HTML"}, files={"photo": f})
-    except: pass
+            r = requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "HTML"}, files={"photo": f})
+            if r.status_code != 200:
+                print(f"Telegram Fotoğraf Gönderme Hatası: {r.text}")
+    except Exception as e:
+        print(f"Telegram Fotoğraf Hatası: {e}")
 
 # =========================
 # 🎨 GELİŞMİŞ GRAFİK ÇİZİMİ
 # =========================
 def make_candle_chart(df, out_png: str, title: str):
     try:
-        os.makedirs(os.path.dirname(out_png), exist_ok=True)
+        # KLASÖR YÖNETİMİ: Kesin çözüm için klasörü burada oluşturuyoruz
+        dir_path = os.path.dirname(out_png)
+        if dir_path and not os.path.exists(dir_path):
+            os.makedirs(dir_path, exist_ok=True)
         
         # Profesyonel Siyah Tema
         mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in', ohlc='i')
@@ -93,7 +101,7 @@ def make_candle_chart(df, out_png: str, title: str):
         )
         return True
     except Exception as e:
-        print(f"Grafik hatası: {e}")
+        print(f"Grafik oluşturma hatası: {e}")
         return False
 
 # =========================
@@ -199,7 +207,7 @@ if __name__ == "__main__":
         time.sleep(1.2)
 
     if results:
-        # Periyot bazlı özet liste oluşturma
+        # Özet Liste Mesajı
         full_list = [f"🚀 <b>{r['Symbol']}</b> | %{r['Change']:.2f} | {r['Close']:.2f}" for r in results if r['Full_BUY_Signal']]
         smi_list = [f"🟡 <b>{r['Symbol']}</b> | %{r['Change']:.2f} | {r['Close']:.2f}" for r in results if not r['Full_BUY_Signal']]
         
@@ -208,14 +216,17 @@ if __name__ == "__main__":
         if smi_list: summary_msg += "🟡 <b>SMI ALIM SİNYALLERİ:</b>\n" + "\n".join(smi_list)
         
         tg_send_message(summary_msg)
+        time.sleep(1)
 
-        # Görselleri gönder
+        # Görselleri Tek Tek Gönder
         for r in results:
             caption = f"#{r['Symbol']} ({r['Period']}) | Fiyat: {r['Close']:.2f}"
-            img_path = f"outputs/charts/{r['Symbol']}_{PERIOD}.png"
+            # Dosya adını ve yolunu basitleştiriyoruz (Klasör sorununu aşmak için)
+            img_name = f"{r['Symbol']}_{PERIOD}.png"
+            img_path = os.path.join(os.getcwd(), "outputs", img_name)
+            
             df_chart = tv.get_hist(r['Symbol'], r['Exchange'], interval=INTERVAL, n_bars=100)
             if df_chart is not None:
-                # SMA Hesaplamaları
                 df_chart['SMA20'] = df_chart['close'].rolling(20).mean()
                 df_chart['SMA50'] = df_chart['close'].rolling(50).mean()
                 df_chart['SMA200'] = df_chart['close'].rolling(200).mean()
@@ -229,6 +240,6 @@ if __name__ == "__main__":
                 chart_title = f"{r['Symbol']} ({r['Period']}) %{r['Change']:.2f} - {r['Close']:.2f}"
                 if make_candle_chart(df_chart, img_path, chart_title):
                     tg_send_photo(img_path, caption=caption)
-                    time.sleep(1)
+                    time.sleep(1.5) # Telegram spam filtresine takılmamak için süreyi artırdık
     else:
         tg_send_message(f"ℹ️ {PERIOD} taramasında sinyal bulunamadı.")
