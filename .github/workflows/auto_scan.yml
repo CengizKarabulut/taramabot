@@ -25,30 +25,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: ⏰ Check Turkish timezone (08:00-23:30)
-        id: time_check
-        run: |
-          TR_HOUR=$(TZ='Europe/Istanbul' date +%H)
-          TR_MIN=$(TZ='Europe/Istanbul' date +%M)
-          TR_TIME=$(TZ='Europe/Istanbul' date '+%H:%M')
-          
-          echo "🕐 Türkiye Saati: $TR_TIME"
-          
-          if [ $TR_HOUR -ge 8 ] && [ $TR_HOUR -le 23 ]; then
-            if [ $TR_HOUR -eq 23 ] && [ $TR_MIN -gt 30 ]; then
-              echo "⏸️ Tarama saati dışında (23:30 sonrası)"
-              echo "skip=true" >> $GITHUB_OUTPUT
-            else
-              echo "✅ Tarama yapılacak"
-              echo "skip=false" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "⏸️ Tarama saati dışında (08:00 öncesi)"
-            echo "skip=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: 🔍 Run Market Scan (ALL PERIODS)
-        if: steps.time_check.outputs.skip == 'false'
         env:
           TV_USER: ${{ secrets.TV_USER }}
           TV_PASS: ${{ secrets.TV_PASS }}
@@ -69,7 +46,6 @@ jobs:
           python tara.py tarama 1W all
 
       - name: 📊 Upload scan results
-        if: steps.time_check.outputs.skip == 'false'
         uses: actions/upload-artifact@v4
         with:
           name: scan-results-${{ github.run_number }}
@@ -80,7 +56,7 @@ jobs:
           retention-days: 7
 
       - name: 📧 Send completion notification
-        if: steps.time_check.outputs.skip == 'false' && always()
+        if: always()
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
