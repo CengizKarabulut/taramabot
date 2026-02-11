@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import logging
 
-# Log seviyesini ayarla (hata mesajlarını görmek için)
+# Log seviyesini ayarla
 logging.basicConfig(level=logging.INFO)
 
 # Yardımcı dosyalar
@@ -47,7 +47,7 @@ def tg_send_message(text: str):
     if not tg_enabled(): return
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "text": text})
+        requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "HTML"})
     except: pass
 
 def tg_send_photo(image_path: str, caption: str = ""):
@@ -55,7 +55,7 @@ def tg_send_photo(image_path: str, caption: str = ""):
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
         with open(image_path, "rb") as f:
-            requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption}, files={"photo": f})
+            requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "HTML"}, files={"photo": f})
     except: pass
 
 def tg_send_document(file_path: str):
@@ -83,41 +83,37 @@ def make_candle_chart(df, out_png: str, title: str):
 
         # MA200
         if 'MA200' in df.columns and not df['MA200'].isnull().all():
-            addplots.append(mpf.make_addplot(df['MA200'], color='#E377C2', width=2.0)) 
+            addplots.append(mpf.make_addplot(df['MA200'], color='#E377C2', width=1.5)) 
 
         # SMI
         if 'SMI' in df.columns and 'SMI_EMA' in df.columns:
-            addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='lime', width=1.5, ylabel='SMI'))
-            addplots.append(mpf.make_addplot(df['SMI_EMA'], panel=2, color='orange', width=1.5))
-            addplots.append(mpf.make_addplot([40]*len(df), panel=2, color='gray', linestyle='--', width=0.8))
-            addplots.append(mpf.make_addplot([-40]*len(df), panel=2, color='gray', linestyle='--', width=0.8))
+            addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='lime', width=1.2, ylabel='SMI'))
+            addplots.append(mpf.make_addplot(df['SMI_EMA'], panel=2, color='orange', width=1.2))
+            addplots.append(mpf.make_addplot([40]*len(df), panel=2, color='gray', linestyle='--', width=0.7))
+            addplots.append(mpf.make_addplot([-40]*len(df), panel=2, color='gray', linestyle='--', width=0.7))
 
         # MACD
         if 'MACD' in df.columns and 'Signal' in df.columns:
-            addplots.append(mpf.make_addplot(df['MACD'], panel=3, color='cyan', width=1.5, ylabel='MACD'))
-            addplots.append(mpf.make_addplot(df['Signal'], panel=3, color='red', width=1.5))
+            addplots.append(mpf.make_addplot(df['MACD'], panel=3, color='cyan', width=1.2, ylabel='MACD'))
+            addplots.append(mpf.make_addplot(df['Signal'], panel=3, color='red', width=1.2))
             if 'Hist' in df.columns:
                  hist_colors = ['green' if v >= 0 else 'red' for v in df['Hist']]
-                 addplots.append(mpf.make_addplot(df['Hist'], panel=3, type='bar', color=hist_colors, alpha=0.6))
+                 addplots.append(mpf.make_addplot(df['Hist'], panel=3, type='bar', color=hist_colors, alpha=0.5))
 
         # Çizim
         mpf.plot(
             df, type="candle", style=s, title=dict(title=title, color='white', fontsize=12),
             volume=True, addplot=addplots, panel_ratios=(3, 1, 1, 1),
-            savefig=dict(fname=out_png, dpi=100, bbox_inches='tight', facecolor='black'),
+            savefig=dict(fname=out_png, dpi=120, bbox_inches='tight', facecolor='black'),
             tight_layout=True, datetime_format='%b %d', xrotation=20
         )
     except Exception as e:
         print(f"Grafik hatası ({title}): {e}")
-        try: mpf.plot(df, type="candle", volume=True, title=title, savefig=out_png, style='yahoo')
-        except: pass
 
 # =========================
 # VERİTABANI
 # =========================
 DB_NAME = "market_tarama.db"
-def b2i(x): return int(bool(x))
-
 def init_database():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -128,8 +124,6 @@ def init_database():
             change_percent REAL, full_buy_signal INTEGER, smi_macd_buy INTEGER, status TEXT
         )
     ''')
-    try: cursor.execute("ALTER TABLE tarama_sonuclari ADD COLUMN change_percent REAL")
-    except: pass
     conn.commit()
     conn.close()
 
@@ -151,22 +145,13 @@ def save_result(row):
 # HESAPLAMALAR
 # =========================
 def make_tv():
-    """
-    TradingView bağlantısını oluşturur.
-    Giriş başarısız olursa otomatik olarak misafir moduna geçer.
-    """
     if TV_USER and TV_PASS:
         try:
-            print(f"🔑 {TV_USER} hesabı ile giriş yapılıyor...")
-            # Otomatik giriş denemesi
             return TvDatafeed(username=TV_USER, password=TV_PASS)
-        except Exception as e:
-            print(f"❌ Giriş hatası: {e}")
-            print("⚠️ Otomatik giriş yapılamadı (Recaptcha veya hatalı bilgi). Misafir moduyla devam ediliyor...")
+        except:
             return TvDatafeed()
     return TvDatafeed()
 
-# Global tv nesnesi
 tv = make_tv()
 
 def ema(s, l): return s.ewm(span=l, adjust=False).mean()
@@ -188,7 +173,6 @@ def process_symbol(sym, exchange, interval, n_bars, period_str):
     except:
         time.sleep(2)
         try:
-            # Bağlantı koptuysa veya nologin uyarısı sonrası veri gelmiyorsa yenile
             tv = make_tv()
             df = tv.get_hist(sym, exchange, interval=interval, n_bars=n_bars)
         except: return None, "CONNECTION_ERROR"
@@ -243,21 +227,12 @@ if __name__ == "__main__":
     PERIOD = sys.argv[2].upper()
     MARKET_TYPE = sys.argv[3].lower() if len(sys.argv) > 3 else "bist"
     
-    # --- YENİ EKLENEN KISIM: PERİYOT SEÇİMİ ---
-    if PERIOD == "4H":
-        INTERVAL = Interval.in_4_hour
-    elif PERIOD == "1W":
-        INTERVAL = Interval.in_weekly
-    else:
-        INTERVAL = Interval.in_daily
+    if PERIOD == "4H": INTERVAL = Interval.in_4_hour
+    elif PERIOD == "1W": INTERVAL = Interval.in_weekly
+    else: INTERVAL = Interval.in_daily
 
     N_BARS = 400
-    BATCH_SIZE = 50
-    SLEEP_BETWEEN_SYMBOLS = 2.0
-    SLEEP_BETWEEN_BATCH = 5
-    TG_MAX_ITEMS = 50 
-
-    # LİSTELER
+    
     BIST_STOCKS = [
         "AKBNK", "ALARK", "ARCLK", "ASELS", "ASTOR", "BIMAS", "BRSAN", "DOAS", "EGEEN", 
         "EKGYO", "ENKAI", "EREGL", "FROTO", "GARAN", "GUBRF", "HEKTS", "ISCTR", "KCHOL", 
@@ -270,78 +245,61 @@ if __name__ == "__main__":
     INDICES = [("XU100", "BIST"), ("XU030", "BIST")]
     CRYPTO = [("BTCUSD", "BINANCE"), ("ETHUSD", "BINANCE"), ("SOLUSD", "BINANCE")]
 
-    if MARKET_TYPE == "bist": 
-        SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]; MARKET_NAME = "BIST Hisseleri"
-    elif MARKET_TYPE == "emtia": 
-        SYMBOLS = COMMODITIES; MARKET_NAME = "Emtialar"
-    elif MARKET_TYPE == "endeks": 
-        SYMBOLS = INDICES; MARKET_NAME = "Endeksler"
-    elif MARKET_TYPE == "kripto": 
-        SYMBOLS = CRYPTO; MARKET_NAME = "Kripto Paralar"
+    if MARKET_TYPE == "bist": SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]; MARKET_NAME = "BIST Hisseleri"
+    elif MARKET_TYPE == "emtia": SYMBOLS = COMMODITIES; MARKET_NAME = "Emtialar"
+    elif MARKET_TYPE == "endeks": SYMBOLS = INDICES; MARKET_NAME = "Endeksler"
+    elif MARKET_TYPE == "kripto": SYMBOLS = CRYPTO; MARKET_NAME = "Kripto Paralar"
     elif MARKET_TYPE == "all": 
         SYMBOLS = ([(s, "BIST") for s in BIST_STOCKS] + COMMODITIES + INDICES + CRYPTO)
         MARKET_NAME = "Tüm Piyasalar"
-    else: 
-        SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]; MARKET_NAME = "BIST"
+    else: SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]; MARKET_NAME = "BIST"
 
     print(f"--- TARAMA BAŞLADI: {MARKET_NAME} ({PERIOD}) ---")
     init_database()
     
     results = []
-    
     for i, (sym, exc) in enumerate(SYMBOLS):
         print(f"[{i+1}/{len(SYMBOLS)}] {sym}...", end="\r")
         row, err = process_symbol(sym, exc, INTERVAL, N_BARS, PERIOD)
         if row:
             results.append(row)
             save_result(row)
-        else:
-            if err != "NO_DATA": pass
-        time.sleep(SLEEP_BETWEEN_SYMBOLS)
+        time.sleep(1.5)
 
     if results:
         df_res = pd.DataFrame(results)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-        csv_name = f"tarama_{MARKET_TYPE}_{PERIOD}_{timestamp}.csv"
-        df_res.to_csv(csv_name, index=False)
-        
         full_buys = df_res[df_res["Full_BUY_Signal"] == True]
         smi_buys = df_res[df_res["SMI_MACD_BUY"] == True]
         
-        msg = (f"📢 Tarama Bitti ({MARKET_NAME} - {PERIOD})\n"
-               f"✅ Tam Alım: {len(full_buys)}\n"
-               f"🟡 SMI Alım: {len(smi_buys)}\n"
-               f"📂 Dosya: {csv_name}")
+        summary = (f"<b>📢 Tarama Bitti: {MARKET_NAME} ({PERIOD})</b>\n"
+                   f"🚀 Tam Alım: {len(full_buys)}\n"
+                   f"🟡 SMI Alım: {len(smi_buys)}")
+        tg_send_message(summary)
+
+        # Grafik ve detaylı mesaj gönderimi
+        target_list = full_buys if not full_buys.empty else smi_buys
         
-        print("\n" + msg)
-        tg_send_message(msg)
-        
-        # Tam alım sinyallerini raporla ve grafiklerini gönder
-        if not full_buys.empty:
-            tg_send_message("🚀 --- TAM ALIM SİNYALLERİ ---")
-            for _, r in full_buys.iterrows():
-                info = f"📈 {r['Symbol']} ({r['Exchange']})\n💰 Fiyat: {r['Close']:.2f}\n📊 Değişim: %{r['Change']:.2f}"
-                print(info)
+        for _, r in target_list.iterrows():
+            # Detaylı Bilgi Mesajı
+            status_icon = "🚀" if r['Full_BUY_Signal'] else "🟡"
+            info_msg = (f"<b>{status_icon} {r['Symbol']} ({r['Exchange']})</b>\n"
+                        f"💰 Fiyat: <b>{r['Close']:.2f}</b>\n"
+                        f"📊 Değişim: <b>%{r['Change']:.2f}</b>\n"
+                        f"🕒 Periyot: {r['Period']}")
+            
+            # Grafik İçin Veri Hazırla
+            img_path = f"outputs/charts/{r['Symbol']}_{PERIOD}.png"
+            df_chart = tv.get_hist(r['Symbol'], r['Exchange'], interval=INTERVAL, n_bars=100)
+            if df_chart is not None:
+                df_chart['MA200'] = df_chart['close'].rolling(200).mean()
+                s, se = calc_smi(df_chart)
+                df_chart['SMI'], df_chart['SMI_EMA'] = s, se
+                m = ema(df_chart['close'], 12) - ema(df_chart['close'], 26)
+                sig = ema(m, 9)
+                df_chart['MACD'], df_chart['Signal'], df_chart['Hist'] = m, sig, m - sig
                 
-                # Grafik oluştur ve gönder
-                img_path = f"outputs/charts/{r['Symbol']}_{PERIOD}.png"
-                # Yeniden veri çek (grafik için daha fazla bar)
-                df_chart = tv.get_hist(r['Symbol'], r['Exchange'], interval=INTERVAL, n_bars=100)
-                if df_chart is not None:
-                    # MA200 ekle
-                    df_chart['MA200'] = df_chart['close'].rolling(200).mean()
-                    # SMI ekle
-                    s, se = calc_smi(df_chart)
-                    df_chart['SMI'], df_chart['SMI_EMA'] = s, se
-                    # MACD ekle
-                    m = ema(df_chart['close'], 12) - ema(df_chart['close'], 26)
-                    sig = ema(m, 9)
-                    df_chart['MACD'], df_chart['Signal'], df_chart['Hist'] = m, sig, m - sig
-                    
-                    make_candle_chart(df_chart, img_path, f"{r['Symbol']} - {PERIOD}")
-                    tg_send_photo(img_path, caption=info)
-        
-        tg_send_document(csv_name)
+                make_candle_chart(df_chart, img_path, f"{r['Symbol']} - {PERIOD}")
+                tg_send_photo(img_path, caption=info_msg)
+                time.sleep(1)
     else:
-        print("\nSinyal bulunamadı.")
-        tg_send_message(f"ℹ️ {MARKET_NAME} taramasında sinyal bulunamadı.")
+        tg_send_message(f"ℹ️ {MARKET_NAME} ({PERIOD}) taramasında sinyal bulunamadı.")
