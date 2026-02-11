@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import matplotlib
-matplotlib.use("Agg")  # Grafik motoru hatasını önle
+matplotlib.use("Agg")
 
 from tvDatafeed import TvDatafeed, Interval
 import pandas as pd
@@ -10,14 +10,12 @@ import sqlite3
 import os
 import requests
 import mplfinance as mpf
-from datetime import datetime, timedelta
+from datetime import datetime
 from dotenv import load_dotenv
 import logging
 
-# Log seviyesini ayarla
 logging.basicConfig(level=logging.INFO)
 
-# Yardımcı dosyalar
 try:
     from telegram_utils import send_message as tg_send_message
     from telegram_utils import send_photo as tg_send_photo
@@ -34,9 +32,6 @@ TV_PASS = os.getenv("TV_PASS")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-if not TV_USER or not TV_PASS:
-    print("⚠️ UYARI: TV_USER veya TV_PASS bulunamadı. Misafir moduyla devam edilecek.")
-
 # =========================
 # TELEGRAM YARDIMCISI
 # =========================
@@ -48,119 +43,68 @@ def tg_send_message(text: str):
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
         requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "HTML"})
-    except Exception as e:
-        print(f"Telegram mesaj hatası: {e}")
+    except: pass
 
 def tg_send_photo(image_path: str, caption: str = ""):
     if not tg_enabled(): return
-    if not os.path.exists(image_path):
-        print(f"Hata: Gönderilecek dosya bulunamadı: {image_path}")
-        return
+    if not os.path.exists(image_path): return
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
         with open(image_path, "rb") as f:
-            r = requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "HTML"}, files={"photo": f})
-            if r.status_code != 200:
-                print(f"Telegram fotoğraf gönderme hatası: {r.text}")
-    except Exception as e:
-        print(f"Telegram fotoğraf hatası: {e}")
-
-def tg_send_document(file_path: str):
-    if not tg_enabled(): return
-    try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
-        with open(file_path, "rb") as f:
-            requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": "📂 Tarama Raporu"}, files={"document": f})
-            print(">> Dosya gönderildi.")
-    except Exception as e:
-        print(f"Dosya gönderme hatası: {e}")
+            requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "HTML"}, files={"photo": f})
+    except: pass
 
 # =========================
-# 🎨 PROFESYONEL GRAFİK ÇİZİMİ
+# 🎨 GÖRSELDEKİ STİLDE GRAFİK ÇİZİMİ
 # =========================
 def make_candle_chart(df, out_png: str, title: str):
     try:
-        # Klasörün var olduğundan emin ol
         os.makedirs(os.path.dirname(out_png), exist_ok=True)
         
-        # Siyah Tema Ayarları
+        # Görseldeki renk paleti ve stil
         mc = mpf.make_marketcolors(up='#00ff00', down='#ff0000', edge='inherit', wick='inherit', volume='in', ohlc='i')
-        s = mpf.make_mpf_style(base_mpf_style='nightclouds', marketcolors=mc, gridstyle=':', y_on_right=True, facecolor='black')
+        s = mpf.make_mpf_style(base_mpf_style='nightclouds', marketcolors=mc, gridstyle=':', y_on_right=True, facecolor='black', edgecolor='#444444', gridcolor='#444444')
 
         addplots = []
 
-        # MA200
+        # MA200 (Pembe Çizgi)
         if 'MA200' in df.columns and not df['MA200'].isnull().all():
             addplots.append(mpf.make_addplot(df['MA200'], color='#E377C2', width=1.5)) 
 
-        # SMI
+        # SMI (Lime ve Turuncu)
         if 'SMI' in df.columns and 'SMI_EMA' in df.columns:
-            addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='lime', width=1.2, ylabel='SMI'))
-            addplots.append(mpf.make_addplot(df['SMI_EMA'], panel=2, color='orange', width=1.2))
-            addplots.append(mpf.make_addplot([40]*len(df), panel=2, color='gray', linestyle='--', width=0.7))
-            addplots.append(mpf.make_addplot([-40]*len(df), panel=2, color='gray', linestyle='--', width=0.7))
+            addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='lime', width=1.0, ylabel='SMI'))
+            addplots.append(mpf.make_addplot(df['SMI_EMA'], panel=2, color='orange', width=1.0))
+            addplots.append(mpf.make_addplot([40]*len(df), panel=2, color='gray', linestyle='--', width=0.5))
+            addplots.append(mpf.make_addplot([-40]*len(df), panel=2, color='gray', linestyle='--', width=0.5))
 
-        # MACD
+        # MACD (Cyan ve Kırmızı)
         if 'MACD' in df.columns and 'Signal' in df.columns:
-            addplots.append(mpf.make_addplot(df['MACD'], panel=3, color='cyan', width=1.2, ylabel='MACD'))
-            addplots.append(mpf.make_addplot(df['Signal'], panel=3, color='red', width=1.2))
+            addplots.append(mpf.make_addplot(df['MACD'], panel=3, color='cyan', width=1.0, ylabel='MACD'))
+            addplots.append(mpf.make_addplot(df['Signal'], panel=3, color='red', width=1.0))
             if 'Hist' in df.columns:
                  hist_colors = ['green' if v >= 0 else 'red' for v in df['Hist']]
                  addplots.append(mpf.make_addplot(df['Hist'], panel=3, type='bar', color=hist_colors, alpha=0.5))
 
-        # Çizim
+        # Çizim (Görseldeki gibi sıkışık ve net)
         mpf.plot(
-            df, type="candle", style=s, title=dict(title=title, color='white', fontsize=12),
-            volume=True, addplot=addplots, panel_ratios=(3, 1, 1, 1),
-            savefig=dict(fname=out_png, dpi=120, bbox_inches='tight', facecolor='black'),
-            tight_layout=True, datetime_format='%b %d', xrotation=20
+            df, type="candle", style=s, title=dict(title=title, color='white', fontsize=10),
+            volume=True, addplot=addplots, panel_ratios=(4, 1, 1, 1),
+            savefig=dict(fname=out_png, dpi=150, bbox_inches='tight', facecolor='black'),
+            tight_layout=True, datetime_format='%b %d', xrotation=0
         )
-        print(f"Grafik oluşturuldu: {out_png}")
         return True
     except Exception as e:
-        print(f"Grafik hatası ({title}): {e}")
+        print(f"Grafik hatası: {e}")
         return False
-
-# =========================
-# VERİTABANI
-# =========================
-DB_NAME = "market_tarama.db"
-def init_database():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS tarama_sonuclari (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            tarama_tarihi DATETIME, symbol TEXT, exchange TEXT, period TEXT, close_price REAL,
-            change_percent REAL, full_buy_signal INTEGER, smi_macd_buy INTEGER, status TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
-def save_result(row):
-    if not row: return
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    try:
-        cursor.execute('''
-            INSERT INTO tarama_sonuclari (tarama_tarihi, symbol, exchange, period, close_price, change_percent, full_buy_signal, smi_macd_buy, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (datetime.now(), row['Symbol'], row['Exchange'], row['Period'], row['Close'], row.get('Change', 0),
-              1 if row['Full_BUY_Signal'] else 0, 1 if row['SMI_MACD_BUY'] else 0, row['Status']))
-        conn.commit()
-    except: pass
-    conn.close()
 
 # =========================
 # HESAPLAMALAR
 # =========================
 def make_tv():
     if TV_USER and TV_PASS:
-        try:
-            return TvDatafeed(username=TV_USER, password=TV_PASS)
-        except:
-            return TvDatafeed()
+        try: return TvDatafeed(username=TV_USER, password=TV_PASS)
+        except: return TvDatafeed()
     return TvDatafeed()
 
 tv = make_tv()
@@ -186,9 +130,9 @@ def process_symbol(sym, exchange, interval, n_bars, period_str):
         try:
             tv = make_tv()
             df = tv.get_hist(sym, exchange, interval=interval, n_bars=n_bars)
-        except: return None, "CONNECTION_ERROR"
+        except: return None
 
-    if df is None or df.empty: return None, "NO_DATA"
+    if df is None or df.empty: return None
 
     try:
         smi, smi_ema = calc_smi(df)
@@ -215,25 +159,19 @@ def process_symbol(sym, exchange, interval, n_bars, period_str):
 
         smi_macd_buy = cross_up and smi_neg and hist_neg and hist_up
         full_buy_signal = smi_macd_buy and above_ma200 and vol_ok
-        sell_signal = (prev["SMI"] >= prev["SMI_EMA"] and last["SMI"] < last["SMI_EMA"] and last["SMI"] > 40)
 
-        row = {
+        return {
             "Symbol": sym, "Exchange": exchange, "Period": period_str, 
-            "Date": df.index[-1], "Close": last["close"], "Change": change_percent,
-            "SMI": last["SMI"], "SMI_EMA": last["SMI_EMA"], "MACD_Hist": last["HIST"],
-            "Full_BUY_Signal": full_buy_signal, "SMI_MACD_BUY": smi_macd_buy, "Status": "OK",
-            "SELL_Signal": sell_signal
+            "Close": last["close"], "Change": change_percent,
+            "Full_BUY_Signal": full_buy_signal, "SMI_MACD_BUY": smi_macd_buy
         }
-        return row, None
-    except: return None, "CALC_ERROR"
+    except: return None
 
 # =========================
 # ANA KOD
 # =========================
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Kullanım: python tara.py tarama 1D bist")
-        sys.exit(0)
+    if len(sys.argv) < 3: sys.exit(0)
 
     PERIOD = sys.argv[2].upper()
     MARKET_TYPE = sys.argv[3].lower() if len(sys.argv) > 3 else "bist"
@@ -242,8 +180,6 @@ if __name__ == "__main__":
     elif PERIOD == "1W": INTERVAL = Interval.in_weekly
     else: INTERVAL = Interval.in_daily
 
-    N_BARS = 400
-    
     BIST_STOCKS = [
         "AKBNK", "ALARK", "ARCLK", "ASELS", "ASTOR", "BIMAS", "BRSAN", "DOAS", "EGEEN", 
         "EKGYO", "ENKAI", "EREGL", "FROTO", "GARAN", "GUBRF", "HEKTS", "ISCTR", "KCHOL", 
@@ -252,65 +188,35 @@ if __name__ == "__main__":
         "CANTE", "EUPWR", "GESAN", "SMRTG", "YEOTK", "MIATK", "ALFAS", "CWENE", "SDTTR",
         "ONCSM", "KMPUR", "KLSER", "KCAER", "AGROT", "KBORU", "TARKM", "MEGMT", "CVKMD"
     ]
-    COMMODITIES = [("XAUUSD", "OANDA"), ("XAGUSD", "OANDA"), ("WTICOUSD", "OANDA")]
-    INDICES = [("XU100", "BIST"), ("XU030", "BIST")]
-    CRYPTO = [("BTCUSD", "BINANCE"), ("ETHUSD", "BINANCE"), ("SOLUSD", "BINANCE")]
-
-    if MARKET_TYPE == "bist": SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]; MARKET_NAME = "BIST Hisseleri"
-    elif MARKET_TYPE == "emtia": SYMBOLS = COMMODITIES; MARKET_NAME = "Emtialar"
-    elif MARKET_TYPE == "endeks": SYMBOLS = INDICES; MARKET_NAME = "Endeksler"
-    elif MARKET_TYPE == "kripto": SYMBOLS = CRYPTO; MARKET_NAME = "Kripto Paralar"
-    elif MARKET_TYPE == "all": 
-        SYMBOLS = ([(s, "BIST") for s in BIST_STOCKS] + COMMODITIES + INDICES + CRYPTO)
-        MARKET_NAME = "Tüm Piyasalar"
-    else: SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]; MARKET_NAME = "BIST"
-
-    print(f"--- TARAMA BAŞLADI: {MARKET_NAME} ({PERIOD}) ---")
-    init_database()
     
+    if MARKET_TYPE == "bist": SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]
+    elif MARKET_TYPE == "emtia": SYMBOLS = [("XAUUSD", "OANDA"), ("XAGUSD", "OANDA")]
+    elif MARKET_TYPE == "kripto": SYMBOLS = [("BTCUSD", "BINANCE"), ("ETHUSD", "BINANCE")]
+    else: SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]
+
     results = []
-    for i, (sym, exc) in enumerate(SYMBOLS):
-        print(f"[{i+1}/{len(SYMBOLS)}] {sym}...", end="\r")
-        row, err = process_symbol(sym, exc, INTERVAL, N_BARS, PERIOD)
-        if row:
+    for sym, exc in SYMBOLS:
+        row = process_symbol(sym, exc, INTERVAL, 400, PERIOD)
+        if row and (row['Full_BUY_Signal'] or row['SMI_MACD_BUY']):
             results.append(row)
-            save_result(row)
-        time.sleep(1.5)
+        time.sleep(1.2)
 
-    if results:
-        df_res = pd.DataFrame(results)
-        full_buys = df_res[df_res["Full_BUY_Signal"] == True]
-        smi_buys = df_res[df_res["SMI_MACD_BUY"] == True]
+    for r in results:
+        # Görseldeki Mesaj Formatı: #HISSE (PERIYOT) | Fiyat: ...
+        caption = f"#{r['Symbol']} ({r['Period']}) | Fiyat: {r['Close']:.2f}"
         
-        summary = (f"<b>📢 Tarama Bitti: {MARKET_NAME} ({PERIOD})</b>\n"
-                   f"🚀 Tam Alım: {len(full_buys)}\n"
-                   f"🟡 SMI Alım: {len(smi_buys)}")
-        tg_send_message(summary)
-
-        # Grafik ve detaylı mesaj gönderimi
-        target_list = full_buys if not full_buys.empty else smi_buys
-        
-        for _, r in target_list.iterrows():
-            # Detaylı Bilgi Mesajı
-            status_icon = "🚀" if r['Full_BUY_Signal'] else "🟡"
-            info_msg = (f"<b>{status_icon} {r['Symbol']} ({r['Exchange']})</b>\n"
-                        f"💰 Fiyat: <b>{r['Close']:.2f}</b>\n"
-                        f"📊 Değişim: <b>%{r['Change']:.2f}</b>\n"
-                        f"🕒 Periyot: {r['Period']}")
+        img_path = f"outputs/charts/{r['Symbol']}_{PERIOD}.png"
+        df_chart = tv.get_hist(r['Symbol'], r['Exchange'], interval=INTERVAL, n_bars=100)
+        if df_chart is not None:
+            df_chart['MA200'] = df_chart['close'].rolling(200).mean()
+            s, se = calc_smi(df_chart)
+            df_chart['SMI'], df_chart['SMI_EMA'] = s, se
+            m = ema(df_chart['close'], 12) - ema(df_chart['close'], 26)
+            sig = ema(m, 9)
+            df_chart['MACD'], df_chart['Signal'], df_chart['Hist'] = m, sig, m - sig
             
-            # Grafik İçin Veri Hazırla
-            img_path = f"outputs/charts/{r['Symbol']}_{PERIOD}.png"
-            df_chart = tv.get_hist(r['Symbol'], r['Exchange'], interval=INTERVAL, n_bars=100)
-            if df_chart is not None:
-                df_chart['MA200'] = df_chart['close'].rolling(200).mean()
-                s, se = calc_smi(df_chart)
-                df_chart['SMI'], df_chart['SMI_EMA'] = s, se
-                m = ema(df_chart['close'], 12) - ema(df_chart['close'], 26)
-                sig = ema(m, 9)
-                df_chart['MACD'], df_chart['Signal'], df_chart['Hist'] = m, sig, m - sig
-                
-                if make_candle_chart(df_chart, img_path, f"{r['Symbol']} - {PERIOD}"):
-                    tg_send_photo(img_path, caption=info_msg)
+            # Grafik başlığına görseldeki gibi bilgi ekle
+            chart_title = f"{r['Symbol']} ({r['Period']}) %{r['Change']:.2f} - {r['Close']:.2f}"
+            if make_candle_chart(df_chart, img_path, chart_title):
+                tg_send_photo(img_path, caption=caption)
                 time.sleep(1)
-    else:
-        tg_send_message(f"ℹ️ {MARKET_NAME} ({PERIOD}) taramasında sinyal bulunamadı.")
