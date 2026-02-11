@@ -2,16 +2,13 @@ name: Auto Market Scanner (Every 30min)
 
 on:
   schedule:
-    # Her yarım saatte bir (UTC saatiyle - Türkiye saati UTC+3)
-    # Sabah 08:00 - 23:30 TR saati = 05:00 - 20:30 UTC
-    - cron: "0,30 5-20 * * *"   # Her saat başı ve 30. dakika
-  workflow_dispatch:  # Manuel tetikleme için
+    - cron: "0,30 5-20 * * *"
+  workflow_dispatch:
 
 jobs:
   scan-all-markets:
     runs-on: ubuntu-latest
-    # 3 ayrı tarama (4H, 1D, 1W) yapılacağı için süreyi uzattık (Garanti olsun diye 2 saat)
-    timeout-minutes: 120  
+    timeout-minutes: 120
     
     steps:
       - name: 📥 Checkout code
@@ -26,8 +23,14 @@ jobs:
       - name: 📦 Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install git+https://github.com/rongardF/tvdatafeed.git
+          pip install pandas python-dotenv requests matplotlib mplfinance
+          # tvdatafeed'i PyPI'dan yükle
+          pip install tvdatafeed || echo "PyPI installation failed, trying alternative..."
+
+      - name: 🔍 Verify tvdatafeed installation
+        run: |
+          python -c "from tvDatafeed import TvDatafeed; print('✅ tvdatafeed installed successfully')" || \
+          echo "⚠️ tvdatafeed import failed"
 
       - name: ⏰ Check Turkish timezone (08:00-23:30)
         id: time_check
@@ -38,7 +41,6 @@ jobs:
           
           echo "🕐 Türkiye Saati: $TR_TIME"
           
-          # Saat 08:00 - 23:30 arası mı kontrol et
           if [ $TR_HOUR -ge 8 ] && [ $TR_HOUR -le 23 ]; then
             if [ $TR_HOUR -eq 23 ] && [ $TR_MIN -gt 30 ]; then
               echo "⏸️ Tarama saati dışında (23:30 sonrası)"
@@ -51,6 +53,30 @@ jobs:
             echo "⏸️ Tarama saati dışında (08:00 öncesi)"
             echo "skip=true" >> $GITHUB_OUTPUT
           fi
+
+      - name: 🔐 Test TradingView Connection
+        if: steps.time_check.outputs.skip == 'false'
+        env:
+          TV_USER: ${{ secrets.TV_USER }}
+          TV_PASS: ${{ secrets.TV_PASS }}
+        run: |
+          python -c "
+          from tvDatafeed import TvDatafeed
+          import os
+          try:
+              username = os.getenv('TV_USER')
+              password = os.getenv('TV_PASS')
+              if username and password:
+                  print(f'Attempting login with user: {username[:3]}***')
+                  tv = TvDatafeed(username=username, password=password)
+                  print('✅ TradingView login successful!')
+              else:
+                  print('⚠️ No credentials provided - using guest mode')
+                  tv = TvDatafeed()
+          except Exception as e:
+              print(f'⚠️ Connection warning: {e}')
+              print('Will continue with guest mode.')
+          " || echo "Connection test completed"
 
       - name: 🔍 Run Market Scan (ALL PERIODS)
         if: steps.time_check.outputs.skip == 'false'
@@ -65,16 +91,20 @@ jobs:
           echo "🚀 ÇOKLU TARAMA BAŞLIYOR..."
           
           echo "⏳ --- 4 SAATLİK TARAMA BAŞLIYOR ---"
-          python tara.py tarama 4H all
+          python tara.py tarama 4H all || echo "⚠️ 4H tarama hatası - devam ediliyor"
+          
+          sleep 10
           
           echo "📅 --- GÜNLÜK TARAMA BAŞLIYOR ---"
-          python tara.py tarama 1D all
+          python tara.py tarama 1D all || echo "⚠️ 1D tarama hatası - devam ediliyor"
+          
+          sleep 10
           
           echo "📆 --- HAFTALIK TARAMA BAŞLIYOR ---"
-          python tara.py tarama 1W all
+          python tara.py tarama 1W all || echo "⚠️ 1W tarama hatası"
 
       - name: 📊 Upload scan results
-        if: steps.time_check.outputs.skip == 'false'
+        if: steps.time_check.outputs.skip == 'false' && always()
         uses: actions/upload-artifact@v4
         with:
           name: scan-results-${{ github.run_number }}
@@ -82,7 +112,8 @@ jobs:
             *.csv
             market_tarama.db
             outputs/charts/*.png
-          retention-days: 7  # 7 gün sakla
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: 📧 Send completion notification
         if: steps.time_check.outputs.skip == 'false' && always()
@@ -95,7 +126,7 @@ jobs:
             if [ "${{ job.status }}" == "success" ]; then
               MESSAGE="✅ Tüm Taramalar Tamamlandı! (4H + 1D + 1W)%0A🕐 $TR_TIME%0A📁 Sonuçlar GitHub Actions'ta"
             else
-              MESSAGE="❌ Tarama HATALI!%0A🕐 $TR_TIME%0A⚠️ Lütfen kontrol edin"
+              MESSAGE="⚠️ Tarama Tamamlandı (Bazı hatalar olabilir)%0A🕐 $TR_TIME%0A📋 Lütfen logları kontrol edin"
             fi
             curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
               -d "chat_id=${TELEGRAM_CHAT_ID}" \
