@@ -85,7 +85,8 @@ def make_candle_chart(df, out_png: str, title: str):
         addplots = []
         if 'SMA20' in df.columns: addplots.append(mpf.make_addplot(df['SMA20'], color='#FFD700', width=0.8, alpha=0.8))
         if 'SMA50' in df.columns: addplots.append(mpf.make_addplot(df['SMA50'], color='#00BFFF', width=1.0, alpha=0.8))
-        if 'SMA200' in df.columns: addplots.append(mpf.make_addplot(df['SMA200'], color='#E377C2', width=1.5))
+        if 'SMA200' in df.columns and not df['SMA200'].isnull().all(): 
+            addplots.append(mpf.make_addplot(df['SMA200'], color='#E377C2', width=1.5))
 
         if 'SMI' in df.columns:
             addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='#00FF00', width=1.0, ylabel='SMI'))
@@ -99,8 +100,11 @@ def make_candle_chart(df, out_png: str, title: str):
             hist_colors = ['#26a69a' if v >= 0 else '#ef5350' for v in df['Hist']]
             addplots.append(mpf.make_addplot(df['Hist'], panel=3, type='bar', color=hist_colors, alpha=0.4))
 
+        # NaN değerleri temizle (Çizim hatasını önlemek için)
+        df_clean = df.copy()
+        
         mpf.plot(
-            df, type="candle", style=s, title=dict(title=title, color='white', fontsize=11),
+            df_clean, type="candle", style=s, title=dict(title=title, color='white', fontsize=11),
             volume=True, addplot=addplots, panel_ratios=(4, 1, 1, 1),
             savefig=dict(fname=abs_out, dpi=150, bbox_inches='tight', facecolor='black'),
             tight_layout=True, datetime_format='%d %b', xrotation=0
