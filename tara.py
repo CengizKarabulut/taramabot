@@ -13,7 +13,7 @@ import mplfinance as mpf
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
-# Yardımcı dosyalar (Varsa kullanır, yoksa devam eder)
+# Yardımcı dosyalar
 try:
     from telegram_utils import send_message as tg_send_message
     from telegram_utils import send_photo as tg_send_photo
@@ -34,7 +34,7 @@ if not TV_USER or not TV_PASS:
     print("⚠️ UYARI: TV_USER veya TV_PASS bulunamadı. Misafir moduyla devam edilecek.")
 
 # =========================
-# TELEGRAM FONKSİYONLARI
+# TELEGRAM YARDIMCISI
 # =========================
 def tg_enabled() -> bool:
     return bool(TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID)
@@ -65,16 +65,16 @@ def tg_send_document(file_path: str):
         print(f"Dosya gönderme hatası: {e}")
 
 # =========================
-# 🎨 PROFESYONEL GRAFİK ÇİZİMİ
+# 🎨 PROFESYONEL GRAFİK ÇİZİMİ (SİYAH TEMA)
 # =========================
-def make_pro_chart(df, out_png: str, title: str):
+def make_candle_chart(df, out_png: str, title: str):
     """
-    Orijinal isteğe uygun, Siyah Temalı, MA, SMI ve MACD içeren profesyonel grafik.
+    Siyah Temalı, MA, SMI ve MACD içeren profesyonel grafik.
     """
     try:
         os.makedirs(os.path.dirname(out_png), exist_ok=True)
         
-        # 1. Stil Ayarları (Karanlık Mod)
+        # 1. Stil Ayarları (Karanlık Mod - NightClouds)
         mc = mpf.make_marketcolors(
             up='#00ff00', down='#ff0000',   # Yeşil/Kırmızı Mumlar
             edge='inherit', wick='inherit', 
@@ -91,24 +91,23 @@ def make_pro_chart(df, out_png: str, title: str):
 
         # PANEL 0: Fiyat Üzerine Hareketli Ortalama (Mor Çizgi)
         if 'MA200' in df.columns:
-            # Boş veri kontrolü
             if not df['MA200'].isnull().all():
-                addplots.append(mpf.make_addplot(df['MA200'], color='#E377C2', width=2.0)) # Mor renk
+                addplots.append(mpf.make_addplot(df['MA200'], color='#E377C2', width=2.0)) 
 
-        # PANEL 2: SMI (Hacim Panel 1'dir, o yüzden bu Panel 2)
+        # PANEL 2: SMI (Hacim Panel 1'dir)
         if 'SMI' in df.columns and 'SMI_EMA' in df.columns:
-            addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='lime', width=1.2, ylabel='SMI'))
-            addplots.append(mpf.make_addplot(df['SMI_EMA'], panel=2, color='orange', width=1.2))
-            # Referans çizgileri (Opsiyonel)
-            addplots.append(mpf.make_addplot([40]*len(df), panel=2, color='gray', linestyle='--', width=0.5))
-            addplots.append(mpf.make_addplot([-40]*len(df), panel=2, color='gray', linestyle='--', width=0.5))
+            addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='lime', width=1.5, ylabel='SMI'))
+            addplots.append(mpf.make_addplot(df['SMI_EMA'], panel=2, color='orange', width=1.5))
+            # Referans çizgileri
+            addplots.append(mpf.make_addplot([40]*len(df), panel=2, color='gray', linestyle='--', width=0.8))
+            addplots.append(mpf.make_addplot([-40]*len(df), panel=2, color='gray', linestyle='--', width=0.8))
 
         # PANEL 3: MACD
         if 'MACD' in df.columns and 'Signal' in df.columns:
-            addplots.append(mpf.make_addplot(df['MACD'], panel=3, color='cyan', width=1.2, ylabel='MACD'))
-            addplots.append(mpf.make_addplot(df['Signal'], panel=3, color='red', width=1.2))
+            addplots.append(mpf.make_addplot(df['MACD'], panel=3, color='cyan', width=1.5, ylabel='MACD'))
+            addplots.append(mpf.make_addplot(df['Signal'], panel=3, color='red', width=1.5))
             if 'Hist' in df.columns:
-                 # Histogramı renklendir (Pozitif Yeşil, Negatif Kırmızı)
+                 # Histogramı renklendir
                  hist_colors = ['green' if v >= 0 else 'red' for v in df['Hist']]
                  addplots.append(mpf.make_addplot(df['Hist'], panel=3, type='bar', color=hist_colors, alpha=0.6))
 
@@ -116,11 +115,11 @@ def make_pro_chart(df, out_png: str, title: str):
         mpf.plot(
             df,
             type="candle",
-            style=s,              # Siyah Stil
+            style=s,              # Siyah Stil Aktif
             title=title,
             volume=True,
             addplot=addplots,
-            panel_ratios=(4, 1, 1.5, 1.5), # Panellerin yükseklik oranları
+            panel_ratios=(3, 1, 1, 1), # Panellerin yükseklik oranları
             savefig=dict(fname=out_png, dpi=100, bbox_inches='tight'),
             tight_layout=True,
             datetime_format='%b %d',
@@ -128,6 +127,9 @@ def make_pro_chart(df, out_png: str, title: str):
         )
     except Exception as e:
         print(f"Grafik hatası ({title}): {e}")
+        # Hata olursa basit çiz (Yedek plan)
+        try: mpf.plot(df, type="candle", volume=True, title=title, savefig=out_png, style='yahoo')
+        except: pass
 
 # =========================
 # VERİTABANI
@@ -174,7 +176,6 @@ def make_tv():
 
 tv = make_tv()
 
-# Hesaplama Fonksiyonları (Grafik üretimi için tekrar lazım)
 def ema(s, l): return s.ewm(span=l, adjust=False).mean()
 def ema2(s, l): return ema(ema(s, l), l)
 
@@ -200,38 +201,41 @@ def process_symbol(sym, exchange, interval, n_bars):
         time.sleep(0.5)
         return None, "NO_DATA"
 
-    smi, smi_ema = calc_smi(df)
-    
-    macd = ema(df["close"], 12) - ema(df["close"], 26)
-    signal = ema(macd, 9)
-    hist = macd - signal
+    try:
+        smi, smi_ema = calc_smi(df)
+        
+        macd = ema(df["close"], 12) - ema(df["close"], 26)
+        signal = ema(macd, 9)
+        hist = macd - signal
 
-    df["SMI"], df["SMI_EMA"], df["HIST"] = smi, smi_ema, hist
-    
-    last, prev = df.iloc[-1], df.iloc[-2]
-    cross_up = prev["SMI"] <= prev["SMI_EMA"] and last["SMI"] > last["SMI_EMA"]
-    smi_neg = last["SMI"] < 0
-    hist_neg = last["HIST"] < 0
-    hist_up = last["HIST"] > prev["HIST"]
-    
-    ma200 = df["close"].rolling(200).mean().iloc[-1] if len(df) > 200 else 0
-    above_ma200 = last["close"] > ma200
-    vol_ma = df["volume"].rolling(20).mean().iloc[-1]
-    vol_ok = last["volume"] > (vol_ma * 1.5) if vol_ma > 0 else False
+        df["SMI"], df["SMI_EMA"], df["HIST"] = smi, smi_ema, hist
+        
+        last, prev = df.iloc[-1], df.iloc[-2]
+        cross_up = prev["SMI"] <= prev["SMI_EMA"] and last["SMI"] > last["SMI_EMA"]
+        smi_neg = last["SMI"] < 0
+        hist_neg = last["HIST"] < 0
+        hist_up = last["HIST"] > prev["HIST"]
+        
+        ma200 = df["close"].rolling(200).mean().iloc[-1] if len(df) > 200 else 0
+        above_ma200 = last["close"] > ma200
+        vol_ma = df["volume"].rolling(20).mean().iloc[-1]
+        vol_ok = last["volume"] > (vol_ma * 1.5) if vol_ma > 0 else False
 
-    smi_macd_buy = cross_up and smi_neg and hist_neg and hist_up
-    full_buy_signal = smi_macd_buy and above_ma200 and vol_ok
-    sell_signal = (prev["SMI"] >= prev["SMI_EMA"] and last["SMI"] < last["SMI_EMA"] and last["SMI"] > 40)
+        smi_macd_buy = cross_up and smi_neg and hist_neg and hist_up
+        full_buy_signal = smi_macd_buy and above_ma200 and vol_ok
+        sell_signal = (prev["SMI"] >= prev["SMI_EMA"] and last["SMI"] < last["SMI_EMA"] and last["SMI"] > 40)
 
-    row = {
-        "Symbol": sym, "Exchange": exchange, "Period": sys.argv[2] if len(sys.argv)>2 else "1D", 
-        "Date": df.index[-1], "Close": last["close"],
-        "SMI": last["SMI"], "SMI_EMA": last["SMI_EMA"], "MACD_Hist": last["HIST"],
-        "Full_BUY_Signal": full_buy_signal, "SMI_MACD_BUY": smi_macd_buy, "Status": "OK",
-        "SELL_Signal": sell_signal
-    }
-    time.sleep(0.5)
-    return row, None
+        row = {
+            "Symbol": sym, "Exchange": exchange, "Period": sys.argv[2] if len(sys.argv)>2 else "1D", 
+            "Date": df.index[-1], "Close": last["close"],
+            "SMI": last["SMI"], "SMI_EMA": last["SMI_EMA"], "MACD_Hist": last["HIST"],
+            "Full_BUY_Signal": full_buy_signal, "SMI_MACD_BUY": smi_macd_buy, "Status": "OK",
+            "SELL_Signal": sell_signal
+        }
+        time.sleep(0.5)
+        return row, None
+    except:
+        return None, "CALC_ERROR"
 
 # =========================
 # ANA KOD
@@ -248,12 +252,9 @@ if __name__ == "__main__":
     N_BARS = 400
 
     BATCH_SIZE = 50
-    SLEEP_BETWEEN_SYMBOLS = 0.5 
+    SLEEP_BETWEEN_SYMBOLS = 2.0  # Ban yememek için yavaş
     SLEEP_BETWEEN_BATCH = 5
-    
-    # GRAFİK SAYISINI 25'e ÇIKARDIK
-    TG_MAX_ITEMS = 25
-    TG_SLEEP_BETWEEN_PHOTOS = 1.0
+    TG_MAX_ITEMS = 25  # İsteğin üzerine artırıldı
 
     # LİSTELER
     BIST_STOCKS = [
@@ -265,19 +266,26 @@ if __name__ == "__main__":
         "ONCSM", "KMPUR", "KLSER", "KCAER", "AGROT", "KBORU", "TARKM", "MEGMT", "CVKMD",
         "ZOREN", "VESTL", "TKFEN", "SOKM", "SKBNK", "OTKAR", "MGROS", "KOZAA", "KORDS",
         "ULKER", "TKNSA", "TRGYO", "ISGYO", "AKSEN", "GWIND", "MAVI", "AEFES", "CCOLA"
+        # ... Buraya kendi uzun BIST listeni yapıştır ...
     ]
     COMMODITIES = [("XAUUSD", "OANDA"), ("XAGUSD", "OANDA"), ("WTICOUSD", "OANDA"), ("BCOUSD", "OANDA")]
     INDICES = [("XU100", "BIST"), ("XU030", "BIST")]
     CRYPTO = [("BTCUSD", "BINANCE"), ("ETHUSD", "BINANCE"), ("SOLUSD", "BINANCE")]
 
-    if MARKET_TYPE == "bist": SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]
-    elif MARKET_TYPE == "emtia": SYMBOLS = COMMODITIES; MARKET_NAME = "Emtialar"
-    elif MARKET_TYPE == "endeks": SYMBOLS = INDICES; MARKET_NAME = "Endeksler"
-    elif MARKET_TYPE == "kripto": SYMBOLS = CRYPTO; MARKET_NAME = "Kripto Paralar"
+    # HATAYI DÜZELTEN KISIM: MARKET_NAME BURADA TANIMLANIYOR
+    if MARKET_TYPE == "bist": 
+        SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]; MARKET_NAME = "BIST Hisseleri"
+    elif MARKET_TYPE == "emtia": 
+        SYMBOLS = COMMODITIES; MARKET_NAME = "Emtialar"
+    elif MARKET_TYPE == "endeks": 
+        SYMBOLS = INDICES; MARKET_NAME = "Endeksler"
+    elif MARKET_TYPE == "kripto": 
+        SYMBOLS = CRYPTO; MARKET_NAME = "Kripto Paralar"
     elif MARKET_TYPE == "all": 
         SYMBOLS = ([(s, "BIST") for s in BIST_STOCKS] + COMMODITIES + INDICES + CRYPTO)
         MARKET_NAME = "Tüm Piyasalar"
-    else: SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]; MARKET_NAME = "BIST"
+    else: 
+        SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]; MARKET_NAME = "BIST"
 
     print(f"--- TARAMA BAŞLADI: {MARKET_NAME} ({len(SYMBOLS)}) ---")
     init_database()
@@ -350,8 +358,8 @@ if __name__ == "__main__":
                         df_plot = df_chart.tail(120)
                         
                         img_path = f"outputs/charts/{sym}.png"
-                        # Yeni PRO Fonksiyonu Çağır
-                        make_pro_chart(df_plot, img_path, f"{sym} ({PERIOD})")
+                        # Yeni PRO Fonksiyonu Çağır (Karanlık Mod + İndikatörler)
+                        make_candle_chart(df_plot, img_path, f"{sym} ({PERIOD})")
                         
                         tg_send_photo(img_path, caption=f"#{sym} - {r['Close']}")
                         time.sleep(TG_SLEEP_BETWEEN_PHOTOS)
@@ -363,3 +371,10 @@ if __name__ == "__main__":
         tg_send_message(f"⚠️ {MARKET_NAME} taraması başarısız.")
 
     print("\nİşlem Tamam.")
+
+elif KOMUT == "backtest":
+    print("Backtest Modu")
+elif KOMUT == "rapor":
+    print("Rapor Modu")
+else:
+    print("Geçersiz komut.")
