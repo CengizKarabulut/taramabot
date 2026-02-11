@@ -6,7 +6,6 @@ from tvDatafeed import TvDatafeed, Interval
 import pandas as pd
 import time
 import sys
-import sqlite3
 import os
 import requests
 import mplfinance as mpf
@@ -55,43 +54,42 @@ def tg_send_photo(image_path: str, caption: str = ""):
     except: pass
 
 # =========================
-# 🎨 GÖRSELDEKİ STİLDE GRAFİK ÇİZİMİ
+# 🎨 GELİŞMİŞ GRAFİK ÇİZİMİ
 # =========================
 def make_candle_chart(df, out_png: str, title: str):
     try:
         os.makedirs(os.path.dirname(out_png), exist_ok=True)
         
-        # Görseldeki renk paleti ve stil
-        mc = mpf.make_marketcolors(up='#00ff00', down='#ff0000', edge='inherit', wick='inherit', volume='in', ohlc='i')
-        s = mpf.make_mpf_style(base_mpf_style='nightclouds', marketcolors=mc, gridstyle=':', y_on_right=True, facecolor='black', edgecolor='#444444', gridcolor='#444444')
+        # Profesyonel Siyah Tema
+        mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in', ohlc='i')
+        s = mpf.make_mpf_style(base_mpf_style='nightclouds', marketcolors=mc, gridstyle=':', y_on_right=True, facecolor='#000000', edgecolor='#222222', gridcolor='#222222')
 
         addplots = []
 
-        # MA200 (Pembe Çizgi)
-        if 'MA200' in df.columns and not df['MA200'].isnull().all():
-            addplots.append(mpf.make_addplot(df['MA200'], color='#E377C2', width=1.5)) 
+        # SMA 20 (Sarı), SMA 50 (Mavi), SMA 200 (Pembe)
+        if 'SMA20' in df.columns: addplots.append(mpf.make_addplot(df['SMA20'], color='#FFD700', width=0.8, alpha=0.8))
+        if 'SMA50' in df.columns: addplots.append(mpf.make_addplot(df['SMA50'], color='#00BFFF', width=1.0, alpha=0.8))
+        if 'SMA200' in df.columns: addplots.append(mpf.make_addplot(df['SMA200'], color='#E377C2', width=1.5))
 
-        # SMI (Lime ve Turuncu)
-        if 'SMI' in df.columns and 'SMI_EMA' in df.columns:
-            addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='lime', width=1.0, ylabel='SMI'))
-            addplots.append(mpf.make_addplot(df['SMI_EMA'], panel=2, color='orange', width=1.0))
-            addplots.append(mpf.make_addplot([40]*len(df), panel=2, color='gray', linestyle='--', width=0.5))
-            addplots.append(mpf.make_addplot([-40]*len(df), panel=2, color='gray', linestyle='--', width=0.5))
+        # SMI Panel
+        if 'SMI' in df.columns:
+            addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='#00FF00', width=1.0, ylabel='SMI'))
+            addplots.append(mpf.make_addplot(df['SMI_EMA'], panel=2, color='#FFA500', width=1.0))
+            addplots.append(mpf.make_addplot([40]*len(df), panel=2, color='#333333', linestyle='--', width=0.5))
+            addplots.append(mpf.make_addplot([-40]*len(df), panel=2, color='#333333', linestyle='--', width=0.5))
 
-        # MACD (Cyan ve Kırmızı)
-        if 'MACD' in df.columns and 'Signal' in df.columns:
-            addplots.append(mpf.make_addplot(df['MACD'], panel=3, color='cyan', width=1.0, ylabel='MACD'))
-            addplots.append(mpf.make_addplot(df['Signal'], panel=3, color='red', width=1.0))
-            if 'Hist' in df.columns:
-                 hist_colors = ['green' if v >= 0 else 'red' for v in df['Hist']]
-                 addplots.append(mpf.make_addplot(df['Hist'], panel=3, type='bar', color=hist_colors, alpha=0.5))
+        # MACD Panel
+        if 'MACD' in df.columns:
+            addplots.append(mpf.make_addplot(df['MACD'], panel=3, color='#00FFFF', width=1.0, ylabel='MACD'))
+            addplots.append(mpf.make_addplot(df['Signal'], panel=3, color='#FF4500', width=1.0))
+            hist_colors = ['#26a69a' if v >= 0 else '#ef5350' for v in df['Hist']]
+            addplots.append(mpf.make_addplot(df['Hist'], panel=3, type='bar', color=hist_colors, alpha=0.4))
 
-        # Çizim (Görseldeki gibi sıkışık ve net)
         mpf.plot(
-            df, type="candle", style=s, title=dict(title=title, color='white', fontsize=10),
+            df, type="candle", style=s, title=dict(title=title, color='white', fontsize=11),
             volume=True, addplot=addplots, panel_ratios=(4, 1, 1, 1),
             savefig=dict(fname=out_png, dpi=150, bbox_inches='tight', facecolor='black'),
-            tight_layout=True, datetime_format='%b %d', xrotation=0
+            tight_layout=True, datetime_format='%d %b', xrotation=0
         )
         return True
     except Exception as e:
@@ -189,10 +187,9 @@ if __name__ == "__main__":
         "ONCSM", "KMPUR", "KLSER", "KCAER", "AGROT", "KBORU", "TARKM", "MEGMT", "CVKMD"
     ]
     
-    if MARKET_TYPE == "bist": SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]
-    elif MARKET_TYPE == "emtia": SYMBOLS = [("XAUUSD", "OANDA"), ("XAGUSD", "OANDA")]
+    SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]
+    if MARKET_TYPE == "emtia": SYMBOLS = [("XAUUSD", "OANDA"), ("XAGUSD", "OANDA")]
     elif MARKET_TYPE == "kripto": SYMBOLS = [("BTCUSD", "BINANCE"), ("ETHUSD", "BINANCE")]
-    else: SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]
 
     results = []
     for sym, exc in SYMBOLS:
@@ -201,22 +198,37 @@ if __name__ == "__main__":
             results.append(row)
         time.sleep(1.2)
 
-    for r in results:
-        # Görseldeki Mesaj Formatı: #HISSE (PERIYOT) | Fiyat: ...
-        caption = f"#{r['Symbol']} ({r['Period']}) | Fiyat: {r['Close']:.2f}"
+    if results:
+        # Periyot bazlı özet liste oluşturma
+        full_list = [f"🚀 <b>{r['Symbol']}</b> | %{r['Change']:.2f} | {r['Close']:.2f}" for r in results if r['Full_BUY_Signal']]
+        smi_list = [f"🟡 <b>{r['Symbol']}</b> | %{r['Change']:.2f} | {r['Close']:.2f}" for r in results if not r['Full_BUY_Signal']]
         
-        img_path = f"outputs/charts/{r['Symbol']}_{PERIOD}.png"
-        df_chart = tv.get_hist(r['Symbol'], r['Exchange'], interval=INTERVAL, n_bars=100)
-        if df_chart is not None:
-            df_chart['MA200'] = df_chart['close'].rolling(200).mean()
-            s, se = calc_smi(df_chart)
-            df_chart['SMI'], df_chart['SMI_EMA'] = s, se
-            m = ema(df_chart['close'], 12) - ema(df_chart['close'], 26)
-            sig = ema(m, 9)
-            df_chart['MACD'], df_chart['Signal'], df_chart['Hist'] = m, sig, m - sig
-            
-            # Grafik başlığına görseldeki gibi bilgi ekle
-            chart_title = f"{r['Symbol']} ({r['Period']}) %{r['Change']:.2f} - {r['Close']:.2f}"
-            if make_candle_chart(df_chart, img_path, chart_title):
-                tg_send_photo(img_path, caption=caption)
-                time.sleep(1)
+        summary_msg = f"📊 <b>{PERIOD} TARAMA SONUÇLARI</b>\n\n"
+        if full_list: summary_msg += "✅ <b>TAM ALIM SİNYALLERİ:</b>\n" + "\n".join(full_list) + "\n\n"
+        if smi_list: summary_msg += "🟡 <b>SMI ALIM SİNYALLERİ:</b>\n" + "\n".join(smi_list)
+        
+        tg_send_message(summary_msg)
+
+        # Görselleri gönder
+        for r in results:
+            caption = f"#{r['Symbol']} ({r['Period']}) | Fiyat: {r['Close']:.2f}"
+            img_path = f"outputs/charts/{r['Symbol']}_{PERIOD}.png"
+            df_chart = tv.get_hist(r['Symbol'], r['Exchange'], interval=INTERVAL, n_bars=100)
+            if df_chart is not None:
+                # SMA Hesaplamaları
+                df_chart['SMA20'] = df_chart['close'].rolling(20).mean()
+                df_chart['SMA50'] = df_chart['close'].rolling(50).mean()
+                df_chart['SMA200'] = df_chart['close'].rolling(200).mean()
+                
+                s, se = calc_smi(df_chart)
+                df_chart['SMI'], df_chart['SMI_EMA'] = s, se
+                m = ema(df_chart['close'], 12) - ema(df_chart['close'], 26)
+                sig = ema(m, 9)
+                df_chart['MACD'], df_chart['Signal'], df_chart['Hist'] = m, sig, m - sig
+                
+                chart_title = f"{r['Symbol']} ({r['Period']}) %{r['Change']:.2f} - {r['Close']:.2f}"
+                if make_candle_chart(df_chart, img_path, chart_title):
+                    tg_send_photo(img_path, caption=caption)
+                    time.sleep(1)
+    else:
+        tg_send_message(f"ℹ️ {PERIOD} taramasında sinyal bulunamadı.")
