@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import matplotlib
-matplotlib.use("Agg")  # GitHub Actions/Server ortamında grafik motoru çökmesin
+matplotlib.use("Agg")  # Grafik motoru hatasını önle
 
 from tvDatafeed import TvDatafeed, Interval
 import pandas as pd
@@ -19,8 +19,6 @@ try:
     from telegram_utils import send_photo as tg_send_photo
     from chart_utils import make_candle_chart
 except ImportError:
-    print("YARDIMCI DOSYALAR EKSİK! (telegram_utils.py veya chart_utils.py bulunamadı)")
-    # Localde çalışıyorsan hata vermemesi için pass geçiyoruz, sunucuda önemli olabilir.
     pass
 
 load_dotenv()
@@ -33,7 +31,7 @@ TV_PASS = os.getenv("TV_PASS")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# Şifre yoksa uyarı ver ama kapatma (Misafir Modu)
+# Şifre yoksa uyarı ver (Misafir Modu)
 if not TV_USER or not TV_PASS:
     print("⚠️ UYARI: TV_USER veya TV_PASS bulunamadı. Misafir moduyla devam edilecek.")
 
@@ -195,9 +193,7 @@ if KOMUT == "tarama":
     TG_MAX_ITEMS = 10
     TG_SLEEP_BETWEEN_PHOTOS = 1.0
 
-    # =========================
-    # SEMBOL LISTELERI
-    # =========================
+    # LİSTELER
     BIST_STOCKS = [
         "DMRGD", "BINHO", "AVOD", "A1CAP", "A1YEN", "ACSEL", "ADEL", "ADESE", "ADGYO", "AFYON",
         "AGHOL", "AGESA", "AHGAZ", "AKBNK", "AKYHO", "AKENR", "AKFGY", "AKFYE", "ATEKS", "AKMGY",
@@ -260,48 +256,115 @@ if KOMUT == "tarama":
         "IZINV", "IZMDC", "IZFAS", "ISFIN", "ISGYO", "ISGSY", "ISMEN", "ISYAT", "ISBIR", "ISSEN",
         "SEKFK", "SEGYO", "SKBNK", "SOKM", "SKYMD"
     ]
-
+    
     COMMODITIES = [
-        ("XAUUSD", "OANDA"), ("XAGUSD", "OANDA"), ("XPTUSD", "OANDA"), ("XPDUSD", "OANDA"),
-        ("WTICOUSD", "OANDA"), ("BCOUSD", "OANDA"), ("NATGASUSD", "OANDA"), ("COPPERUSD", "OANDA"),
-        ("XCUUSD", "OANDA"), ("SUGARUSD", "OANDA"), ("WHEATUSD", "OANDA"), ("CORNUSD", "OANDA"),
-        ("SOYBEANUSD", "OANDA"), ("COFFEEUSD", "OANDA"), ("COTTONUSD", "OANDA"),
+        ("XAUUSD", "OANDA"),   # Altın
+        ("XAGUSD", "OANDA"),   # Gümüş
+        ("XPTUSD", "OANDA"),   # Platin
+        ("XPDUSD", "OANDA"),   # Paladyum
+        ("WTICOUSD", "OANDA"), # Ham Petrol (WTI)
+        ("BCOUSD", "OANDA"),   # Brent Petrol
+        ("NATGASUSD", "OANDA"),# Doğalgaz
+        ("COPPERUSD", "OANDA"),# Bakır
+        ("XCUUSD", "OANDA"),   # Bakır (alternatif yaygın sembol)
+        ("SUGARUSD", "OANDA"), # Şeker
+        ("WHEATUSD", "OANDA"), # Buğday
+        ("CORNUSD", "OANDA"),  # Mısır
+        ("SOYBEANUSD", "OANDA"), # Soya Fasulyesi
+        ("COFFEEUSD", "OANDA"),# Kahve
+        ("COTTONUSD", "OANDA"),# Pamuk
     ]
 
+    
     INDICES = [
-        ("XU100", "BIST"), ("XU030", "BIST"), ("XU050", "BIST"), ("XU500", "BIST"),
-        ("XUTUM", "BIST"), ("XYUZO", "BIST"), ("XBANA", "BIST"), ("XBANK", "BIST"),
-        ("XUMAL", "BIST"), ("XUSIN", "BIST"), ("XUHIZ", "BIST"), ("XUTEK", "BIST"),
-        ("XGIDA", "BIST"), ("XTRZM", "BIST"), ("XULAS", "BIST"), ("XELKT", "BIST"),
-        ("XHOLD", "BIST"), ("XKMYA", "BIST"), ("XMANA", "BIST"), ("XMESY", "BIST"),
-        ("XTAST", "BIST"), ("XILTM", "BIST"), ("XSPOR", "BIST"), ("XSGRT", "BIST"),
-        ("XFINK", "BIST"), ("XTEKS", "BIST"), ("XKAGT", "BIST"), ("XBLSM", "BIST"),
-        ("XINSA", "BIST"), ("XK100", "BIST"), ("XKTUM", "BIST"), ("XK050", "BIST"),
-        ("XSDT", "BIST"), ("XTUMY", "BIST"), ("XHARZ", "BIST"), ("XUGRA", "BIST"),
-        ("XKURY", "BIST"), ("XSIST", "BIST"), ("XSIZM", "BIST"), ("XHIZM", "BIST"),
+        ("XU100", "BIST"),
+        ("XU030", "BIST"),
+        ("XU050", "BIST"),
+        ("XU500", "BIST"),
+        ("XUTUM", "BIST"),
+        ("XYUZO", "BIST"),
+        ("XBANA", "BIST"),
+        ("XBANK", "BIST"),
+        ("XUMAL", "BIST"),
+        ("XUSIN", "BIST"),
+        ("XUHIZ", "BIST"),
+        ("XUTEK", "BIST"),
+        ("XGIDA", "BIST"),
+        ("XTRZM", "BIST"),
+        ("XULAS", "BIST"),
+        ("XELKT", "BIST"),
+        ("XHOLD", "BIST"),
+        ("XKMYA", "BIST"),
+        ("XMANA", "BIST"),
+        ("XMESY", "BIST"),
+        ("XTAST", "BIST"),
+        ("XILTM", "BIST"),
+        ("XSPOR", "BIST"),
+        ("XSGRT", "BIST"),
+        ("XFINK", "BIST"),
+        ("XTEKS", "BIST"),
+        ("XKAGT", "BIST"),
+        ("XBLSM", "BIST"),
+        ("XINSA", "BIST"),
+        ("XK100", "BIST"),
+        ("XKTUM", "BIST"),
+        ("XK050", "BIST"),
+        ("XSDT", "BIST"),
+        ("XTUMY", "BIST"),
+        ("XHARZ", "BIST"),
+        ("XUGRA", "BIST"),
+        ("XKURY", "BIST"),
+        ("XSIST", "BIST"),
+        ("XSIZM", "BIST"),
+        ("XHIZM", "BIST"),
     ]
-
+    
     CRYPTO = [
-        ("BTCUSD", "BINANCE"), ("ETHUSD", "BINANCE"), ("BNBUSD", "BINANCE"), ("SOLUSD", "BINANCE"),
-        ("XRPUSD", "BINANCE"), ("ADAUSD", "BINANCE"), ("DOGEUSD","BINANCE"), ("AVAXUSD","BINANCE"),
-        ("DOTUSD", "BINANCE"), ("MATICUSD","BINANCE"), ("LINKUSD","BINANCE"), ("ATOMUSD","BINANCE"),
-        ("LTCUSD", "BINANCE"), ("TRXUSD", "BINANCE"), ("UNIUSD", "BINANCE"), ("NEARUSD","BINANCE"),
-        ("APTUSD", "BINANCE"), ("OPUSD",  "BINANCE"), ("ARBUSD", "BINANCE"),
+        ("BTCUSD", "BINANCE"),   # Bitcoin
+        ("ETHUSD", "BINANCE"),   # Ethereum
+        ("BNBUSD", "BINANCE"),   # Binance Coin
+        ("SOLUSD", "BINANCE"),   # Solana
+        ("XRPUSD", "BINANCE"),   # Ripple
+        ("ADAUSD", "BINANCE"),   # Cardano
+        ("DOGEUSD","BINANCE"),   # Dogecoin
+        ("AVAXUSD","BINANCE"),   # Avalanche
+        ("DOTUSD", "BINANCE"),   # Polkadot
+        ("MATICUSD","BINANCE"),  # Polygon
+        ("LINKUSD","BINANCE"),   # Chainlink
+        ("ATOMUSD","BINANCE"),   # Cosmos
+        ("LTCUSD", "BINANCE"),   # Litecoin
+        ("TRXUSD", "BINANCE"),   # Tron
+        ("UNIUSD", "BINANCE"),   # Uniswap
+        ("NEARUSD","BINANCE"),   # Near Protocol
+        ("APTUSD", "BINANCE"),   # Aptos
+        ("OPUSD",  "BINANCE"),   # Optimism
+        ("ARBUSD", "BINANCE"),   # Arbitrum
     ]
 
-    if MARKET_TYPE == "bist": SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]
-    elif MARKET_TYPE == "emtia": SYMBOLS = COMMODITIES
-    elif MARKET_TYPE == "endeks": SYMBOLS = INDICES
-    elif MARKET_TYPE == "kripto": SYMBOLS = CRYPTO
-    elif MARKET_TYPE == "all": SYMBOLS = ([(s, "BIST") for s in BIST_STOCKS] + COMMODITIES + INDICES + CRYPTO)
-    else: raise ValueError("Hatalı market tipi")
+    # DÜZELTİLEN BÖLÜM: MARKET_NAME TANIMLAMALARI EKLENDİ
+    if MARKET_TYPE == "bist": 
+        SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]
+        MARKET_NAME = "BIST Hisseleri"
+    elif MARKET_TYPE == "emtia": 
+        SYMBOLS = COMMODITIES
+        MARKET_NAME = "Emtialar"
+    elif MARKET_TYPE == "endeks": 
+        SYMBOLS = INDICES
+        MARKET_NAME = "Endeksler"
+    elif MARKET_TYPE == "kripto": 
+        SYMBOLS = CRYPTO
+        MARKET_NAME = "Kripto Paralar"
+    elif MARKET_TYPE == "all": 
+        SYMBOLS = ([(s, "BIST") for s in BIST_STOCKS] + COMMODITIES + INDICES + CRYPTO)
+        MARKET_NAME = "Tüm Piyasalar"
+    else: 
+        raise ValueError("Hatalı market tipi")
 
     # Hesaplalamalar
     def ema(s, l): return s.ewm(span=l, adjust=False).mean()
     def ema2(s, l): return ema(ema(s, l), l)
     
     def process_symbol(sym, exchange, extra_sleep=0.0):
-        # BU SATIRI EN TEPEYE ALDIK:
         global tv 
         
         try:
@@ -389,7 +452,7 @@ if KOMUT == "tarama":
         full_buys = df_out[df_out["Full_BUY_Signal"] == True]
         smi_buys = df_out[df_out["SMI_MACD_BUY"] == True]
         
-        msg = (f"📢 Tarama Bitti ({MARKET_TYPE})\n"
+        msg = (f"📢 Tarama Bitti ({MARKET_NAME})\n"
                f"✅ Tam Alım: {len(full_buys)}\n"
                f"🟡 SMI Alım: {len(smi_buys)}\n"
                f"📁 Dosya: {out_name}")
