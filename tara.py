@@ -65,16 +65,13 @@ def tg_send_document(file_path: str):
         print(f"Dosya gönderme hatası: {e}")
 
 # =========================
-# 🎨 PROFESYONEL GRAFİK ÇİZİMİ (SİYAH TEMA)
+# 🎨 PROFESYONEL GRAFİK ÇİZİMİ (SİYAH TEMA + İNDİKATÖRLER)
 # =========================
 def make_candle_chart(df, out_png: str, title: str):
-    """
-    Siyah Temalı, MA, SMI ve MACD içeren profesyonel grafik.
-    """
     try:
         os.makedirs(os.path.dirname(out_png), exist_ok=True)
         
-        # 1. Stil Ayarları (Karanlık Mod - NightClouds)
+        # 1. Stil Ayarları (Karanlık Mod)
         mc = mpf.make_marketcolors(
             up='#00ff00', down='#ff0000',   # Yeşil/Kırmızı Mumlar
             edge='inherit', wick='inherit', 
@@ -115,11 +112,11 @@ def make_candle_chart(df, out_png: str, title: str):
         mpf.plot(
             df,
             type="candle",
-            style=s,              # Siyah Stil Aktif
+            style=s,
             title=title,
             volume=True,
             addplot=addplots,
-            panel_ratios=(3, 1, 1, 1), # Panellerin yükseklik oranları
+            panel_ratios=(3, 1, 1, 1),
             savefig=dict(fname=out_png, dpi=100, bbox_inches='tight'),
             tight_layout=True,
             datetime_format='%b %d',
@@ -127,7 +124,7 @@ def make_candle_chart(df, out_png: str, title: str):
         )
     except Exception as e:
         print(f"Grafik hatası ({title}): {e}")
-        # Hata olursa basit çiz (Yedek plan)
+        # Hata olursa basit çiz
         try: mpf.plot(df, type="candle", volume=True, title=title, savefig=out_png, style='yahoo')
         except: pass
 
@@ -169,9 +166,7 @@ def save_result(row):
 # BAĞLANTI VE HESAPLAMALAR
 # =========================
 def make_tv():
-    if TV_USER and TV_PASS:
-        try: return TvDatafeed(username=TV_USER, password=TV_PASS)
-        except: return TvDatafeed()
+    # Parametresiz çağırarak misafir modunu zorluyoruz (daha az hata için)
     return TvDatafeed()
 
 tv = make_tv()
@@ -194,11 +189,15 @@ def process_symbol(sym, exchange, interval, n_bars):
         df = tv.get_hist(sym, exchange, interval=interval, n_bars=n_bars)
     except:
         print(f"⚠️ Bağlantı hatası ({sym}), tekrar deneniyor...")
-        tv = make_tv()
-        return None, "CONNECTION_ERROR"
+        # Kısa bir bekleme ve yeniden bağlanma
+        time.sleep(2)
+        try:
+            tv = make_tv()
+            df = tv.get_hist(sym, exchange, interval=interval, n_bars=n_bars)
+        except:
+            return None, "CONNECTION_ERROR"
 
     if df is None or df.empty:
-        time.sleep(0.5)
         return None, "NO_DATA"
 
     try:
@@ -232,7 +231,6 @@ def process_symbol(sym, exchange, interval, n_bars):
             "Full_BUY_Signal": full_buy_signal, "SMI_MACD_BUY": smi_macd_buy, "Status": "OK",
             "SELL_Signal": sell_signal
         }
-        time.sleep(0.5)
         return row, None
     except:
         return None, "CALC_ERROR"
@@ -252,9 +250,9 @@ if __name__ == "__main__":
     N_BARS = 400
 
     BATCH_SIZE = 50
-    SLEEP_BETWEEN_SYMBOLS = 2.0  # Ban yememek için yavaş
+    SLEEP_BETWEEN_SYMBOLS = 2.0  # GÜVENLİ HIZ (Ban yememek için)
     SLEEP_BETWEEN_BATCH = 5
-    TG_MAX_ITEMS = 25  # İsteğin üzerine artırıldı
+    TG_MAX_ITEMS = 25  # Grafik limiti
 
     # LİSTELER
     BIST_STOCKS = [
@@ -266,28 +264,34 @@ if __name__ == "__main__":
         "ONCSM", "KMPUR", "KLSER", "KCAER", "AGROT", "KBORU", "TARKM", "MEGMT", "CVKMD",
         "ZOREN", "VESTL", "TKFEN", "SOKM", "SKBNK", "OTKAR", "MGROS", "KOZAA", "KORDS",
         "ULKER", "TKNSA", "TRGYO", "ISGYO", "AKSEN", "GWIND", "MAVI", "AEFES", "CCOLA"
-        # ... Buraya kendi uzun BIST listeni yapıştır ...
+        # ... Buraya kendi uzun BIST listenizi ekleyebilirsiniz ...
     ]
     COMMODITIES = [("XAUUSD", "OANDA"), ("XAGUSD", "OANDA"), ("WTICOUSD", "OANDA"), ("BCOUSD", "OANDA")]
     INDICES = [("XU100", "BIST"), ("XU030", "BIST")]
     CRYPTO = [("BTCUSD", "BINANCE"), ("ETHUSD", "BINANCE"), ("SOLUSD", "BINANCE")]
 
-    # HATAYI DÜZELTEN KISIM: MARKET_NAME BURADA TANIMLANIYOR
+    # --- HATA DÜZELTME: MARKET_NAME TANIMLAMASI ---
     if MARKET_TYPE == "bist": 
-        SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]; MARKET_NAME = "BIST Hisseleri"
+        SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]
+        MARKET_NAME = "BIST Hisseleri"
     elif MARKET_TYPE == "emtia": 
-        SYMBOLS = COMMODITIES; MARKET_NAME = "Emtialar"
+        SYMBOLS = COMMODITIES
+        MARKET_NAME = "Emtialar"
     elif MARKET_TYPE == "endeks": 
-        SYMBOLS = INDICES; MARKET_NAME = "Endeksler"
+        SYMBOLS = INDICES
+        MARKET_NAME = "Endeksler"
     elif MARKET_TYPE == "kripto": 
-        SYMBOLS = CRYPTO; MARKET_NAME = "Kripto Paralar"
+        SYMBOLS = CRYPTO
+        MARKET_NAME = "Kripto Paralar"
     elif MARKET_TYPE == "all": 
         SYMBOLS = ([(s, "BIST") for s in BIST_STOCKS] + COMMODITIES + INDICES + CRYPTO)
         MARKET_NAME = "Tüm Piyasalar"
     else: 
-        SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]; MARKET_NAME = "BIST"
+        # Varsayılan
+        SYMBOLS = [(s, "BIST") for s in BIST_STOCKS]
+        MARKET_NAME = "BIST Hisseleri"
 
-    print(f"--- TARAMA BAŞLADI: {MARKET_NAME} ({len(SYMBOLS)}) ---")
+    print(f"--- TARAMA BAŞLADI: {MARKET_NAME} ({len(SYMBOLS)} sembol) ---")
     init_database()
     
     results = []
@@ -300,7 +304,7 @@ if __name__ == "__main__":
             results.append(row)
             save_result(row)
         else:
-            if err != "NO_DATA": print(f" >> {sym} atlandı: {err}          ")
+            if err != "NO_DATA": pass
         time.sleep(SLEEP_BETWEEN_SYMBOLS)
 
     # Sonuçlar ve Telegram
@@ -354,7 +358,7 @@ if __name__ == "__main__":
                         
                         df_chart['MA200'] = df_chart['close'].rolling(200).mean()
                         
-                        # Son 120 barı çiz
+                        # Son 120 barı çiz (Okunabilir olması için)
                         df_plot = df_chart.tail(120)
                         
                         img_path = f"outputs/charts/{sym}.png"
