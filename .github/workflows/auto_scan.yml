@@ -2,7 +2,7 @@ name: Auto Market Scanner (Every 30min)
 
 on:
   schedule:
-    - cron: "0,30 5-20 * * *"
+    - cron: "0 8-16 * * *"
   workflow_dispatch:
 
 jobs:
