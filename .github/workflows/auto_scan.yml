@@ -1,4 +1,4 @@
-name: Auto Market Scanner (Every 30min)
+name: Auto Market Scanner (Hourly 11:00-19:00 TRT)
 
 on:
   schedule:
