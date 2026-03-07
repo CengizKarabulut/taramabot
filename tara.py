@@ -1,127 +1,151 @@
-# -*- coding: utf-8 -*-
-import matplotlib
-matplotlib.use("Agg")
-
-from tvDatafeed import TvDatafeed, Interval
-import pandas as pd
-import time
-import sys
+import json
 import os
+import asyncio
+from datetime import datetime, timezone, timedelta
 import requests
-import mplfinance as mpf
-from datetime import datetime
-from dotenv import load_dotenv
+import pandas as pd
+import numpy as np
+from playwright.async_api import async_playwright
 import logging
+from tvDatafeed import TvDatafeed, Interval
 
-logging.basicConfig(level=logging.INFO)
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-try:
-    from telegram_utils import send_message as tg_send_message
-    from telegram_utils import send_photo as tg_send_photo
-except ImportError:
-    pass
+# -----------------------------
+# FILES
+# -----------------------------
+STATE_FILE = "state.json"
 
-load_dotenv()
+# -----------------------------
+# TELEGRAM
+# -----------------------------
+TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
+TG_CHAT_ID = os.getenv("TG_CHAT_ID")
 
-# =========================
-# GÜVENLİK
-# =========================
-TV_USER = os.getenv("TV_USER")
-TV_PASS = os.getenv("TV_PASS")
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+# -----------------------------
+# TRADINGVIEW
+# -----------------------------
+TV_USERNAME = os.getenv("TV_USERNAME")
+TV_PASSWORD = os.getenv("TV_PASSWORD")
+TV_CHART_ID = os.getenv("TV_CHART_ID")
 
-# =========================
-# TELEGRAM YARDIMCISI
-# =========================
-def tg_enabled() -> bool:
-    return bool(TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID)
+# -----------------------------
+# STATE
+# -----------------------------
+def load_state():
+    if not os.path.exists(STATE_FILE):
+        logging.info(f"State file not found: {STATE_FILE}. Initializing new state.")
+        return {"last_sent": {}}
 
+    try:
+        with open(STATE_FILE, "r", encoding="utf-8") as f:
+            state = json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError) as e:
+        logging.error(f"Error loading or parsing state file {STATE_FILE}: {e}. Initializing new state.")
+        return {"last_sent": {}}
+
+    if "last_sent" not in state:
+        state["last_sent"] = {}
+
+    return state
+
+def save_state(state):
+    try:
+        with open(STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump(state, f, ensure_ascii=False, indent=2)
+        logging.info(f"State saved to {STATE_FILE}.")
+    except Exception as e:
+        logging.error(f"Error saving state file {STATE_FILE}: {e}")
+
+# -----------------------------
+# TELEGRAM
+# -----------------------------
 def tg_send_message(text: str):
-    if not tg_enabled(): return
-    try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "HTML"})
-    except: pass
-
-def tg_send_photo(image_path: str, caption: str = ""):
-    if not tg_enabled(): return
-    
-    # Mutlak yolu al ve kontrol et
-    abs_path = os.path.abspath(image_path)
-    if not os.path.exists(abs_path):
-        print(f"HATA: Dosya bulunamadı -> {abs_path}")
+    if not TG_BOT_TOKEN or not TG_CHAT_ID:
+        logging.warning(f"Telegram Config Missing. Message: {text}")
         return
-
+    url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
     try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
-        with open(abs_path, "rb") as f:
-            r = requests.post(url, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption, "parse_mode": "HTML"}, files={"photo": f})
-            
-        if r.status_code != 200:
-            print(f"Telegram Fotoğraf Hatası: {r.text}")
-            # Fotoğraf olarak gitmezse döküman olarak dene
-            url_doc = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendDocument"
-            with open(abs_path, "rb") as f:
-                requests.post(url_doc, data={"chat_id": TELEGRAM_CHAT_ID, "caption": caption}, files={"document": f})
-        else:
-            print(f"BAŞARILI: Görsel gönderildi -> {abs_path}")
-    except Exception as e:
-        print(f"Telegram Gönderim Hatası: {e}")
-
-# =========================
-# 🎨 GELİŞMİŞ GRAFİK ÇİZİMİ
-# =========================
-def make_candle_chart(df, out_png: str, title: str):
-    try:
-        abs_out = os.path.abspath(out_png)
-        dir_path = os.path.dirname(abs_out)
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path, exist_ok=True)
-        
-        mc = mpf.make_marketcolors(up='#26a69a', down='#ef5350', edge='inherit', wick='inherit', volume='in', ohlc='i')
-        s = mpf.make_mpf_style(base_mpf_style='nightclouds', marketcolors=mc, gridstyle=':', y_on_right=True, facecolor='#000000', edgecolor='#222222', gridcolor='#222222')
-
-        addplots = []
-        if 'SMA20' in df.columns: addplots.append(mpf.make_addplot(df['SMA20'], color='#FFD700', width=0.8, alpha=0.8))
-        if 'SMA50' in df.columns: addplots.append(mpf.make_addplot(df['SMA50'], color='#00BFFF', width=1.0, alpha=0.8))
-        if 'SMA200' in df.columns and not df['SMA200'].isnull().all(): 
-            addplots.append(mpf.make_addplot(df['SMA200'], color='#E377C2', width=1.5))
-
-        if 'SMI' in df.columns:
-            addplots.append(mpf.make_addplot(df['SMI'], panel=2, color='#00FF00', width=1.0, ylabel='SMI'))
-            addplots.append(mpf.make_addplot(df['SMI_EMA'], panel=2, color='#FFA500', width=1.0))
-            addplots.append(mpf.make_addplot([40]*len(df), panel=2, color='#333333', linestyle='--', width=0.5))
-            addplots.append(mpf.make_addplot([-40]*len(df), panel=2, color='#333333', linestyle='--', width=0.5))
-
-        if 'MACD' in df.columns:
-            addplots.append(mpf.make_addplot(df['MACD'], panel=3, color='#00FFFF', width=1.0, ylabel='MACD'))
-            addplots.append(mpf.make_addplot(df['Signal'], panel=3, color='#FF4500', width=1.0))
-            hist_colors = ['#26a69a' if v >= 0 else '#ef5350' for v in df['Hist']]
-            addplots.append(mpf.make_addplot(df['Hist'], panel=3, type='bar', color=hist_colors, alpha=0.4))
-
-        # NaN değerleri temizle (Çizim hatasını önlemek için)
-        df_clean = df.copy()
-        
-        mpf.plot(
-            df_clean, type="candle", style=s, title=dict(title=title, color='white', fontsize=11),
-            volume=True, addplot=addplots, panel_ratios=(4, 1, 1, 1),
-            savefig=dict(fname=abs_out, dpi=150, bbox_inches='tight', facecolor='black'),
-            tight_layout=True, datetime_format='%d %b', xrotation=0
+        r = requests.post(
+            url,
+            json={"chat_id": TG_CHAT_ID, "text": text, "disable_web_page_preview": True, "parse_mode": "HTML"},
+            timeout=10,
         )
-        return True
-    except Exception as e:
-        print(f"Grafik oluşturma hatası: {e}")
-        return False
+        r.raise_for_status()
+        logging.info(f"Telegram message sent: {text[:50]}...")
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error sending Telegram message: {e}")
 
-# =========================
-# HESAPLAMALAR
-# =========================
+def tg_send_photo(photo_path: str, caption: str):
+    if not TG_BOT_TOKEN or not TG_CHAT_ID:
+        logging.warning(f"Telegram Config Missing. Photo: {photo_path}, Caption: {caption}")
+        return
+    url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendPhoto"
+    try:
+        with open(photo_path, 'rb') as f:
+            r = requests.post(
+                url,
+                data={"chat_id": TG_CHAT_ID, "caption": caption, "parse_mode": "HTML"},
+                files={"photo": f},
+                timeout=30,
+            )
+        r.raise_for_status()
+        logging.info(f"Telegram photo sent: {photo_path}")
+    except (requests.exceptions.RequestException, FileNotFoundError) as e:
+        logging.error(f"Error sending Telegram photo {photo_path}: {e}")
+
+# -----------------------------
+# TRADINGVIEW SCREENSHOT
+# -----------------------------
+async def get_tv_screenshot(symbol, exchange, interval_str):
+    tv_intervals = {"4H": "240", "1D": "D", "1W": "W"}
+    tv_interval = tv_intervals.get(interval_str, "D")
+    
+    os.makedirs("screenshots", exist_ok=True)
+    screenshot_path = f"screenshots/{symbol}_{interval_str}.png"
+    
+    async with async_playwright() as p:
+        browser = None
+        try:
+            browser = await p.chromium.launch(headless=True, args=['--no-sandbox', '--disable-setuid-sandbox'])
+            context = await browser.new_context(viewport={'width': 1280, 'height': 720})
+            page = await context.new_page()
+            
+            if TV_USERNAME and TV_PASSWORD:
+                logging.info(f"Attempting to log in to TradingView for {symbol}...")
+                await page.goto("https://www.tradingview.com/accounts/signin/")
+                await page.fill("input[name='username']", TV_USERNAME)
+                await page.fill("input[name='password']", TV_PASSWORD)
+                await page.click("button[type='submit']")
+                try:
+                    await page.wait_for_url("https://www.tradingview.com/", timeout=10000)
+                    logging.info("TradingView login successful.")
+                except Exception:
+                    logging.warning("TradingView login might have failed.")
+            
+            chart_url = f"https://www.tradingview.com/chart/{TV_CHART_ID}/?symbol={exchange}:{symbol}&interval={tv_interval}" if TV_CHART_ID else f"https://www.tradingview.com/chart/?symbol={exchange}:{symbol}&interval={tv_interval}"
+            logging.info(f"Navigating to chart: {chart_url}")
+            await page.goto(chart_url, wait_until="networkidle")
+            
+            await page.wait_for_selector(".chart-container", timeout=15000)
+            await asyncio.sleep(5)
+            
+            await page.screenshot(path=screenshot_path)
+            logging.info(f"Screenshot saved to {screenshot_path}")
+            return screenshot_path
+        except Exception as e:
+            logging.error(f"TV Screenshot Error for {symbol} ({interval_str}): {e}", exc_info=True)
+            return None
+        finally:
+            if browser:
+                await browser.close()
+
+# -----------------------------
+# CALCULATIONS
+# -----------------------------
 def make_tv():
-    if TV_USER and TV_PASS:
-        try: return TvDatafeed(username=TV_USER, password=TV_PASS)
-        except: return TvDatafeed()
-    return TvDatafeed()
+    return TvDatafeed(username=TV_USERNAME, password=TV_PASSWORD) if TV_USERNAME and TV_PASSWORD else TvDatafeed()
 
 tv = make_tv()
 
@@ -138,63 +162,60 @@ def calc_smi(df):
     return smi, smi_ema
 
 def process_symbol(sym, exchange, interval, n_bars, period_str):
-    global tv 
+    global tv
     try:
         df = tv.get_hist(sym, exchange, interval=interval, n_bars=n_bars)
-    except:
-        time.sleep(2)
-        try:
-            tv = make_tv()
-            df = tv.get_hist(sym, exchange, interval=interval, n_bars=n_bars)
-        except: return None
+    except Exception as e:
+        logging.error(f"Error fetching history for {sym}: {e}")
+        return None
 
-    if df is None or df.empty: return None
+    if df is None or df.empty:
+        return None
 
-    try:
-        smi, smi_ema = calc_smi(df)
-        macd = ema(df["close"], 12) - ema(df["close"], 26)
-        signal = ema(macd, 9)
-        hist = macd - signal
+    smi, smi_ema = calc_smi(df)
+    macd = ema(df["close"], 12) - ema(df["close"], 26)
+    signal = ema(macd, 9)
+    hist = macd - signal
 
-        df["SMI"], df["SMI_EMA"], df["HIST"] = smi, smi_ema, hist
-        
-        last, prev = df.iloc[-1], df.iloc[-2]
-        cross_up = prev["SMI"] <= prev["SMI_EMA"] and last["SMI"] > last["SMI_EMA"]
-        smi_neg = last["SMI"] < 0
-        hist_neg = last["HIST"] < 0
-        hist_up = last["HIST"] > prev["HIST"]
-        
-        ma200 = df["close"].rolling(200).mean().iloc[-1] if len(df) > 200 else 0
-        above_ma200 = last["close"] > ma200
-        vol_ma = df["volume"].rolling(20).mean().iloc[-1]
-        vol_ok = last["volume"] > (vol_ma * 1.5) if vol_ma > 0 else False
+    df["SMI"], df["SMI_EMA"], df["HIST"] = smi, smi_ema, hist
+    
+    last, prev = df.iloc[-1], df.iloc[-2]
+    cross_up = prev["SMI"] <= prev["SMI_EMA"] and last["SMI"] > last["SMI_EMA"]
+    smi_neg = last["SMI"] < 0
+    hist_neg = last["HIST"] < 0
+    hist_up = last["HIST"] > prev["HIST"]
+    
+    ma200 = df["close"].rolling(200).mean().iloc[-1] if len(df) > 200 else 0
+    above_ma200 = last["close"] > ma200
+    vol_ma = df["volume"].rolling(20).mean().iloc[-1]
+    vol_ok = last["volume"] > (vol_ma * 1.5) if vol_ma > 0 else False
 
-        prev_close = df.iloc[-2]['close']
-        current_close = last['close']
-        change_percent = ((current_close - prev_close) / prev_close) * 100
+    prev_close = df.iloc[-2]['close']
+    current_close = last['close']
+    change_percent = ((current_close - prev_close) / prev_close) * 100
 
-        smi_macd_buy = cross_up and smi_neg and hist_neg and hist_up
-        full_buy_signal = smi_macd_buy and above_ma200 and vol_ok
+    smi_macd_buy = cross_up and smi_neg and hist_neg and hist_up
+    full_buy_signal = smi_macd_buy and above_ma200 and vol_ok
 
-        return {
-            "Symbol": sym, "Exchange": exchange, "Period": period_str, 
-            "Close": last["close"], "Change": change_percent,
-            "Full_BUY_Signal": full_buy_signal, "SMI_MACD_BUY": smi_macd_buy
-        }
-    except: return None
+    return {
+        "Symbol": sym, "Exchange": exchange, "Period": period_str, 
+        "Close": last["close"], "Change": change_percent,
+        "Full_BUY_Signal": full_buy_signal, "SMI_MACD_BUY": smi_macd_buy,
+        "bar_time": df.index[-1].isoformat()
+    }
 
-# =========================
-# ANA KOD
-# =========================
-if __name__ == "__main__":
-    if len(sys.argv) < 3: sys.exit(0)
+# -----------------------------
+# MAIN
+# -----------------------------
+async def async_main():
+    if len(sys.argv) < 3:
+        sys.exit(0)
 
     PERIOD = sys.argv[2].upper()
     MARKET_TYPE = sys.argv[3].lower() if len(sys.argv) > 3 else "bist"
     
-    if PERIOD == "4H": INTERVAL = Interval.in_4_hour
-    elif PERIOD == "1W": INTERVAL = Interval.in_weekly
-    else: INTERVAL = Interval.in_daily
+    interval_map = {"4H": Interval.in_4_hour, "1W": Interval.in_weekly, "1D": Interval.in_daily}
+    INTERVAL = interval_map.get(PERIOD, Interval.in_daily)
 
     BIST_STOCKS = [
         "AKBNK", "ALARK", "ARCLK", "ASELS", "ASTOR", "BIMAS", "BRSAN", "DOAS", "EGEEN", 
@@ -209,12 +230,17 @@ if __name__ == "__main__":
     if MARKET_TYPE == "emtia": SYMBOLS = [("XAUUSD", "OANDA"), ("XAGUSD", "OANDA")]
     elif MARKET_TYPE == "kripto": SYMBOLS = [("BTCUSD", "BINANCE"), ("ETHUSD", "BINANCE")]
 
+    state = load_state()
     results = []
     for sym, exc in SYMBOLS:
         row = process_symbol(sym, exc, INTERVAL, 400, PERIOD)
         if row and (row['Full_BUY_Signal'] or row['SMI_MACD_BUY']):
+            last_sent_time = state["last_sent"].get(f"{sym}_{PERIOD}")
+            if last_sent_time and last_sent_time == row["bar_time"]:
+                logging.info(f"Signal for {sym} ({PERIOD}) already sent for this bar. Skipping.")
+                continue
             results.append(row)
-        time.sleep(1.2)
+        await asyncio.sleep(1.2)
 
     if results:
         full_list = [f"🚀 <b>{r['Symbol']}</b> | %{r['Change']:.2f} | {r['Close']:.2f}" for r in results if r['Full_BUY_Signal']]
@@ -225,27 +251,21 @@ if __name__ == "__main__":
         if smi_list: summary_msg += "🟡 <b>SMI ALIM SİNYALLERİ:</b>\n" + "\n".join(smi_list)
         
         tg_send_message(summary_msg)
-        time.sleep(2)
+        await asyncio.sleep(2)
 
         for r in results:
             caption = f"#{r['Symbol']} ({r['Period']}) | Fiyat: {r['Close']:.2f}"
-            img_name = f"{r['Symbol']}_{PERIOD}.png"
-            img_path = os.path.join(os.getcwd(), "outputs", img_name)
-            
-            df_chart = tv.get_hist(r['Symbol'], r['Exchange'], interval=INTERVAL, n_bars=100)
-            if df_chart is not None:
-                df_chart['SMA20'] = df_chart['close'].rolling(20).mean()
-                df_chart['SMA50'] = df_chart['close'].rolling(50).mean()
-                df_chart['SMA200'] = df_chart['close'].rolling(200).mean()
-                s, se = calc_smi(df_chart)
-                df_chart['SMI'], df_chart['SMI_EMA'] = s, se
-                m = ema(df_chart['close'], 12) - ema(df_chart['close'], 26)
-                sig = ema(m, 9)
-                df_chart['MACD'], df_chart['Signal'], df_chart['Hist'] = m, sig, m - sig
-                
-                chart_title = f"{r['Symbol']} ({r['Period']}) %{r['Change']:.2f} - {r['Close']:.2f}"
-                if make_candle_chart(df_chart, img_path, chart_title):
-                    tg_send_photo(img_path, caption=caption)
-                    time.sleep(2.0)
+            screenshot_path = await get_tv_screenshot(r['Symbol'], r['Exchange'], r['Period'])
+            if screenshot_path:
+                tg_send_photo(screenshot_path, caption=caption)
+                state["last_sent"][f"{r['Symbol']}_{r['Period']}"] = r["bar_time"]
+                await asyncio.sleep(2.0)
+            else:
+                tg_send_message(f"Grafik alınamadı: {caption}")
+        save_state(state)
     else:
         tg_send_message(f"ℹ️ {PERIOD} taramasında sinyal bulunamadı.")
+
+if __name__ == "__main__":
+    import sys
+    asyncio.run(async_main())
