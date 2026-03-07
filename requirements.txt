@@ -1,6 +1,5 @@
 pandas
 python-dotenv
 requests
-matplotlib
-mplfinance
+playwright
 git+https://github.com/rongardF/tvdatafeed.git
