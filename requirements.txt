@@ -1,5 +1,8 @@
-pandas
-python-dotenv
-requests
-playwright
+pandas>=2.0.0
+numpy>=1.24.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+playwright>=1.40.0
+mplfinance>=0.12.9
+git+https://github.com/saidsurucu/borsapy.git
 git+https://github.com/rongardF/tvdatafeed.git
