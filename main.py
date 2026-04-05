@@ -15,7 +15,6 @@ from config import (
 from scanner import MarketScanner
 from telegram_sender import get_telegram_sender
 from screenshot import take_screenshot
-from chart_generator import get_chart_generator
 from scheduler import Scheduler, TZ_TURKEY
 
 # Loglama konfigürasyonu
@@ -30,7 +29,6 @@ async def main_scan_logic(market_type: str, period: str):
     """
     scanner = MarketScanner()
     telegram_sender = get_telegram_sender()
-    chart_generator = get_chart_generator()
 
     logger.info(f"Tarama başlatılıyor: Pazar={market_type.upper()}, Periyot={period}")
 
@@ -84,7 +82,7 @@ async def main_scan_logic(market_type: str, period: str):
                 )
                 await asyncio.sleep(2)
 
-                # Ekran görüntüsü al ve gönder
+                # Ekran görüntüsü al ve gönder (TradingView üzerinden)
                 screenshot_path = await take_screenshot(symbol, exchange, period_str)
                 if screenshot_path:
                     caption = f"#{symbol} ({period_str}) | Fiyat: {close_price:.2f}"
