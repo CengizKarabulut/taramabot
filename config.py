@@ -5,7 +5,9 @@ Ortam değişkenleri ve sistem ayarlarını yönetir.
 
 import os
 import json
+import logging
 from dotenv import load_dotenv
+import borsapy as bp
 from datetime import time
 from typing import List, Tuple
 
@@ -43,15 +45,35 @@ SCAN_INTERVAL_MINUTES = 60
 # ============================================================================
 
 def load_symbols():
+    """Sembol listelerini yükler. BIST için borsapy'den güncel listeyi çekmeye çalışır."""
+    symbols = {"NASDAQ_100": [], "SP_500": [], "BIST_ALL": []}
+    
+    # 1. Sabit dosyadan diğer sembolleri yükle (NASDAQ, SP500 vb.)
     try:
-        with open("all_symbols.json", "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {"NASDAQ_100": [], "SP_500": [], "BIST_ALL": []}
+        if os.path.exists("all_symbols.json"):
+            with open("all_symbols.json", "r", encoding="utf-8") as f:
+                file_symbols = json.load(f)
+                symbols.update(file_symbols)
+    except Exception as e:
+        print(f"Sembol dosyası yükleme hatası: {e}")
+
+    # 2. BIST sembollerini borsapy'den dinamik olarak çek
+    try:
+        print("BIST sembolleri borsapy üzerinden güncelleniyor...")
+        bist_all = bp.Index("XUTUM").component_symbols
+        if bist_all and len(bist_all) > 0:
+            symbols["BIST_ALL"] = bist_all
+            print(f"borsapy üzerinden {len(bist_all)} BIST sembolü başarıyla çekildi.")
+        else:
+            print("borsapy boş liste döndürdü, mevcut listeden devam ediliyor.")
+    except Exception as e:
+        print(f"borsapy sembol çekme hatası: {e}. Mevcut liste kullanılacak.")
+    
+    return symbols
 
 ALL_SYMBOLS = load_symbols()
 
-# BIST STOKLARI (Tüm liste)
+# BIST STOKLARI (Dinamik liste)
 BIST_STOCKS = ALL_SYMBOLS.get("BIST_ALL", [])
 
 # ABD STOKLARI
