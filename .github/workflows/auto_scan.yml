@@ -1,8 +1,9 @@
-name: Auto Market Scanner (Hourly 11:00-19:00 TRT)
+name: Auto Market Scanner (Hourly 10:30-18:30 TRT)
 
 on:
   schedule:
-    - cron: "0 8-16 * * *"
+    # Türkiye saati ile 10:30 - 18:30 arası her saat başı (UTC 7:30 - 15:30)
+    - cron: "30 7-15 * * *"
   workflow_dispatch:
 
 jobs:
@@ -24,52 +25,52 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
+          playwright install --with-deps
 
       - name: 🔍 Run Market Scan (ALL PERIODS)
         env:
-          TV_USER: ${{ secrets.TV_USER }}
-          TV_PASS: ${{ secrets.TV_PASS }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          TG_MAX_ITEMS: "50"
-          TG_SLEEP_BETWEEN_PHOTOS: "1.5"
+          # Sizin secret isimlerinize göre eşleştirildi
+          TV_USERNAME: ${{ secrets.TV_USERNAME }}
+          TV_PASSWORD: ${{ secrets.TV_PASSWORD }}
+          TV_CHART_ID: ${{ secrets.TV_CHART_ID }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: |
           echo "🚀 ÇOKLU TARAMA BAŞLIYOR..."
           
           echo "⏳ --- 4 SAATLİK TARAMA ---"
-          python tara.py tarama 4H all
+          python main.py scan 4H bist
           
           echo "📅 --- GÜNLÜK TARAMA ---"
-          python tara.py tarama 1D all
+          python main.py scan 1D bist
           
           echo "📆 --- HAFTALIK TARAMA ---"
-          python tara.py tarama 1W all
+          python main.py scan 1W bist
 
       - name: 📊 Upload scan results
         uses: actions/upload-artifact@v4
         with:
           name: scan-results-${{ github.run_number }}
           path: |
-            *.csv
-            market_tarama.db
-            outputs/charts/*.png
+            state.json
+            screenshots/*.png
           retention-days: 7
 
       - name: 📧 Send completion notification
         if: always()
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: |
-          if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+          if [ -n "$TG_BOT_TOKEN" ] && [ -n "$TG_CHAT_ID" ]; then
             TR_TIME=$(TZ='Europe/Istanbul' date '+%Y-%m-%d %H:%M')
             if [ "${{ job.status }}" == "success" ]; then
-              MESSAGE="✅ Tüm Taramalar Tamamlandı! (4H + 1D + 1W)%0A🕐 $TR_TIME%0A📁 Sonuçlar GitHub Actions'ta"
+              MESSAGE="✅ Tüm Taramalar Tamamlandı! (4H + 1D + 1W)%0A🕐 $TR_TIME%0A📁 Grafikler Telegram'a gönderildi."
             else
-              MESSAGE="❌ Tarama HATALI!%0A🕐 $TR_TIME%0A⚠️ Lütfen kontrol edin"
+              MESSAGE="❌ Tarama HATALI!%0A🕐 $TR_TIME%0A⚠️ Lütfen GitHub Actions loglarını kontrol edin."
             fi
-            curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-              -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            curl -s -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
+              -d "chat_id=${TG_CHAT_ID}" \
               -d "text=${MESSAGE}" \
               -d "parse_mode=HTML" || true
           fi
