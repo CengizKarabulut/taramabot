@@ -4,6 +4,7 @@ Ortam değişkenleri ve sistem ayarlarını yönetir.
 """
 
 import os
+import json
 from dotenv import load_dotenv
 from datetime import time
 from typing import List, Tuple
@@ -38,16 +39,24 @@ SCAN_END_MINUTE = 30
 SCAN_INTERVAL_MINUTES = 60
 
 # ============================================================================
-# BIST STOKLARı
+# SEMBOL LİSTELERİ
 # ============================================================================
-BIST_STOCKS = [
-    "AKBNK", "ALARK", "ARCLK", "ASELS", "ASTOR", "BIMAS", "BRSAN", "DOAS", "EGEEN",
-    "EKGYO", "ENKAI", "EREGL", "FROTO", "GARAN", "GUBRF", "HEKTS", "ISCTR", "KCHOL",
-    "KONTR", "KOZAL", "KRDMD", "ODAS", "OYAKC", "PETKM", "PGSUS", "SAHOL", "SASA",
-    "SISE", "TCELL", "THYAO", "TOASO", "TSKB", "TTKOM", "TUPRS", "VAKBN", "YKBNK",
-    "CANTE", "EUPWR", "GESAN", "SMRTG", "YEOTK", "MIATK", "ALFAS", "CWENE", "SDTTR",
-    "ONCSM", "KMPUR", "KLSER", "KCAER", "AGROT", "KBORU", "TARKM", "MEGMT", "CVKMD"
-]
+
+def load_symbols():
+    try:
+        with open("all_symbols.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {"NASDAQ_100": [], "SP_500": [], "BIST_ALL": []}
+
+ALL_SYMBOLS = load_symbols()
+
+# BIST STOKLARI (Tüm liste)
+BIST_STOCKS = ALL_SYMBOLS.get("BIST_ALL", [])
+
+# ABD STOKLARI
+NASDAQ_100 = ALL_SYMBOLS.get("NASDAQ_100", [])
+SP_500 = ALL_SYMBOLS.get("SP_500", [])
 
 # Emtia Sembolü
 COMMODITIES = [

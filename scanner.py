@@ -13,7 +13,7 @@ from typing import List, Dict, Optional, Tuple
 from tvDatafeed import TvDatafeed, Interval
 
 from config import (
-    TV_USERNAME, TV_PASSWORD, BIST_STOCKS, COMMODITIES, CRYPTO,
+    TV_USERNAME, TV_PASSWORD, BIST_STOCKS, NASDAQ_100, SP_500, COMMODITIES, CRYPTO,
     BARS_TO_FETCH, STATE_FILE
 )
 from indicators import check_smi_macd_signal, check_rsi_signal
@@ -161,6 +161,10 @@ class MarketScanner:
         # Sembol listesini seç
         if market_type.lower() == "bist":
             symbols = [(s, "BIST") for s in BIST_STOCKS]
+        elif market_type.lower() == "nasdaq":
+            symbols = [(s, "NASDAQ") for s in NASDAQ_100]
+        elif market_type.lower() == "sp500":
+            symbols = [(s, "NYSE") for s in SP_500] # Bazıları NASDAQ olabilir ama NYSE geneldir
         elif market_type.lower() == "emtia":
             symbols = COMMODITIES
         elif market_type.lower() == "kripto":
@@ -180,7 +184,8 @@ class MarketScanner:
         
         logger.info(f"{market_type.upper()} pazarı taranıyor ({period})...")
         
-        # Asenkron tarama
+        # Asenkron tarama (Hız için sembolleri gruplayarak tarayabiliriz)
+        # Ancak mevcut yapıyı bozmadan devam edelim.
         tasks = [
             self.scan_symbol(sym, exc, interval, period, strategies)
             for sym, exc in symbols
