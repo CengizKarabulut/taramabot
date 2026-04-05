@@ -180,4 +180,36 @@ class TelegramSender:
             message += f"  • Hacim Artışı ✓\n"
         
         message += f"\n<b>İndikatörler:</b>\n"
-        for key, value in details.items():\n            if isinstance(value, float):\n                message += f"  • {key}: {value:.2f}\n"\n            elif isinstance(value, bool):\n                message += f"  • {key}: {'✓' if value else '✗'}\n"\n        \n        return self.send_message(message)\n    \n    def send_error(self, error_msg: str) -> bool:\n        """\n        Hata mesajı gönder.\n        \n        Args:\n            error_msg: Hata mesajı\n            \n        Returns:\n            Başarılı olup olmadığı\n        """\n        message = f"<b>❌ HATA</b>\n\n{error_msg}"\n        return self.send_message(message)\n\n\n# Global singleton instance\n_sender_instance: Optional[TelegramSender] = None\n\n\ndef get_telegram_sender() -> TelegramSender:\n    """Singleton Telegram gönderici'yi al."""\n    global _sender_instance\n    if _sender_instance is None:\n        _sender_instance = TelegramSender(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)\n    return _sender_instance\n
+        for key, value in details.items():
+            if isinstance(value, float):
+                message += f"  • {key}: {value:.2f}\n"
+            elif isinstance(value, bool):
+                message += f"  • {key}: {'✓' if value else '✗'}\n"
+        
+        return self.send_message(message)
+    
+    def send_error(self, error_msg: str) -> bool:
+        """
+        Hata mesajı gönder.
+        
+        Args:
+            error_msg: Hata mesajı
+            
+        Returns:
+            Başarılı olup olmadığı
+        """
+        message = f"<b>❌ HATA</b>\n\n{error_msg}"
+        return self.send_message(message)
+
+
+# Global singleton instance
+_sender_instance: Optional[TelegramSender] = None
+
+
+def get_telegram_sender() -> TelegramSender:
+    """Singleton Telegram gönderici'yi al."""
+    global _sender_instance
+    if _sender_instance is None:
+        from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+        _sender_instance = TelegramSender(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+    return _sender_instance
