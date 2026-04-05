@@ -66,17 +66,24 @@ class TradingViewScreenshot:
                         await self._navigate_to_chart(page, symbol, exchange, interval)
                         
                         # 3. Ekran Görüntüsü Al
-                        # Grafik elementinin yüklenmesini bekle
-                        await page.wait_for_selector(".chart-container", timeout=SCREENSHOT_TIMEOUT)
+                        # Grafik elementinin yüklenmesini bekle (TradingView'da ana grafik alanı)
+                        try:
+                            await page.wait_for_selector(".chart-container", timeout=SCREENSHOT_TIMEOUT)
+                        except:
+                            logger.warning("chart-container bulunamadı, genel sayfa bekleniyor...")
+                            await page.wait_for_load_state("networkidle", timeout=SCREENSHOT_TIMEOUT)
+                        
                         # İndikatörlerin ve verilerin yüklenmesi için bekle
                         await asyncio.sleep(SCREENSHOT_WAIT_TIME)
                         
-                        # Sağ üstteki reklamları veya panelleri gizlemek için gerekirse JS çalıştırılabilir
-                        # Şimdilik tam sayfa alıyoruz
+                        # Ekran görüntüsü al
                         await page.screenshot(path=screenshot_path)
                         
-                        logger.info(f"Ekran görüntüsü başarıyla alındı: {screenshot_path}")
-                        return screenshot_path
+                        if os.path.exists(screenshot_path) and os.path.getsize(screenshot_path) > 1000:
+                            logger.info(f"Ekran görüntüsü başarıyla alındı: {screenshot_path}")
+                            return screenshot_path
+                        else:
+                            logger.warning("Ekran görüntüsü dosyası boş veya oluşmadı.")
                         
                     finally:
                         await browser.close()
@@ -95,14 +102,13 @@ class TradingViewScreenshot:
             await page.goto("https://www.tradingview.com/accounts/signin/", timeout=SCREENSHOT_TIMEOUT)
             
             # Kullanıcı adı ve şifre alanlarını doldur
-            # TradingView bazen farklı seçiciler kullanabilir, en yaygın olanları deneyelim
             await page.fill("input[name='username']", TV_USERNAME)
             await page.fill("input[name='password']", TV_PASSWORD)
             
             # Giriş butonuna tıkla
             await page.click("button[type='submit']")
             
-            # Girişin tamamlanmasını bekle (Ana sayfaya yönlendirme)
+            # Girişin tamamlanmasını bekle
             try:
                 await page.wait_for_url("https://www.tradingview.com/", timeout=10000)
                 logger.info("Giriş başarılı.")
@@ -115,7 +121,12 @@ class TradingViewScreenshot:
     async def _navigate_to_chart(self, page: Page, symbol: str, exchange: str, interval: str):
         """Grafik sayfasına git."""
         # Zaman dilimi dönüşümü
-        tv_intervals = {"4H": "240", "1D": "D", "1W": "W"}
+        tv_intervals = {
+            "1H": "60",
+            "4H": "240",
+            "1D": "D",
+            "1W": "W"
+        }
         tv_interval = tv_intervals.get(interval, "D")
         
         # URL oluşturma
@@ -127,7 +138,9 @@ class TradingViewScreenshot:
             chart_url = f"https://www.tradingview.com/chart/?symbol={exchange}:{symbol}&interval={tv_interval}"
             
         logger.info(f"Grafik URL'sine gidiliyor: {chart_url}")
-        await page.goto(chart_url, wait_until="networkidle", timeout=SCREENSHOT_TIMEOUT)
+        await page.goto(chart_url, wait_until="domcontentloaded", timeout=SCREENSHOT_TIMEOUT)
+        # Ekstra bekleme
+        await asyncio.sleep(2)
 
 
 # Singleton instance

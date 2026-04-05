@@ -150,9 +150,10 @@ class MarketScanner:
         market_type: str = "bist",
         period: str = "1D",
         strategies: List[str] = None
-    ) -> Tuple[List[dict], List[dict], List[dict]]:
+    ) -> Tuple[List[dict], List[dict], List[dict], int]:
         """
         Pazarı tara.
+        Returns: (full_signals, smi_signals, rsi_signals, total_scanned)
         """
         if strategies is None:
             strategies = ["smi_macd", "rsi"]
@@ -166,10 +167,15 @@ class MarketScanner:
             symbols = CRYPTO
         else:
             logger.error(f"Bilinmeyen pazar türü: {market_type}")
-            return [], [], []
+            return [], [], [], 0
         
         # Zaman dilimini TvDatafeed formatına çevir
-        interval_map = {"4H": Interval.in_4_hour, "1W": Interval.in_weekly, "1D": Interval.in_daily}
+        interval_map = {
+            "1H": Interval.in_1_hour,
+            "4H": Interval.in_4_hour,
+            "1D": Interval.in_daily,
+            "1W": Interval.in_weekly
+        }
         interval = interval_map.get(period, Interval.in_daily)
         
         logger.info(f"{market_type.upper()} pazarı taranıyor ({period})...")
@@ -181,6 +187,7 @@ class MarketScanner:
         ]
         
         results = await asyncio.gather(*tasks)
+        total_scanned = len([r for r in results if r is not None])
         results = [r for r in results if r is not None]
         
         # Sinyalleri kategorize et
@@ -215,6 +222,6 @@ class MarketScanner:
         # Durumu kaydet
         self.state.save()
         
-        logger.info(f"Tarama tamamlandı: {len(full_signals)} tam sinyal, {len(smi_signals)} SMI sinyali, {len(rsi_signals)} RSI sinyali")
+        logger.info(f"Tarama tamamlandı: {total_scanned} sembol tarandı. {len(full_signals)} tam sinyal, {len(smi_signals)} SMI sinyali, {len(rsi_signals)} RSI sinyali")
         
-        return full_signals, smi_signals, rsi_signals
+        return full_signals, smi_signals, rsi_signals, total_scanned

@@ -33,7 +33,7 @@ async def main_scan_logic(market_type: str, period: str):
     logger.info(f"Tarama başlatılıyor: Pazar={market_type.upper()}, Periyot={period}")
 
     try:
-        full_signals, smi_signals, rsi_signals = await scanner.scan_market(
+        full_signals, smi_signals, rsi_signals, total_scanned = await scanner.scan_market(
             market_type=market_type,
             period=period,
             strategies=["smi_macd", "rsi"]
@@ -45,10 +45,18 @@ async def main_scan_logic(market_type: str, period: str):
             telegram_sender.send_signal_summary(period, full_signals, smi_signals)
             await asyncio.sleep(2)
 
+            # SMI sinyalleri için detaylı özet (RSI gibi)
+            if smi_signals:
+                smi_summary_msg = f"<b>📊 {period} SMI ALIM SİNYALLERİ</b>\n\n"
+                for s in smi_signals:
+                    change_str = f"<b>+{s['change']:.2f}%</b>" if s['change'] >= 0 else f"<b>{s['change']:.2f}%</b>"
+                    smi_summary_msg += f"  • <b>{s['symbol']}</b> | {change_str} | Fiyat: {s['close']:.2f}\n"
+                telegram_sender.send_message(smi_summary_msg)
+                await asyncio.sleep(2)
+
             # RSI sinyallerini ayrı gönder
             if rsi_signals:
-                rsi_summary_msg = f"<b>📊 {period} RSI TARAMA SONUÇLARI</b>\n\n"
-                rsi_summary_msg += "<b>🔵 RSI ALIM SİNYALLERİ:</b>\n"
+                rsi_summary_msg = f"<b>📊 {period} RSI ALIM SİNYALLERİ</b>\n\n"
                 for r in rsi_signals:
                     change_str = f"<b>+{r['change']:.2f}%</b>" if r['change'] >= 0 else f"<b>{r['change']:.2f}%</b>"
                     rsi_summary_msg += f"  • <b>{r['symbol']}</b> | {change_str} | Fiyat: {r['close']:.2f}\n"
@@ -91,8 +99,15 @@ async def main_scan_logic(market_type: str, period: str):
                 else:
                     telegram_sender.send_message(f"{EMOJI_ERROR} Grafik alınamadı: {symbol} ({period_str})")
 
+            # Tarama tamamlandı mesajı ve istatistikler
+            finish_msg = f"{EMOJI_SUCCESS} <b>Tarama Tamamlandı! ({period})</b>\n"
+            finish_msg += f"⏱ {datetime.now(TZ_TURKEY).strftime('%Y-%m-%d %H:%M')}\n"
+            finish_msg += f"🔍 Toplam {total_scanned} hisse tarandı.\n"
+            finish_msg += f"📈 {len(full_signals)} Tam, {len(smi_signals)} SMI, {len(rsi_signals)} RSI sinyali bulundu."
+            telegram_sender.send_message(finish_msg)
+
         else:
-            telegram_sender.send_message(f"{EMOJI_INFO} {period} taramasında sinyal bulunamadı.")
+            telegram_sender.send_message(f"{EMOJI_INFO} {period} taramasında ({total_scanned} hisse) sinyal bulunamadı.")
 
     except Exception as e:
         logger.error(f"Ana tarama mantığında hata: {str(e)}", exc_info=True)
@@ -112,13 +127,19 @@ async def run_bot():
             period = sys.argv[2].upper() if len(sys.argv) > 2 else "1D"
             market_type = sys.argv[3].lower() if len(sys.argv) > 3 else "bist"
             await main_scan_logic(market_type, period)
+        elif command == "multi":
+            # Çoklu tarama (4H, 1D, 1W ve yeni eklenen 1H)
+            periods = ["1H", "4H", "1D", "1W"]
+            for p in periods:
+                await main_scan_logic("bist", p)
+                await asyncio.sleep(5)
         else:
             logger.warning(f"Bilinmeyen komut: {command}")
             sys.exit(1)
     else:
         # Zamanlanmış çalıştırma
         scheduler = Scheduler()
-        # Örnek olarak BIST 1D taramasını zamanla
+        # Varsayılan olarak BIST 1D taramasını zamanla
         await scheduler.start(main_scan_logic, market_type="bist", period="1D")
 
 
