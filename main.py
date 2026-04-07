@@ -39,31 +39,12 @@ async def main_scan_logic(market_type: str, period: str):
             strategies=["smi_macd", "rsi"]
         )
 
-        # Özet mesaj gönder
+        # 1. Özet listeyi gönder (Tüm sinyalleri içeren gruplanmış özet)
         if full_signals or smi_signals or rsi_signals:
-            # SMI/MACD özetini gönder
-            telegram_sender.send_signal_summary(period, full_signals, smi_signals)
-            await asyncio.sleep(2)
+            telegram_sender.send_grouped_summary(period, full_signals, smi_signals, rsi_signals)
+            await asyncio.sleep(3)
 
-            # SMI sinyalleri için detaylı özet (RSI gibi)
-            if smi_signals:
-                smi_summary_msg = f"<b>📊 {period} SMI ALIM SİNYALLERİ</b>\n\n"
-                for s in smi_signals:
-                    change_str = f"<b>+{s['change']:.2f}%</b>" if s['change'] >= 0 else f"<b>{s['change']:.2f}%</b>"
-                    smi_summary_msg += f"  • <b>{s['symbol']}</b> | {change_str} | Fiyat: {s['close']:.2f}\n"
-                telegram_sender.send_message(smi_summary_msg)
-                await asyncio.sleep(2)
-
-            # RSI sinyallerini ayrı gönder
-            if rsi_signals:
-                rsi_summary_msg = f"<b>📊 {period} RSI ALIM SİNYALLERİ</b>\n\n"
-                for r in rsi_signals:
-                    change_str = f"<b>+{r['change']:.2f}%</b>" if r['change'] >= 0 else f"<b>{r['change']:.2f}%</b>"
-                    rsi_summary_msg += f"  • <b>{r['symbol']}</b> | {change_str} | Fiyat: {r['close']:.2f}\n"
-                telegram_sender.send_message(rsi_summary_msg)
-                await asyncio.sleep(2)
-
-            # Detaylı sinyaller ve grafikler
+            # 2. Grafiklerin Gönderimi (Önce Tam Alım, Sonra SMI, Sonra RSI)
             all_signals = []
             for s in full_signals: all_signals.append({**s, 'signal_type': 'full_buy'})
             for s in smi_signals: all_signals.append({**s, 'signal_type': 'smi_buy'})
@@ -77,29 +58,25 @@ async def main_scan_logic(market_type: str, period: str):
                 change_percent = signal_data['change']
                 signal_type = signal_data['signal_type']
 
-                # İndikatör detaylarını al
-                details = {}
-                if signal_type == 'full_buy' or signal_type == 'smi_buy':
-                    details = signal_data['signals']['smi_macd']['details']
-                elif signal_type == 'rsi_buy':
-                    details = signal_data['signals']['rsi']['details']
-
-                # Detay mesajı gönder
-                telegram_sender.send_signal_detail(
-                    symbol, exchange, period_str, close_price, change_percent, signal_type, details
-                )
-                await asyncio.sleep(2)
-
                 # Ekran görüntüsü al ve gönder (TradingView üzerinden)
                 screenshot_path = await take_screenshot(symbol, exchange, period_str)
                 if screenshot_path:
-                    caption = f"#{symbol} ({period_str}) | Fiyat: {close_price:.2f}"
+                    # Sinyal türüne göre emoji seç
+                    s_emoji = "🚀" if signal_type == "full_buy" else "🟡" if signal_type == "smi_buy" else "🔵"
+                    s_name = "TAM ALIM" if signal_type == "full_buy" else "SMI ALIM" if signal_type == "smi_buy" else "RSI ALIM"
+                    
+                    caption = f"<b>{s_emoji} {s_name} | #{symbol} ({period_str})</b>\n"
+                    caption += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
+                    caption += f"💰 <b>Fiyat:</b> {close_price:.2f}\n"
+                    caption += f"📈 <b>Değişim:</b> {'+' if change_percent >= 0 else ''}{change_percent:.2f}%\n"
+                    caption += f"⏱ <b>Tarih:</b> {datetime.now(TZ_TURKEY).strftime('%d.%m.%Y %H:%M')}"
+                    
                     telegram_sender.send_photo(screenshot_path, caption=caption)
-                    await asyncio.sleep(2.0)
+                    await asyncio.sleep(3.0)
                 else:
-                    telegram_sender.send_message(f"{EMOJI_ERROR} Grafik alınamadı: {symbol} ({period_str})")
+                    logger.warning(f"Grafik alınamadı: {symbol} ({period_str})")
 
-            # Tarama tamamlandı mesajı ve istatistikler
+            # 3. İstatistik Mesajı
             finish_msg = f"{EMOJI_SUCCESS} <b>Tarama Tamamlandı! ({period})</b>\n"
             finish_msg += f"⏱ {datetime.now(TZ_TURKEY).strftime('%Y-%m-%d %H:%M')}\n"
             finish_msg += f"🔍 Toplam {total_scanned} hisse tarandı.\n"
@@ -107,7 +84,7 @@ async def main_scan_logic(market_type: str, period: str):
             telegram_sender.send_message(finish_msg)
 
         else:
-            telegram_sender.send_message(f"{EMOJI_INFO} {period} taramasında ({total_scanned} hisse) sinyal bulunamadı.")
+            telegram_sender.send_message(f"{EMOJI_INFO} <b>{period}</b> taramasında ({total_scanned} hisse) kriterlere uygun sinyal bulunamadı.")
 
     except Exception as e:
         logger.error(f"Ana tarama mantığında hata: {str(e)}", exc_info=True)
@@ -128,7 +105,7 @@ async def run_bot():
             market_type = sys.argv[3].lower() if len(sys.argv) > 3 else "bist"
             await main_scan_logic(market_type, period)
         elif command == "multi":
-            # Çoklu tarama (15m, 1H, 4H, 1D, 1W, 1M)
+            # Tüm zaman dilimlerini tara (15m, 1H, 4H, 1D, 1W, 1M)
             periods = ["15m", "1H", "4H", "1D", "1W", "1M"]
             for p in periods:
                 await main_scan_logic("bist", p)

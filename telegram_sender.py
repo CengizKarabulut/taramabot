@@ -93,42 +93,65 @@ class TelegramSender:
             logger.error(f"Telegram fotoğraf gönderme hatası: {str(e)}")
             return False
     
-    def send_signal_summary(
+    def send_grouped_summary(
         self,
         period: str,
         full_signals: List[dict],
-        smi_signals: List[dict]
+        smi_signals: List[dict],
+        rsi_signals: List[dict]
     ) -> bool:
         """
-        Tarama sonuçlarının özet mesajını gönder.
-        
-        Args:
-            period: Zaman dilimi (4H, 1D, 1W)
-            full_signals: Tam alım sinyalleri
-            smi_signals: SMI alım sinyalleri
-            
-        Returns:
-            Başarılı olup olmadığı
+        Tarama sonuçlarını stratejiye göre gruplayarak şık bir özet mesajı gönderir.
         """
-        message = f"<b>📊 {period} TARAMA SONUÇLARI</b>\n\n"
+        period_names = {
+            "15m": "15 DAKİKA",
+            "1H": "1 SAAT",
+            "4H": "4 SAAT",
+            "1D": "GÜNLÜK",
+            "1W": "HAFTALIK",
+            "1M": "AYLIK"
+        }
+        p_name = period_names.get(period, period)
         
+        header = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
+        header += f"<b>🔍 {p_name} TARAMA ÖZETİ</b>\n"
+        header += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n\n"
+        
+        body = ""
+        
+        # 1. Strateji: Tam Alım (SMI + MA200 + Hacim)
         if full_signals:
-            message += "<b>🚀 TAM ALIM SİNYALLERİ:</b>\n"
-            for signal in full_signals:
-                change_str = f"<b>+{signal['change']:.2f}%</b>" if signal['change'] >= 0 else f"<b>{signal['change']:.2f}%</b>"
-                message += f"  • <b>{signal['symbol']}</b> | {change_str} | Fiyat: {signal['close']:.2f}\n"
-            message += "\n"
-        
+            body += f"<b>🚀 TAM ALIM SİNYALLERİ (GÜÇLÜ)</b>\n"
+            body += f"<i>SMI Kesişimi + MA200 Üstü + Hacim</i>\n"
+            for s in full_signals:
+                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
+                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
+            body += "\n"
+
+        # 2. Strateji: SMI/MACD Alım
         if smi_signals:
-            message += "<b>🟡 SMI ALIM SİNYALLERİ:</b>\n"
-            for signal in smi_signals:
-                change_str = f"<b>+{signal['change']:.2f}%</b>" if signal['change'] >= 0 else f"<b>{signal['change']:.2f}%</b>"
-                message += f"  • <b>{signal['symbol']}</b> | {change_str} | Fiyat: {signal['close']:.2f}\n"
+            body += f"<b>🟡 SMI/MACD ALIM SİNYALLERİ</b>\n"
+            body += f"<i>SMI/MACD Pozitif Kesişim</i>\n"
+            for s in smi_signals:
+                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
+                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
+            body += "\n"
+
+        # 3. Strateji: RSI Alım
+        if rsi_signals:
+            body += f"<b>🔵 RSI ALIM SİNYALLERİ</b>\n"
+            body += f"<i>RSI > 60 + RSI 50 Kesişimi</i>\n"
+            for s in rsi_signals:
+                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
+                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
+            body += "\n"
+
+        if not (full_signals or smi_signals or rsi_signals):
+            body = f"<b>ℹ️ SİNYAL BULUNAMADI</b>\n\n<i>{p_name} periyodunda kriterlere uygun hisse tespit edilemedi.</i>"
         
-        if not full_signals and not smi_signals:
-            message = f"<b>ℹ️ {period} TARAMASINDA SİNYAL BULUNAMADI</b>\n\nSonraki taramaya kadar lütfen bekleyiniz."
+        footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
         
-        return self.send_message(message)
+        return self.send_message(header + body + footer)
     
     def send_signal_detail(
         self,

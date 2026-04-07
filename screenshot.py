@@ -99,38 +99,51 @@ class TradingViewScreenshot:
         """TradingView'a giriş yap."""
         try:
             logger.info("TradingView'a giriş yapılıyor...")
-            # TradingView bazen doğrudan giriş sayfasında sorun çıkarabiliyor, ana sayfadan girmeyi deneyelim
-            await page.goto("https://www.tradingview.com/", timeout=SCREENSHOT_TIMEOUT)
+            await page.goto("https://www.tradingview.com/#signin", timeout=SCREENSHOT_TIMEOUT)
             
-            # Eğer zaten giriş yapılmışsa (çerezler vs.) geç
-            if await page.query_selector(".tv-header__user-menu-button"):
+            # Giriş yapılmış mı kontrol et
+            if await page.query_selector("button[aria-label='Open user menu']"):
                 logger.info("Zaten giriş yapılmış.")
                 return
 
-            await page.goto("https://www.tradingview.com/accounts/signin/", timeout=SCREENSHOT_TIMEOUT)
-            
-            # Email/Kullanıcı adı seçeneğine tıkla (bazı durumlarda gerekebilir)
-            email_btn = await page.query_selector("button[name='Email']")
+            # Email ile giriş butonunu bul ve tıkla
+            email_btn = await page.query_selector("button[name='Email'], span:has-text('Email')")
             if email_btn:
                 await email_btn.click()
+                await asyncio.sleep(1)
 
-            # Kullanıcı adı ve şifre alanlarını doldur
-            await page.fill("input[name='id_username']", TV_USERNAME)
-            await page.fill("input[name='id_password']", TV_PASSWORD)
+            # Kullanıcı adı/Email ve şifre alanlarını doldur
+            # Birden fazla olası seçiciyi dene
+            for selector in ["input[name='id_username']", "input[name='username']", "#id_username"]:
+                try:
+                    if await page.query_selector(selector):
+                        await page.fill(selector, TV_USERNAME)
+                        break
+                except: continue
+
+            for selector in ["input[name='id_password']", "input[name='password']", "#id_password"]:
+                try:
+                    if await page.query_selector(selector):
+                        await page.fill(selector, TV_PASSWORD)
+                        break
+                except: continue
             
             # Giriş butonuna tıkla
-            await page.click("button[type='submit']")
+            submit_btn = await page.query_selector("button[type='submit']")
+            if submit_btn:
+                await submit_btn.click()
             
-            # Girişin tamamlanmasını veya ana sayfanın yüklenmesini bekle
-            await page.wait_for_load_state("networkidle")
-            logger.info("Giriş işlemi tamamlandı.")
+            # Girişin tamamlanmasını bekle
+            await page.wait_for_load_state("networkidle", timeout=10000)
+            logger.info("Giriş işlemi denendi.")
                 
         except Exception as e:
             logger.error(f"Giriş sırasında hata: {str(e)}")
 
     async def _navigate_to_chart(self, page: Page, symbol: str, exchange: str, interval: str):
         """Grafik sayfasına git."""
-        # Zaman dilimi dönüşümü
+        # Zaman dilimi dönüşümü (TradingView URL formatı)
+        # 15m -> 15, 1H -> 60, 4H -> 240, 1D -> D, 1W -> W, 1M -> M
         tv_intervals = {
             "15m": "15",
             "1H": "60",
@@ -139,20 +152,30 @@ class TradingViewScreenshot:
             "1W": "W",
             "1M": "M"
         }
-        tv_interval = tv_intervals.get(interval, "D")
+        # Küçük harf/büyük harf duyarlılığını yönet
+        tv_interval = tv_intervals.get(interval, tv_intervals.get(interval.lower(), "D"))
         
         # URL oluşturma
+        symbol_param = f"{exchange}:{symbol}" if exchange else symbol
+        
         if TV_CHART_ID:
             # Kullanıcının kendi grafik şablonu
-            chart_url = f"https://www.tradingview.com/chart/{TV_CHART_ID}/?symbol={exchange}:{symbol}&interval={tv_interval}"
+            chart_url = f"https://www.tradingview.com/chart/{TV_CHART_ID}/?symbol={symbol_param}&interval={tv_interval}"
         else:
             # Varsayılan grafik
-            chart_url = f"https://www.tradingview.com/chart/?symbol={exchange}:{symbol}&interval={tv_interval}"
+            chart_url = f"https://www.tradingview.com/chart/?symbol={symbol_param}&interval={tv_interval}"
             
         logger.info(f"Grafik URL'sine gidiliyor: {chart_url}")
-        await page.goto(chart_url, wait_until="domcontentloaded", timeout=SCREENSHOT_TIMEOUT)
-        # Ekstra bekleme
-        await asyncio.sleep(2)
+        
+        # Sayfaya git ve yüklenmesini bekle
+        try:
+            await page.goto(chart_url, wait_until="networkidle", timeout=SCREENSHOT_TIMEOUT)
+        except:
+            await page.goto(chart_url, wait_until="domcontentloaded", timeout=SCREENSHOT_TIMEOUT)
+            
+        # Grafik üzerinde sembolün ve periyodun doğru olduğundan emin olmak için klavye kısayolu kullanabiliriz (opsiyonel)
+        # Ancak URL parametreleri genellikle yeterlidir.
+        await asyncio.sleep(3)
 
 
 # Singleton instance
