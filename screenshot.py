@@ -68,10 +68,21 @@ class TradingViewScreenshot:
                         # 3. Ekran Görüntüsü Al
                         # Grafik elementinin yüklenmesini bekle (TradingView'da ana grafik alanı)
                         try:
-                            await page.wait_for_selector(".chart-container", timeout=SCREENSHOT_TIMEOUT)
+                            # Farklı grafik konteyner seçicilerini dene
+                            chart_selectors = [".chart-container", ".layout__area--center", "canvas.trading-chart"]
+                            found = False
+                            for selector in chart_selectors:
+                                try:
+                                    await page.wait_for_selector(selector, timeout=5000)
+                                    found = True
+                                    break
+                                except: continue
+                            
+                            if not found:
+                                logger.warning("Belirli bir grafik konteyneri bulunamadı, genel sayfa bekleniyor...")
+                                await page.wait_for_load_state("networkidle", timeout=SCREENSHOT_TIMEOUT)
                         except:
-                            logger.warning("chart-container bulunamadı, genel sayfa bekleniyor...")
-                            await page.wait_for_load_state("networkidle", timeout=SCREENSHOT_TIMEOUT)
+                            logger.warning("Bekleme sırasında hata oluştu, devam ediliyor...")
                         
                         # İndikatörlerin ve verilerin yüklenmesi için bekle
                         await asyncio.sleep(SCREENSHOT_WAIT_TIME)
@@ -99,43 +110,80 @@ class TradingViewScreenshot:
         """TradingView'a giriş yap."""
         try:
             logger.info("TradingView'a giriş yapılıyor...")
+            # Doğrudan giriş sayfasına git
             await page.goto("https://www.tradingview.com/#signin", timeout=SCREENSHOT_TIMEOUT)
+            await asyncio.sleep(2)
             
-            # Giriş yapılmış mı kontrol et
-            if await page.query_selector("button[aria-label='Open user menu']"):
-                logger.info("Zaten giriş yapılmış.")
-                return
+            # Zaten giriş yapılmış mı kontrol et (Kullanıcı menüsü butonu varsa)
+            user_menu_selectors = ["button[aria-label='Open user menu']", ".tv-header__user-menu-button", "button[id='header-user-menu-button']"]
+            for selector in user_menu_selectors:
+                if await page.query_selector(selector):
+                    logger.info("Zaten giriş yapılmış.")
+                    return
 
             # Email ile giriş butonunu bul ve tıkla
-            email_btn = await page.query_selector("button[name='Email'], span:has-text('Email')")
-            if email_btn:
-                await email_btn.click()
-                await asyncio.sleep(1)
+            # TradingView bazen doğrudan formu gösterir, bazen butonla seçtirir
+            email_btn_selectors = [
+                "button[name='Email']", 
+                "span:has-text('Email')", 
+                "button:has-text('Email')",
+                "div[data-name='email']"
+            ]
+            
+            for selector in email_btn_selectors:
+                btn = await page.query_selector(selector)
+                if btn:
+                    await btn.click()
+                    await asyncio.sleep(1)
+                    break
 
             # Kullanıcı adı/Email ve şifre alanlarını doldur
-            # Birden fazla olası seçiciyi dene
-            for selector in ["input[name='id_username']", "input[name='username']", "#id_username"]:
+            user_selectors = ["input[name='id_username']", "input[name='username']", "#id_username", "input[id='id_username']"]
+            pass_selectors = ["input[name='id_password']", "input[name='password']", "#id_password", "input[id='id_password']"]
+            
+            user_filled = False
+            for selector in user_selectors:
                 try:
-                    if await page.query_selector(selector):
-                        await page.fill(selector, TV_USERNAME)
+                    input_field = await page.query_selector(selector)
+                    if input_field and await input_field.is_visible():
+                        await input_field.fill(TV_USERNAME)
+                        user_filled = True
                         break
                 except: continue
 
-            for selector in ["input[name='id_password']", "input[name='password']", "#id_password"]:
+            pass_filled = False
+            for selector in pass_selectors:
                 try:
-                    if await page.query_selector(selector):
-                        await page.fill(selector, TV_PASSWORD)
+                    input_field = await page.query_selector(selector)
+                    if input_field and await input_field.is_visible():
+                        await input_field.fill(TV_PASSWORD)
+                        pass_filled = True
                         break
                 except: continue
             
+            if not user_filled or not pass_filled:
+                logger.warning(f"Giriş alanları tam olarak doldurulamadı. User: {user_filled}, Pass: {pass_filled}")
+                # Hata ayıklama için ekran görüntüsü al (geçici)
+                # await page.screenshot(path=f"{self.screenshots_dir}/login_failed_fields.png")
+            
             # Giriş butonuna tıkla
-            submit_btn = await page.query_selector("button[type='submit']")
-            if submit_btn:
-                await submit_btn.click()
+            submit_selectors = ["button[type='submit']", "button:has-text('Sign in')", "button:has-text('Log in')", ".tv-button--primary"]
+            for selector in submit_selectors:
+                btn = await page.query_selector(selector)
+                if btn and await btn.is_visible():
+                    await btn.click()
+                    break
             
             # Girişin tamamlanmasını bekle
-            await page.wait_for_load_state("networkidle", timeout=10000)
-            logger.info("Giriş işlemi denendi.")
+            await asyncio.sleep(5)
+            
+            # Başarı kontrolü
+            for selector in user_menu_selectors:
+                if await page.query_selector(selector):
+                    logger.info("Giriş BAŞARILI.")
+                    return
+            
+            logger.warning("Giriş işlemi tamamlanamadı veya başarısız oldu.")
                 
         except Exception as e:
             logger.error(f"Giriş sırasında hata: {str(e)}")
@@ -143,7 +191,6 @@ class TradingViewScreenshot:
     async def _navigate_to_chart(self, page: Page, symbol: str, exchange: str, interval: str):
         """Grafik sayfasına git."""
         # Zaman dilimi dönüşümü (TradingView URL formatı)
-        # 15m -> 15, 1H -> 60, 4H -> 240, 1D -> D, 1W -> W, 1M -> M
         tv_intervals = {
             "15m": "15",
             "1H": "60",
@@ -152,7 +199,6 @@ class TradingViewScreenshot:
             "1W": "W",
             "1M": "M"
         }
-        # Küçük harf/büyük harf duyarlılığını yönet
         tv_interval = tv_intervals.get(interval, tv_intervals.get(interval.lower(), "D"))
         
         # URL oluşturma
@@ -171,10 +217,11 @@ class TradingViewScreenshot:
         try:
             await page.goto(chart_url, wait_until="networkidle", timeout=SCREENSHOT_TIMEOUT)
         except:
-            await page.goto(chart_url, wait_until="domcontentloaded", timeout=SCREENSHOT_TIMEOUT)
+            try:
+                await page.goto(chart_url, wait_until="domcontentloaded", timeout=SCREENSHOT_TIMEOUT)
+            except Exception as e:
+                logger.error(f"Grafik sayfasına gidilemedi: {str(e)}")
             
-        # Grafik üzerinde sembolün ve periyodun doğru olduğundan emin olmak için klavye kısayolu kullanabiliriz (opsiyonel)
-        # Ancak URL parametreleri genellikle yeterlidir.
         await asyncio.sleep(3)
 
 
