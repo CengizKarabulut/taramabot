@@ -84,10 +84,13 @@ class MarketScanner:
         """TradingView bağlantısı oluştur."""
         if TV_USERNAME and TV_PASSWORD:
             try:
+                logger.info(f"TradingView'a giriş yapılıyor: {TV_USERNAME}")
                 return TvDatafeed(username=TV_USERNAME, password=TV_PASSWORD)
             except Exception as e:
-                logger.warning(f"TradingView giriş başarısız: {e}. Anonim bağlantı kullanılıyor.")
+                logger.warning(f"tvDatafeed giriş hatası: {e}. Anonim (nologin) modda devam ediliyor.")
                 return TvDatafeed()
+        
+        logger.info("TradingView'a anonim (nologin) olarak bağlanılıyor.")
         return TvDatafeed()
     
     async def scan_symbol(
@@ -109,7 +112,6 @@ class MarketScanner:
             df = self.tv.get_hist(symbol, exchange, interval=interval, n_bars=BARS_TO_FETCH)
             
             if df is None or df.empty:
-                logger.warning(f"Veri çekilemedi: {symbol}")
                 return None
             
             # Son bar bilgisi
@@ -141,8 +143,7 @@ class MarketScanner:
             
             return result
             
-        except Exception as e:
-            logger.error(f"Tarama hatası ({symbol}): {str(e)}")
+        except Exception:
             return None
     
     async def scan_market(
@@ -164,7 +165,7 @@ class MarketScanner:
         elif market_type.lower() == "nasdaq":
             symbols = [(s, "NASDAQ") for s in NASDAQ_100]
         elif market_type.lower() == "sp500":
-            symbols = [(s, "NYSE") for s in SP_500] # Bazıları NASDAQ olabilir ama NYSE geneldir
+            symbols = [(s, "NYSE") for s in SP_500]
         elif market_type.lower() == "emtia":
             symbols = COMMODITIES
         elif market_type.lower() == "kripto":
@@ -186,8 +187,7 @@ class MarketScanner:
         
         logger.info(f"{market_type.upper()} pazarı taranıyor ({period})...")
         
-        # Asenkron tarama (Hız için sembolleri gruplayarak tarayabiliriz)
-        # Ancak mevcut yapıyı bozmadan devam edelim.
+        # Asenkron tarama
         tasks = [
             self.scan_symbol(sym, exc, interval, period, strategies)
             for sym, exc in symbols

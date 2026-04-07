@@ -91,6 +91,15 @@ async def main_scan_logic(market_type: str, period: str):
         telegram_sender.send_error(f"Tarama sırasında bir hata oluştu: {str(e)}")
 
 
+async def run_multi_scan(market_type: str = "bist"):
+    """Tüm zaman dilimlerini sırayla tara."""
+    periods = ["15m", "1H", "4H", "1D", "1W", "1M"]
+    logger.info(f"Çoklu tarama başlatılıyor: {periods}")
+    for p in periods:
+        await main_scan_logic(market_type, p)
+        await asyncio.sleep(5)
+
+
 async def run_bot():
     """
     Botu çalıştıran ana fonksiyon.
@@ -105,19 +114,15 @@ async def run_bot():
             market_type = sys.argv[3].lower() if len(sys.argv) > 3 else "bist"
             await main_scan_logic(market_type, period)
         elif command == "multi":
-            # Tüm zaman dilimlerini tara (15m, 1H, 4H, 1D, 1W, 1M)
-            periods = ["15m", "1H", "4H", "1D", "1W", "1M"]
-            for p in periods:
-                await main_scan_logic("bist", p)
-                await asyncio.sleep(5)
+            market_type = sys.argv[2].lower() if len(sys.argv) > 2 else "bist"
+            await run_multi_scan(market_type)
         else:
             logger.warning(f"Bilinmeyen komut: {command}")
             sys.exit(1)
     else:
-        # Zamanlanmış çalıştırma
+        # Zamanlanmış çalıştırma (Varsayılan olarak tüm periyotları tara)
         scheduler = Scheduler()
-        # Varsayılan olarak BIST 1D taramasını zamanla
-        await scheduler.start(main_scan_logic, market_type="bist", period="1D")
+        await scheduler.start(run_multi_scan, market_type="bist")
 
 
 if __name__ == "__main__":
