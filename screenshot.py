@@ -99,21 +99,31 @@ class TradingViewScreenshot:
         """TradingView'a giriş yap."""
         try:
             logger.info("TradingView'a giriş yapılıyor...")
+            # TradingView bazen doğrudan giriş sayfasında sorun çıkarabiliyor, ana sayfadan girmeyi deneyelim
+            await page.goto("https://www.tradingview.com/", timeout=SCREENSHOT_TIMEOUT)
+            
+            # Eğer zaten giriş yapılmışsa (çerezler vs.) geç
+            if await page.query_selector(".tv-header__user-menu-button"):
+                logger.info("Zaten giriş yapılmış.")
+                return
+
             await page.goto("https://www.tradingview.com/accounts/signin/", timeout=SCREENSHOT_TIMEOUT)
             
+            # Email/Kullanıcı adı seçeneğine tıkla (bazı durumlarda gerekebilir)
+            email_btn = await page.query_selector("button[name='Email']")
+            if email_btn:
+                await email_btn.click()
+
             # Kullanıcı adı ve şifre alanlarını doldur
-            await page.fill("input[name='username']", TV_USERNAME)
-            await page.fill("input[name='password']", TV_PASSWORD)
+            await page.fill("input[name='id_username']", TV_USERNAME)
+            await page.fill("input[name='id_password']", TV_PASSWORD)
             
             # Giriş butonuna tıkla
             await page.click("button[type='submit']")
             
-            # Girişin tamamlanmasını bekle
-            try:
-                await page.wait_for_url("https://www.tradingview.com/", timeout=10000)
-                logger.info("Giriş başarılı.")
-            except:
-                logger.warning("Giriş yönlendirmesi beklenenden uzun sürdü veya başarısız oldu.")
+            # Girişin tamamlanmasını veya ana sayfanın yüklenmesini bekle
+            await page.wait_for_load_state("networkidle")
+            logger.info("Giriş işlemi tamamlandı.")
                 
         except Exception as e:
             logger.error(f"Giriş sırasında hata: {str(e)}")
@@ -122,10 +132,12 @@ class TradingViewScreenshot:
         """Grafik sayfasına git."""
         # Zaman dilimi dönüşümü
         tv_intervals = {
+            "15m": "15",
             "1H": "60",
             "4H": "240",
             "1D": "D",
-            "1W": "W"
+            "1W": "W",
+            "1M": "M"
         }
         tv_interval = tv_intervals.get(interval, "D")
         

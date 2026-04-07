@@ -128,8 +128,8 @@ async def run_bot():
             market_type = sys.argv[3].lower() if len(sys.argv) > 3 else "bist"
             await main_scan_logic(market_type, period)
         elif command == "multi":
-            # Çoklu tarama (4H, 1D, 1W ve yeni eklenen 1H)
-            periods = ["1H", "4H", "1D", "1W"]
+            # Çoklu tarama (15m, 1H, 4H, 1D, 1W, 1M)
+            periods = ["15m", "1H", "4H", "1D", "1W", "1M"]
             for p in periods:
                 await main_scan_logic("bist", p)
                 await asyncio.sleep(5)

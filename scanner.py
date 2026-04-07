@@ -175,10 +175,12 @@ class MarketScanner:
         
         # Zaman dilimini TvDatafeed formatına çevir
         interval_map = {
+            "15m": Interval.in_15_minute,
             "1H": Interval.in_1_hour,
             "4H": Interval.in_4_hour,
             "1D": Interval.in_daily,
-            "1W": Interval.in_weekly
+            "1W": Interval.in_weekly,
+            "1M": Interval.in_monthly
         }
         interval = interval_map.get(period, Interval.in_daily)
         

@@ -23,7 +23,7 @@ def ema2(series: pd.Series, length: int) -> pd.Series:
 
 def calc_smi(df: pd.DataFrame) -> tuple:
     """
-    Stochastic Momentum Index (SMI) hesapla.
+    Stochastic Momentum Index (SMI) hesapla (Pine Script v6 uyumlu).
     
     Args:
         df: OHLCV verileri içeren DataFrame
@@ -31,12 +31,26 @@ def calc_smi(df: pd.DataFrame) -> tuple:
     Returns:
         (smi, smi_ema) tuple
     """
-    hh = df["high"].rolling(SMI_PERIOD).max()
-    ll = df["low"].rolling(SMI_PERIOD).min()
-    rng = (hh - ll).replace(0, 0.000001)
-    rel = df["close"] - (hh + ll) / 2
-    smi = 200 * (ema2(rel, SMI_EMA_PERIOD) / ema2(rng, SMI_EMA_PERIOD))
-    smi_ema = ema(smi, SMI_EMA_PERIOD)
+    # Pine Script parametreleri: lengthK=10, lengthD=3, lengthEMA=3
+    lengthK = 10
+    lengthD = 3
+    lengthEMA = 3
+    
+    hh = df["high"].rolling(lengthK).max()
+    ll = df["low"].rolling(lengthK).min()
+    
+    highest_lowest_range = hh - ll
+    relative_range = df["close"] - (hh + ll) / 2
+    
+    # Pine Script: emaEma(source, length) => ta.ema(ta.ema(source, length), length)
+    # 200 * (emaEma(relativeRange, lengthD) / emaEma(highestLowestRange, lengthD))
+    
+    num = ema2(relative_range, lengthD)
+    den = ema2(highest_lowest_range, lengthD)
+    
+    smi = 200 * (num / den.replace(0, 0.000001))
+    smi_ema = ema(smi, lengthEMA)
+    
     return smi, smi_ema
 
 
@@ -107,7 +121,7 @@ def check_smi_macd_signal(df: pd.DataFrame) -> dict:
     last = df.iloc[-1]
     prev = df.iloc[-2]
     last_smi = smi.iloc[-1]
-    prev_smi = smi.iloc[-1]
+    prev_smi = smi.iloc[-2]
     last_smi_ema = smi_ema.iloc[-1]
     prev_smi_ema = smi_ema.iloc[-2]
     last_hist = hist.iloc[-1]
