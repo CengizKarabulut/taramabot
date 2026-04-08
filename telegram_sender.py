@@ -1,6 +1,6 @@
 """
 Taramabot Telegram Gönderici Modülü
-Telegram API üzerinden mesaj ve fotoğraf gönderir.
+Telegram API üzerinden mesaj gönderir.
 HTML formatında şık ve profesyonel mesajlar oluşturur.
 """
 
@@ -23,13 +23,6 @@ class TelegramSender:
     def send_message(self, text: str, parse_mode: str = "HTML") -> bool:
         """
         Telegram'a mesaj gönder.
-        
-        Args:
-            text: Mesaj metni
-            parse_mode: HTML veya Markdown
-            
-        Returns:
-            Başarılı olup olmadığı
         """
         if not self.bot_token or not self.chat_id:
             logger.warning(f"Telegram konfigürasyonu eksik. Mesaj: {text[:50]}...")
@@ -52,45 +45,6 @@ class TelegramSender:
             
         except requests.exceptions.RequestException as e:
             logger.error(f"Telegram mesaj gönderme hatası: {str(e)}")
-            return False
-    
-    def send_photo(self, photo_path: str, caption: str = "") -> bool:
-        """
-        Telegram'a fotoğraf gönder.
-        
-        Args:
-            photo_path: Fotoğraf dosya yolu
-            caption: Fotoğraf başlığı (HTML formatında)
-            
-        Returns:
-            Başarılı olup olmadığı
-        """
-        if not self.bot_token or not self.chat_id:
-            logger.warning(f"Telegram konfigürasyonu eksik. Fotoğraf: {photo_path}")
-            return False
-        
-        try:
-            url = f"{self.base_url}/sendPhoto"
-            
-            with open(photo_path, 'rb') as f:
-                files = {"photo": f}
-                data = {
-                    "chat_id": self.chat_id,
-                    "caption": caption,
-                    "parse_mode": "HTML"
-                }
-                
-                response = requests.post(url, data=data, files=files, timeout=30)
-                response.raise_for_status()
-            
-            logger.info(f"Telegram fotoğrafı gönderildi: {photo_path}")
-            return True
-            
-        except FileNotFoundError:
-            logger.error(f"Fotoğraf dosyası bulunamadı: {photo_path}")
-            return False
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Telegram fotoğraf gönderme hatası: {str(e)}")
             return False
     
     def send_grouped_summary(
@@ -165,59 +119,6 @@ class TelegramSender:
         footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
         
         return self.send_message(header + body + footer)
-    
-    def send_signal_detail(
-        self,
-        symbol: str,
-        exchange: str,
-        period: str,
-        close: float,
-        change: float,
-        signal_type: str,
-        details: dict
-    ) -> bool:
-        """
-        Sinyal detaylarını gönder.
-        """
-        change_str = f"<b>+{change:.2f}%</b>" if change >= 0 else f"<b>{change:.2f}%</b>"
-        
-        message = f"<b>📈 {symbol} ({exchange})</b>\n"
-        message += f"<b>Zaman Dilimi:</b> {period}\n"
-        message += f"<b>Fiyat:</b> {close:.2f}\n"
-        message += f"<b>Değişim:</b> {change_str}\n\n"
-        
-        if signal_type == "new_scan":
-            message += f"<b>{EMOJI_NEW_SCAN_SIGNAL} ÖZEL TARAMA SİNYALİ</b>\n"
-            message += "Şartlar sağlanmıştır:\n"
-            message += f"  • SMA Dizilimi (5,8,21,50,55,200) ✓\n"
-            message += f"  • MACD Level > 0 ✓\n"
-            message += f"  • MACD Kesişimi ✓\n"
-            message += f"  • Hacim Artışı ✓\n"
-        elif signal_type == "full_buy":
-            message += f"<b>{EMOJI_FULL_SIGNAL} TAM ALIM SİNYALİ</b>\n"
-            message += "Tüm şartlar sağlanmıştır:\n"
-            message += f"  • SMI/MACD Kesişimi ✓\n"
-            message += f"  • 200 MA Üstü ✓\n"
-            message += f"  • Hacim Artışı ✓\n"
-        elif signal_type == "smi_buy":
-            message += f"<b>{EMOJI_SMI_SIGNAL} SMI ALIM SİNYALİ</b>\n"
-            message += "SMI/MACD şartları sağlanmıştır:\n"
-            message += f"  • SMI/MACD Kesişimi ✓\n"
-        elif signal_type == "rsi_buy":
-            message += f"<b>{EMOJI_RSI_SIGNAL} RSI ALIM SİNYALİ</b>\n"
-            message += "RSI şartları sağlanmıştır:\n"
-            message += f"  • RSI > 60 ✓\n"
-            message += f"  • RSI 50 Kesişimi ✓\n"
-            message += f"  • Hacim Artışı ✓\n"
-        
-        message += f"\n<b>İndikatörler:</b>\n"
-        for key, value in details.items():
-            if isinstance(value, float):
-                message += f"  • {key}: {value:.2f}\n"
-            elif isinstance(value, bool):
-                message += f"  • {key}: {'✓' if value else '✗'}\n"
-        
-        return self.send_message(message)
     
     def send_error(self, error_msg: str) -> bool:
         """
