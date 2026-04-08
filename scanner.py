@@ -165,7 +165,8 @@ class MarketScanner:
             
             return result
             
-        except Exception:
+        except Exception as e:
+            logger.error(f"Sembol tarama hatası ({symbol}): {str(e)}")
             return None
     
     async def scan_market(
@@ -196,16 +197,17 @@ class MarketScanner:
             logger.error(f"Bilinmeyen pazar türü: {market_type}")
             return [], [], [], [], 0
         
-        # Zaman dilimini TvDatafeed formatına çevir
+        # Zaman dilimini TvDatafeed formatına çevir (Case-insensitive)
+        p_key = period.lower()
         interval_map = {
             "15m": Interval.in_15_minute,
-            "1H": Interval.in_1_hour,
-            "4H": Interval.in_4_hour,
-            "1D": Interval.in_daily,
-            "1W": Interval.in_weekly,
-            "1M": Interval.in_monthly
+            "1h": Interval.in_1_hour,
+            "4h": Interval.in_4_hour,
+            "1d": Interval.in_daily,
+            "1w": Interval.in_weekly,
+            "1m": Interval.in_monthly
         }
-        interval = interval_map.get(period, Interval.in_daily)
+        interval = interval_map.get(p_key, Interval.in_daily)
         
         logger.info(f"{market_type.upper()} pazarı taranıyor ({period})...")
         

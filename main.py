@@ -32,6 +32,7 @@ async def main_scan_logic(market_type: str, period: str):
     logger.info(f"Tarama başlatılıyor: Pazar={market_type.upper()}, Periyot={period}")
 
     try:
+        # scan_market artık 6 değer döndürüyor (rsi_macd_signals eklendi)
         full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, total_scanned = await scanner.scan_market(
             market_type=market_type,
             period=period,
@@ -39,6 +40,7 @@ async def main_scan_logic(market_type: str, period: str):
         )
 
         # 1. Özet listeyi gönder (Tüm sinyalleri içeren gruplanmış özet)
+        # Sinyal olmasa bile kullanıcı "kriterlere uygun sinyal bulunamadı" mesajını görmek istiyor olabilir
         if full_signals or smi_signals or rsi_signals or new_scan_signals or rsi_macd_signals:
             telegram_sender.send_grouped_summary(period, full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals)
             
@@ -52,6 +54,7 @@ async def main_scan_logic(market_type: str, period: str):
         else:
             telegram_sender.send_message(f"{EMOJI_INFO} <b>{period}</b> taramasında ({total_scanned} hisse) kriterlere uygun sinyal bulunamadı.")
 
+        # Sonuçları bir sonraki aşama (toplu özet) için döndür
         return {
             "period": period,
             "full": full_signals,
@@ -64,6 +67,7 @@ async def main_scan_logic(market_type: str, period: str):
     except Exception as e:
         logger.error(f"Ana tarama mantığında hata: {str(e)}", exc_info=True)
         telegram_sender.send_error(f"Tarama sırasında bir hata oluştu: {str(e)}")
+        return None
 
 
 async def run_multi_scan(market_type: str = "bist"):
@@ -76,17 +80,18 @@ async def run_multi_scan(market_type: str = "bist"):
         res = await main_scan_logic(market_type, p)
         if res:
             all_results.append(res)
-        await asyncio.sleep(5)
+        # Her periyot arasında kısa bir bekleme (API limitleri ve düzenli mesaj akışı için)
+        await asyncio.sleep(2)
     
-    # Tüm taramalar bitince hisse bazlı özet raporu oluştur
+    # Tüm taramalar bitince BİRDEN FAZLA taramada çıkan hisseleri belirtecek özel özet raporu oluştur
     if all_results:
         send_final_summary(all_results)
 
 
 def send_final_summary(all_results: list):
     """
-    Tüm taramalar bittikten sonra hisse bazlı zaman dilimi özetini gönderir.
-    Örnek: X hissesi 1W için şu şu taramalarda var...
+    Tüm taramalar bittikten sonra BİRDEN FAZLA taramada çıkan hisseleri özetler.
+    Kullanıcı isteği: "tüm taramalarda çıkan hisseleri zaman dilimine göre ayrı şekilde belirtecek şekilde ayarla"
     """
     telegram_sender = get_telegram_sender()
     symbol_map = {} # symbol -> { period -> [strategies] }
@@ -110,27 +115,36 @@ def send_final_summary(all_results: list):
                     symbol_map[sym][p] = []
                 symbol_map[sym][p].append(strategy_names[strat])
     
-    if not symbol_map:
+    # Sadece birden fazla periyotta veya birden fazla stratejide çıkanları filtrele (Opsiyonel ama daha temiz rapor sağlar)
+    # Kullanıcı "birden fazla taramada olanları ayrıca belirtecek bir liste" dediği için:
+    filtered_map = {}
+    for sym, periods in symbol_map.items():
+        total_signals = sum(len(strats) for strats in periods.values())
+        if total_signals > 1: # Birden fazla sinyal varsa (farklı periyot veya aynı periyot farklı strateji)
+            filtered_map[sym] = periods
+
+    if not filtered_map:
         return
 
     header = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
-    header += f"<b>📊 TÜM PERİYOTLAR HİSSE ÖZETİ</b>\n"
+    header += f"<b>💎 ÇOKLU SİNYAL VEREN HİSSELER</b>\n"
     header += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n\n"
     
     body = ""
     # Alfabetik sırala
-    for sym in sorted(symbol_map.keys()):
+    for sym in sorted(filtered_map.keys()):
         body += f"<b>• {sym}:</b>\n"
+        # Periyotları belirli bir sırada göster
         for p in ["15m", "1H", "4H", "1D", "1W", "1M"]:
-            if p in symbol_map[sym]:
-                strats = ", ".join(symbol_map[sym][p])
+            if p in filtered_map[sym]:
+                strats = ", ".join(filtered_map[sym][p])
                 body += f"  └ {p}: {strats}\n"
         body += "\n"
         
-        # Telegram mesaj sınırı kontrolü (yaklaşık 4096 karakter)
+        # Telegram mesaj sınırı kontrolü
         if len(header + body) > 3500:
             telegram_sender.send_message(header + body + "<b>━━━━━━━━━━━━━━━━━━━━━━</b>")
-            body = "" # Reset body for next part
+            body = ""
     
     if body:
         footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
@@ -140,10 +154,8 @@ def send_final_summary(all_results: list):
 async def run_bot():
     """
     Botu çalıştıran ana fonksiyon.
-    Komut satırı argümanlarını işler veya zamanlayıcıyı başlatır.
     """
     if len(sys.argv) > 1:
-        # Komut satırı argümanları ile tek seferlik çalıştırma
         command = sys.argv[1]
         if command == "scan":
             period = sys.argv[2].upper() if len(sys.argv) > 2 else "1D"
@@ -156,7 +168,6 @@ async def run_bot():
             logger.warning(f"Bilinmeyen komut: {command}")
             sys.exit(1)
     else:
-        # Zamanlanmış çalıştırma (Varsayılan olarak tüm periyotları tara)
         scheduler = Scheduler()
         await scheduler.start(run_multi_scan, market_type="bist")
 
