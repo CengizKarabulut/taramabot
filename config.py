@@ -126,6 +126,14 @@ SMA_200 = 200
 MACD_LEVEL_THRESHOLD = 0
 VOLUME_RATIO_THRESHOLD = 1.5
 
+# EMA Dizilimi Ayarları
+EMA_5 = 5
+EMA_8 = 8
+EMA_13 = 13
+EMA_21 = 21
+EMA_55 = 55
+EMA_200 = 200
+
 # ============================================================================
 # EKRAN GÖRÜNTÜSÜ AYARLARI (DEVRE DIŞI)
 # ============================================================================
@@ -163,6 +171,7 @@ EMOJI_SMI_SIGNAL = "🟡"
 EMOJI_RSI_SIGNAL = "🔵"
 EMOJI_NEW_SCAN_SIGNAL = "🟣"
 EMOJI_RSI_MACD_SIGNAL = "🟢"
+EMOJI_EMA_SIGNAL = "🟠"
 EMOJI_INFO = "ℹ️"
 EMOJI_ERROR = "❌"
 EMOJI_SUCCESS = "✅"

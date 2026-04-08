@@ -16,7 +16,7 @@ from config import (
     TV_USERNAME, TV_PASSWORD, BIST_STOCKS, NASDAQ_100, SP_500, COMMODITIES, CRYPTO,
     BARS_TO_FETCH, STATE_FILE
 )
-from indicators import check_smi_macd_signal, check_rsi_signal, check_new_scan_signal, check_rsi_macd_scan_signal
+from indicators import check_smi_macd_signal, check_rsi_signal, check_new_scan_signal, check_rsi_macd_scan_signal, check_ema_scan_signal
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class ScannerState:
         """Durumu dosyadan yükle."""
         if not os.path.exists(self.state_file):
             logger.info(f"Durum dosyası bulunamadı: {self.state_file}. Yeni durum oluşturuluyor.")
-            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}}
+            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}}
         
         try:
             with open(self.state_file, "r", encoding="utf-8") as f:
@@ -45,10 +45,12 @@ class ScannerState:
                     state["last_sent_new_scan"] = {}
                 if "last_sent_rsi_macd" not in state:
                     state["last_sent_rsi_macd"] = {}
+                if "last_sent_ema" not in state:
+                    state["last_sent_ema"] = {}
                 return state
         except (json.JSONDecodeError, FileNotFoundError) as e:
             logger.error(f"Durum dosyası yükleme hatası: {e}. Yeni durum oluşturuluyor.")
-            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}}
+            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}}
     
     def save(self) -> None:
         """Durumu dosyaya kaydet."""
@@ -70,6 +72,8 @@ class ScannerState:
             return key in self.state.get("last_sent_new_scan", {})
         elif strategy == "rsi_macd":
             return key in self.state.get("last_sent_rsi_macd", {})
+        elif strategy == "ema":
+            return key in self.state.get("last_sent_ema", {})
         return False
     
     def mark_signal_sent(self, symbol: str, period: str, strategy: str, bar_time: str) -> None:
@@ -83,6 +87,8 @@ class ScannerState:
             self.state.setdefault("last_sent_new_scan", {})[key] = bar_time
         elif strategy == "rsi_macd":
             self.state.setdefault("last_sent_rsi_macd", {})[key] = bar_time
+        elif strategy == "ema":
+            self.state.setdefault("last_sent_ema", {})[key] = bar_time
 
 
 class MarketScanner:
@@ -117,7 +123,7 @@ class MarketScanner:
         Bir sembolü tara.
         """
         if strategies is None:
-            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd"]
+            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema"]
         
         try:
             # Veri çek
@@ -163,6 +169,11 @@ class MarketScanner:
                 rsi_macd_result = check_rsi_macd_scan_signal(df)
                 result["signals"]["rsi_macd"] = rsi_macd_result
             
+            # EMA Dizilimi Stratejisi
+            if "ema" in strategies:
+                ema_result = check_ema_scan_signal(df)
+                result["signals"]["ema"] = ema_result
+            
             return result
             
         except Exception as e:
@@ -174,13 +185,13 @@ class MarketScanner:
         market_type: str = "bist",
         period: str = "1D",
         strategies: List[str] = None
-    ) -> Tuple[List[dict], List[dict], List[dict], List[dict], List[dict], int]:
+    ) -> Tuple[List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], int]:
         """
         Pazarı tara.
-        Returns: (full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, total_scanned)
+        Returns: (full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, total_scanned)
         """
         if strategies is None:
-            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd"]
+            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema"]
         
         # Sembol listesini seç
         if market_type.lower() == "bist":
@@ -227,6 +238,7 @@ class MarketScanner:
         rsi_signals = []
         new_scan_signals = []
         rsi_macd_signals = []
+        ema_signals = []
         
         for result in results:
             # SMI/MACD sinyalleri
@@ -269,10 +281,19 @@ class MarketScanner:
                     if not self.state.is_signal_sent(result["symbol"], period, "rsi_macd"):
                         rsi_macd_signals.append(result)
                         self.state.mark_signal_sent(result["symbol"], period, "rsi_macd", result["bar_time"])
+            
+            # EMA sinyalleri
+            if "ema" in result["signals"]:
+                ema_result = result["signals"]["ema"]
+                
+                if ema_result["signal"]:
+                    if not self.state.is_signal_sent(result["symbol"], period, "ema"):
+                        ema_signals.append(result)
+                        self.state.mark_signal_sent(result["symbol"], period, "ema", result["bar_time"])
         
         # Durumu kaydet
         self.state.save()
         
-        logger.info(f"Tarama tamamlandı: {total_scanned} sembol tarandı. {len(full_signals)} tam sinyal, {len(smi_signals)} SMI sinyali, {len(rsi_signals)} RSI sinyali, {len(new_scan_signals)} yeni tarama sinyali, {len(rsi_macd_signals)} RSI+MACD sinyali")
+        logger.info(f"Tarama tamamlandı: {total_scanned} sembol tarandı. {len(full_signals)} tam sinyal, {len(smi_signals)} SMI sinyali, {len(rsi_signals)} RSI sinyali, {len(new_scan_signals)} yeni tarama sinyali, {len(rsi_macd_signals)} RSI+MACD sinyali, {len(ema_signals)} EMA sinyali")
         
-        return full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, total_scanned
+        return full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, total_scanned

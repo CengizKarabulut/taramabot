@@ -32,23 +32,22 @@ async def main_scan_logic(market_type: str, period: str):
     logger.info(f"Tarama başlatılıyor: Pazar={market_type.upper()}, Periyot={period}")
 
     try:
-        # scan_market artık 6 değer döndürüyor (rsi_macd_signals eklendi)
-        full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, total_scanned = await scanner.scan_market(
+        # scan_market artık 7 değer döndürüyor (ema_signals eklendi)
+        full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, total_scanned = await scanner.scan_market(
             market_type=market_type,
             period=period,
-            strategies=["smi_macd", "rsi", "new_scan", "rsi_macd"]
+            strategies=["smi_macd", "rsi", "new_scan", "rsi_macd", "ema"]
         )
 
         # 1. Özet listeyi gönder (Tüm sinyalleri içeren gruplanmış özet)
-        # Sinyal olmasa bile kullanıcı "kriterlere uygun sinyal bulunamadı" mesajını görmek istiyor olabilir
-        if full_signals or smi_signals or rsi_signals or new_scan_signals or rsi_macd_signals:
-            telegram_sender.send_grouped_summary(period, full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals)
+        if full_signals or smi_signals or rsi_signals or new_scan_signals or rsi_macd_signals or ema_signals:
+            telegram_sender.send_grouped_summary(period, full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals)
             
             # 2. İstatistik Mesajı
             finish_msg = f"{EMOJI_SUCCESS} <b>Tarama Tamamlandı! ({period})</b>\n"
             finish_msg += f"⏱ {datetime.now(TZ_TURKEY).strftime('%Y-%m-%d %H:%M')}\n"
             finish_msg += f"🔍 Toplam {total_scanned} hisse tarandı.\n"
-            finish_msg += f"📈 {len(rsi_macd_signals)} RSI+MACD, {len(new_scan_signals)} Özel, {len(full_signals)} Tam, {len(smi_signals)} SMI, {len(rsi_signals)} RSI sinyali bulundu."
+            finish_msg += f"📈 {len(ema_signals)} EMA, {len(rsi_macd_signals)} RSI+MACD, {len(new_scan_signals)} Özel, {len(full_signals)} Tam, {len(smi_signals)} SMI, {len(rsi_signals)} RSI sinyali bulundu."
             telegram_sender.send_message(finish_msg)
 
         else:
@@ -61,7 +60,8 @@ async def main_scan_logic(market_type: str, period: str):
             "smi": smi_signals,
             "rsi": rsi_signals,
             "new": new_scan_signals,
-            "rsi_macd": rsi_macd_signals
+            "rsi_macd": rsi_macd_signals,
+            "ema": ema_signals
         }
 
     except Exception as e:
@@ -80,7 +80,6 @@ async def run_multi_scan(market_type: str = "bist"):
         res = await main_scan_logic(market_type, p)
         if res:
             all_results.append(res)
-        # Her periyot arasında kısa bir bekleme (API limitleri ve düzenli mesaj akışı için)
         await asyncio.sleep(2)
     
     # Tüm taramalar bitince BİRDEN FAZLA taramada çıkan hisseleri belirtecek özel özet raporu oluştur
@@ -91,7 +90,6 @@ async def run_multi_scan(market_type: str = "bist"):
 def send_final_summary(all_results: list):
     """
     Tüm taramalar bittikten sonra BİRDEN FAZLA taramada çıkan hisseleri özetler.
-    Kullanıcı isteği: "tüm taramalarda çıkan hisseleri zaman dilimine göre ayrı şekilde belirtecek şekilde ayarla"
     """
     telegram_sender = get_telegram_sender()
     symbol_map = {} # symbol -> { period -> [strategies] }
@@ -101,12 +99,13 @@ def send_final_summary(all_results: list):
         "smi": "SMI/MACD",
         "rsi": "RSI",
         "new": "Özel Tarama",
-        "rsi_macd": "RSI+MACD+Hacim"
+        "rsi_macd": "RSI+MACD+Hacim",
+        "ema": "EMA Dizilimi"
     }
     
     for res in all_results:
         p = res["period"]
-        for strat in ["full", "smi", "rsi", "new", "rsi_macd"]:
+        for strat in ["full", "smi", "rsi", "new", "rsi_macd", "ema"]:
             for item in res[strat]:
                 sym = item["symbol"]
                 if sym not in symbol_map:
@@ -115,12 +114,11 @@ def send_final_summary(all_results: list):
                     symbol_map[sym][p] = []
                 symbol_map[sym][p].append(strategy_names[strat])
     
-    # Sadece birden fazla periyotta veya birden fazla stratejide çıkanları filtrele (Opsiyonel ama daha temiz rapor sağlar)
-    # Kullanıcı "birden fazla taramada olanları ayrıca belirtecek bir liste" dediği için:
+    # Birden fazla sinyal varsa (farklı periyot veya aynı periyot farklı strateji)
     filtered_map = {}
     for sym, periods in symbol_map.items():
         total_signals = sum(len(strats) for strats in periods.values())
-        if total_signals > 1: # Birden fazla sinyal varsa (farklı periyot veya aynı periyot farklı strateji)
+        if total_signals > 1:
             filtered_map[sym] = periods
 
     if not filtered_map:
@@ -134,7 +132,6 @@ def send_final_summary(all_results: list):
     # Alfabetik sırala
     for sym in sorted(filtered_map.keys()):
         body += f"<b>• {sym}:</b>\n"
-        # Periyotları belirli bir sırada göster
         for p in ["15m", "1H", "4H", "1D", "1W", "1M"]:
             if p in filtered_map[sym]:
                 strats = ", ".join(filtered_map[sym][p])

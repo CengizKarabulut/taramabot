@@ -7,7 +7,7 @@ HTML formatında şık ve profesyonel mesajlar oluşturur.
 import logging
 import requests
 from typing import Optional, List
-from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, EMOJI_FULL_SIGNAL, EMOJI_SMI_SIGNAL, EMOJI_RSI_SIGNAL, EMOJI_NEW_SCAN_SIGNAL, EMOJI_RSI_MACD_SIGNAL
+from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, EMOJI_FULL_SIGNAL, EMOJI_SMI_SIGNAL, EMOJI_RSI_SIGNAL, EMOJI_NEW_SCAN_SIGNAL, EMOJI_RSI_MACD_SIGNAL, EMOJI_EMA_SIGNAL
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,8 @@ class TelegramSender:
         smi_signals: List[dict],
         rsi_signals: List[dict],
         new_scan_signals: List[dict] = None,
-        rsi_macd_signals: List[dict] = None
+        rsi_macd_signals: List[dict] = None,
+        ema_signals: List[dict] = None
     ) -> bool:
         """
         Tarama sonuçlarını stratejiye göre gruplayarak şık bir özet mesajı gönderir.
@@ -63,6 +64,8 @@ class TelegramSender:
             new_scan_signals = []
         if rsi_macd_signals is None:
             rsi_macd_signals = []
+        if ema_signals is None:
+            ema_signals = []
             
         period_names = {
             "15m": "15 DAKİKA",
@@ -80,7 +83,16 @@ class TelegramSender:
         
         body = ""
         
-        # 1. Strateji: RSI + MACD + Hacim
+        # 1. Strateji: EMA Dizilimi + Bağ Hacim
+        if ema_signals:
+            body += f"<b>{EMOJI_EMA_SIGNAL} EMA DİZİLİMİ + HACİM SİNYALLERİ</b>\n"
+            body += f"<i>EMA(5,8,13) Kesişimi + EMA(21,55,200) Altı</i>\n"
+            for s in ema_signals:
+                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
+                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
+            body += "\n"
+
+        # 2. Strateji: RSI + MACD + Hacim
         if rsi_macd_signals:
             body += f"<b>{EMOJI_RSI_MACD_SIGNAL} RSI + MACD + HACİM SİNYALLERİ</b>\n"
             body += f"<i>RSI(14) 50 Kes. + RSI < 70 + MACD Kes.</i>\n"
@@ -125,7 +137,7 @@ class TelegramSender:
                 body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
             body += "\n"
 
-        if not (full_signals or smi_signals or rsi_signals or new_scan_signals or rsi_macd_signals):
+        if not (full_signals or smi_signals or rsi_signals or new_scan_signals or rsi_macd_signals or ema_signals):
             body = f"<b>ℹ️ SİNYAL BULUNAMADI</b>\n\n<i>{p_name} periyodunda kriterlere uygun hisse tespit edilemedi.</i>"
         
         footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"

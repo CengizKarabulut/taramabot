@@ -9,7 +9,8 @@ from config import (
     SMI_PERIOD, SMI_EMA_PERIOD, MACD_FAST, MACD_SLOW, MACD_SIGNAL,
     MA200_PERIOD, VOLUME_MULTIPLIER, RSI_PERIOD, RSI_THRESHOLD, RSI_CROSSOVER,
     SMA_5, SMA_8, SMA_21, SMA_50, SMA_55, SMA_200, MACD_LEVEL_THRESHOLD, VOLUME_RATIO_THRESHOLD,
-    NEW_RSI_PERIOD, NEW_RSI_UP_THRESHOLD, NEW_RSI_MAX_THRESHOLD, NEW_VOLUME_RATIO
+    NEW_RSI_PERIOD, NEW_RSI_UP_THRESHOLD, NEW_RSI_MAX_THRESHOLD, NEW_VOLUME_RATIO,
+    EMA_5, EMA_8, EMA_13, EMA_21, EMA_55, EMA_200
 )
 
 
@@ -379,5 +380,88 @@ def check_rsi_macd_scan_signal(df: pd.DataFrame) -> dict:
             'rsi_below_70': cond_rsi_max,
             'macd_cross': cond_macd_cross,
             'volume_ok': cond_vol
+        }
+    }
+
+
+def check_ema_scan_signal(df: pd.DataFrame) -> dict:
+    """
+    Görseldeki kriterlere göre EMA Dizilimi ve Bağ Hacim taraması.
+    
+    Şartlar:
+    1. EMA(200) < Fiyat
+    2. EMA(55) < Fiyat
+    3. EMA(21) < Fiyat
+    4. EMA(8) EMA(13)'ü yukarı keser
+    5. EMA(5) EMA(8)'i yukarı keser
+    6. EMA(5) EMA(13)'ü yukarı keser
+    7. Bağ Hacim > 1.5
+    
+    Args:
+        df: OHLCV verileri içeren DataFrame
+        
+    Returns:
+        {
+            'signal': bool,
+            'details': dict
+        }
+    """
+    if df is None or df.empty or len(df) < 200:
+        return {'signal': False, 'details': {}}
+    
+    close = df["close"].astype(float)
+    vol = df["volume"].astype(float)
+    
+    # EMA'ları hesapla
+    ema5 = ema(close, EMA_5)
+    ema8 = ema(close, EMA_8)
+    ema13 = ema(close, EMA_13)
+    ema21 = ema(close, EMA_21)
+    ema55 = ema(close, EMA_55)
+    ema200 = ema(close, EMA_200)
+    
+    # Son ve önceki değerler
+    last_close = close.iloc[-1]
+    
+    e5_last, e5_prev = ema5.iloc[-1], ema5.iloc[-2]
+    e8_last, e8_prev = ema8.iloc[-1], ema8.iloc[-2]
+    e13_last, e13_prev = ema13.iloc[-1], ema13.iloc[-2]
+    e21_last = ema21.iloc[-1]
+    e55_last = ema55.iloc[-1]
+    e200_last = ema200.iloc[-1]
+    
+    vol_last = vol.iloc[-1]
+    vol_avg = vol.tail(20).mean()
+    vol_ratio = vol_last / vol_avg if vol_avg > 0 else 0
+    
+    # Şartlar
+    # 1. EMA(200) < Fiyat
+    cond1 = e200_last < last_close
+    # 2. EMA(55) < Fiyat
+    cond2 = e55_last < last_close
+    # 3. EMA(21) < Fiyat
+    cond3 = e21_last < last_close
+    # 4. EMA(8) EMA(13)'ü yukarı keser
+    cond4 = (e8_prev <= e13_prev) and (e8_last > e13_last)
+    # 5. EMA(5) EMA(8)'i yukarı keser
+    cond5 = (e5_prev <= e8_prev) and (e5_last > e8_last)
+    # 6. EMA(5) EMA(13)'ü yukarı keser
+    cond6 = (e5_prev <= e13_prev) and (e5_last > e13_last)
+    # 7. Bağ Hacim > 1.5
+    cond7 = vol_ratio > 1.5
+    
+    signal = cond1 and cond2 and cond3 and cond4 and cond5 and cond6 and cond7
+    
+    return {
+        'signal': signal,
+        'details': {
+            'ema5': e5_last,
+            'ema8': e8_last,
+            'ema13': e13_last,
+            'ema21': e21_last,
+            'ema55': e55_last,
+            'ema200': e200_last,
+            'volume_ratio': vol_ratio,
+            'conditions': [cond1, cond2, cond3, cond4, cond5, cond6, cond7]
         }
     }
