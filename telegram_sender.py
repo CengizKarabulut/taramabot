@@ -137,12 +137,15 @@ class TelegramSender:
                 body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
             body += "\n"
 
-        if not (full_signals or smi_signals or rsi_signals or new_scan_signals or rsi_macd_signals or ema_signals):
-            body = f"<b>ℹ️ SİNYAL BULUNAMADI</b>\n\n<i>{p_name} periyodunda kriterlere uygun hisse tespit edilemedi.</i>"
-        
-        footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
-        
-        return self.send_message(header + body + footer)
+        # Herhangi bir sinyal varsa mesajı gönder
+        if body:
+            footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
+            return self.send_message(header + body + footer)
+        else:
+            # Sinyal yoksa bilgilendirme mesajı gönder
+            body = f"<b>ℹ️ SİNYAL BULUNAMADI</b>\n\n<i>{p_name} periyodunda kriterlere uygun hisse tespit edilemedi.</i>\n"
+            footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
+            return self.send_message(header + body + footer)
     
     def send_error(self, error_msg: str) -> bool:
         """

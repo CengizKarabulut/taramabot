@@ -24,34 +24,33 @@ logger = logging.getLogger(__name__)
 async def main_scan_logic(market_type: str, period: str):
     """
     Ana tarama mantığını çalıştırır.
-    Sembolleri tarar, sinyalleri işler ve Telegram'a sadece özet listeyi gönderir.
+    Sembolleri tarar, sinyalleri işler ve Telegram'a rapor gönderir.
     """
     scanner = MarketScanner()
     telegram_sender = get_telegram_sender()
 
+    # Periyot ismini düzelt (Küçük harf gelirse TV formatına uygun hale getir)
+    period = period.upper() if period.lower() != "15m" else "15m"
+    
     logger.info(f"Tarama başlatılıyor: Pazar={market_type.upper()}, Periyot={period}")
 
     try:
-        # scan_market artık 7 değer döndürüyor (ema_signals eklendi)
+        # scan_market çağrısı (7 değer döndürür)
         full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, total_scanned = await scanner.scan_market(
             market_type=market_type,
             period=period,
             strategies=["smi_macd", "rsi", "new_scan", "rsi_macd", "ema"]
         )
 
-        # 1. Özet listeyi gönder (Tüm sinyalleri içeren gruplanmış özet)
-        if full_signals or smi_signals or rsi_signals or new_scan_signals or rsi_macd_signals or ema_signals:
-            telegram_sender.send_grouped_summary(period, full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals)
-            
-            # 2. İstatistik Mesajı
-            finish_msg = f"{EMOJI_SUCCESS} <b>Tarama Tamamlandı! ({period})</b>\n"
-            finish_msg += f"⏱ {datetime.now(TZ_TURKEY).strftime('%Y-%m-%d %H:%M')}\n"
-            finish_msg += f"🔍 Toplam {total_scanned} hisse tarandı.\n"
-            finish_msg += f"📈 {len(ema_signals)} EMA, {len(rsi_macd_signals)} RSI+MACD, {len(new_scan_signals)} Özel, {len(full_signals)} Tam, {len(smi_signals)} SMI, {len(rsi_signals)} RSI sinyali bulundu."
-            telegram_sender.send_message(finish_msg)
-
-        else:
-            telegram_sender.send_message(f"{EMOJI_INFO} <b>{period}</b> taramasında ({total_scanned} hisse) kriterlere uygun sinyal bulunamadı.")
+        # 1. Gruplanmış özet listeyi gönder (Sinyal olsun veya olmasın mesaj gönderilir)
+        telegram_sender.send_grouped_summary(period, full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals)
+        
+        # 2. İstatistik Mesajı (Her periyot sonunda mutlaka gönderilir)
+        finish_msg = f"{EMOJI_SUCCESS} <b>Tarama Tamamlandı! ({period})</b>\n"
+        finish_msg += f"⏱ {datetime.now(TZ_TURKEY).strftime('%Y-%m-%d %H:%M')}\n"
+        finish_msg += f"🔍 Toplam {total_scanned} hisse tarandı.\n"
+        finish_msg += f"📈 {len(ema_signals)} EMA, {len(rsi_macd_signals)} RSI+MACD, {len(new_scan_signals)} Özel, {len(full_signals)} Tam, {len(smi_signals)} SMI, {len(rsi_signals)} RSI sinyali bulundu."
+        telegram_sender.send_message(finish_msg)
 
         # Sonuçları bir sonraki aşama (toplu özet) için döndür
         return {
@@ -71,7 +70,8 @@ async def main_scan_logic(market_type: str, period: str):
 
 
 async def run_multi_scan(market_type: str = "bist"):
-    """Tüm zaman dilimlerini sırayla tara."""
+    """Tüm zaman dilimlerini KESİN SIRAYLA (Küçükten Büyüğe) tara."""
+    # Sıralama: 15m -> 1H -> 4H -> 1D -> 1W -> 1M
     periods = ["15m", "1H", "4H", "1D", "1W", "1M"]
     logger.info(f"Çoklu tarama başlatılıyor: {periods}")
     
@@ -80,7 +80,8 @@ async def run_multi_scan(market_type: str = "bist"):
         res = await main_scan_logic(market_type, p)
         if res:
             all_results.append(res)
-        await asyncio.sleep(2)
+        # Her periyot arasında güvenli bir bekleme (Mesajların sırasının karışmaması için)
+        await asyncio.sleep(3)
     
     # Tüm taramalar bitince BİRDEN FAZLA taramada çıkan hisseleri belirtecek özel özet raporu oluştur
     if all_results:
@@ -132,6 +133,7 @@ def send_final_summary(all_results: list):
     # Alfabetik sırala
     for sym in sorted(filtered_map.keys()):
         body += f"<b>• {sym}:</b>\n"
+        # Periyotları belirli bir sırada göster
         for p in ["15m", "1H", "4H", "1D", "1W", "1M"]:
             if p in filtered_map[sym]:
                 strats = ", ".join(filtered_map[sym][p])
@@ -155,7 +157,7 @@ async def run_bot():
     if len(sys.argv) > 1:
         command = sys.argv[1]
         if command == "scan":
-            period = sys.argv[2].upper() if len(sys.argv) > 2 else "1D"
+            period = sys.argv[2]
             market_type = sys.argv[3].lower() if len(sys.argv) > 3 else "bist"
             await main_scan_logic(market_type, period)
         elif command == "multi":
