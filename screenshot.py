@@ -33,6 +33,12 @@ CHART_LOAD_WAIT = 10
 SYMBOL_CHANGE_WAIT = 5
 UI_HIDE_WAIT = 2
 
+# Interval mapping (TradingView URL formatı)
+_INTERVAL_MAP = {
+    "15m": "15", "1H": "60", "4H": "240",
+    "1D": "D", "1W": "W", "1M": "M"
+}
+
 def _tv_sembol_formatla(symbol: str, exchange: str) -> str:
     """Sembolü TradingView arama formatına çevirir."""
     s = symbol.upper().strip()
@@ -139,8 +145,8 @@ class TVBrowser:
         options.add_argument("--lang=tr-TR")
 
         try:
-            # Sandbox ortamındaki Chrome versiyonuna göre (146)
-            cls._driver = uc.Chrome(options=options, version_main=146)
+            # version_main kaldırıldı, otomatik eşleşme sağlandı
+            cls._driver = uc.Chrome(options=options)
             cls._driver.set_page_load_timeout(60)
             cls._driver.implicitly_wait(5)
             cls._cookies_injected = False
@@ -244,16 +250,16 @@ async def take_screenshot(symbol: str, exchange: str, interval: str) -> Optional
                 await loop.run_in_executor(None, lambda: _cookie_enjekte(driver, cookies))
                 TVBrowser._cookies_injected = True
 
-        # URL Oluşturma - 404 hatasını önlemek için kontrol
-        # Eğer TV_CHART_ID varsa: https://www.tradingview.com/chart/ID/
-        # Yoksa: https://www.tradingview.com/chart/
-        base_url = DEFAULT_CHART_URL
+        # URL Oluşturma - Public chart URL (login gerektirmez, her zaman açılır)
+        tv_symbol = _tv_sembol_formatla(symbol, exchange)
+        tv_interval = _INTERVAL_MAP.get(interval, "D")
+        
+        # Eğer TV_CHART_ID varsa layout'u açar, yoksa public URL kullanır
         if TV_CHART_ID and TV_CHART_ID.strip():
-            # ID'nin başında/sonunda slash varsa temizle
             clean_id = TV_CHART_ID.strip().strip('/')
-            chart_url = f"{base_url}{clean_id}/"
+            chart_url = f"https://www.tradingview.com/chart/{clean_id}/?symbol={tv_symbol}&interval={tv_interval}"
         else:
-            chart_url = base_url
+            chart_url = f"https://www.tradingview.com/chart/?symbol={tv_symbol}&interval={tv_interval}"
         
         logger.info(f"Grafik URL'sine gidiliyor: {chart_url}")
         await loop.run_in_executor(None, lambda: driver.get(chart_url))
@@ -264,12 +270,8 @@ async def take_screenshot(symbol: str, exchange: str, interval: str) -> Optional
         # Oturum kontrolü (Opsiyonel, loglama için)
         is_logged_in = await loop.run_in_executor(None, lambda: _oturum_acik_mi(driver))
         if not is_logged_in:
-            logger.warning("TradingView oturumu açık görünmüyor. Lütfen tv_cookies.txt dosyasını kontrol edin.")
+            logger.warning("TradingView oturumu açık görünmüyor. Lütfen TV_COOKIES secret'ını kontrol edin.")
 
-        # Sembol değiştir
-        tv_symbol = _tv_sembol_formatla(symbol, exchange)
-        await loop.run_in_executor(None, lambda: _sembol_degistir(driver, tv_symbol))
-        
         # Verilerin ve indikatörlerin yüklenmesi için bekle
         await asyncio.sleep(SYMBOL_CHANGE_WAIT)
 
