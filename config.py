@@ -110,9 +110,20 @@ RSI_PERIOD = 7
 RSI_THRESHOLD = 60
 RSI_CROSSOVER = 50
 
+# Yeni Tarama (Scanner 3) Ayarları
+SMA_5 = 5
+SMA_8 = 8
+SMA_21 = 21
+SMA_50 = 50
+SMA_55 = 55
+SMA_200 = 200
+MACD_LEVEL_THRESHOLD = 0
+VOLUME_RATIO_THRESHOLD = 1.5
+
 # ============================================================================
-# EKRAN GÖRÜNTÜSÜ AYARLARI
+# EKRAN GÖRÜNTÜSÜ AYARLARI (DEVRE DIŞI)
 # ============================================================================
+ENABLE_SCREENSHOTS = False
 
 # Playwright ayarları
 SCREENSHOT_WIDTH = 1280
@@ -143,6 +154,8 @@ BARS_TO_FETCH = 400
 # Telegram mesajlarında kullanılacak emojiler
 EMOJI_FULL_SIGNAL = "🚀"
 EMOJI_SMI_SIGNAL = "🟡"
+EMOJI_RSI_SIGNAL = "🔵"
+EMOJI_NEW_SCAN_SIGNAL = "🟣"
 EMOJI_INFO = "ℹ️"
 EMOJI_ERROR = "❌"
 EMOJI_SUCCESS = "✅"

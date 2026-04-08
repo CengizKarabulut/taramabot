@@ -1,13 +1,14 @@
 """
 Taramabot İndikatör Modülü
-SMI/MACD ve RSI indikatörlerini hesaplar.
+SMI/MACD, RSI ve SMA tabanlı indikatörleri hesaplar.
 """
 
 import pandas as pd
 import numpy as np
 from config import (
     SMI_PERIOD, SMI_EMA_PERIOD, MACD_FAST, MACD_SLOW, MACD_SIGNAL,
-    MA200_PERIOD, VOLUME_MULTIPLIER, RSI_PERIOD, RSI_THRESHOLD, RSI_CROSSOVER
+    MA200_PERIOD, VOLUME_MULTIPLIER, RSI_PERIOD, RSI_THRESHOLD, RSI_CROSSOVER,
+    SMA_5, SMA_8, SMA_21, SMA_50, SMA_55, SMA_200, MACD_LEVEL_THRESHOLD, VOLUME_RATIO_THRESHOLD
 )
 
 
@@ -19,6 +20,11 @@ def ema(series: pd.Series, length: int) -> pd.Series:
 def ema2(series: pd.Series, length: int) -> pd.Series:
     """Çift Exponential Moving Average hesapla."""
     return ema(ema(series, length), length)
+
+
+def sma(series: pd.Series, length: int) -> pd.Series:
+    """Simple Moving Average hesapla."""
+    return series.rolling(window=length).mean()
 
 
 def calc_smi(df: pd.DataFrame) -> tuple:
@@ -217,5 +223,90 @@ def check_rsi_signal(df: pd.DataFrame) -> dict:
             'rsi_crossed_50': cond2,
             'volume_ok': cond3,
             'volume_ratio': vol_last / vol_avg if vol_avg > 0 else 0
+        }
+    }
+
+
+def check_new_scan_signal(df: pd.DataFrame) -> dict:
+    """
+    Görseldeki kriterlere göre yeni tarama (Scanner 3) kontrolü.
+    
+    Şartlar:
+    1. Bağ Hacim > 1.5
+    2. SMA(55) < Fiyat
+    3. SMA(21) < Fiyat
+    4. SMA(200) < Fiyat
+    5. SMA(5) < Fiyat
+    6. SMA(8) < Fiyat
+    7. SMA(50) < Fiyat
+    8. MACD Level > 0
+    9. MACD Level yukarı keser Signal
+    
+    Args:
+        df: OHLCV verileri içeren DataFrame
+        
+    Returns:
+        {
+            'signal': bool,
+            'details': dict
+        }
+    """
+    if df is None or df.empty or len(df) < 200:
+        return {'signal': False, 'details': {}}
+    
+    close = df["close"].astype(float)
+    vol = df["volume"].astype(float)
+    
+    # SMA'ları hesapla
+    sma5 = sma(close, SMA_5)
+    sma8 = sma(close, SMA_8)
+    sma21 = sma(close, SMA_21)
+    sma50 = sma(close, SMA_50)
+    sma55 = sma(close, SMA_55)
+    sma200 = sma(close, SMA_200)
+    
+    # MACD hesapla
+    macd_line, signal_line, _ = calc_macd(df)
+    
+    # Son değerler
+    last_close = close.iloc[-1]
+    last_vol = vol.iloc[-1]
+    avg_vol = vol.tail(20).mean()
+    
+    last_macd = macd_line.iloc[-1]
+    prev_macd = macd_line.iloc[-2]
+    last_signal = signal_line.iloc[-1]
+    prev_signal = signal_line.iloc[-2]
+    
+    # Şartlar
+    cond_vol = last_vol > (avg_vol * VOLUME_RATIO_THRESHOLD)
+    cond_sma5 = last_close > sma5.iloc[-1]
+    cond_sma8 = last_close > sma8.iloc[-1]
+    cond_sma21 = last_close > sma21.iloc[-1]
+    cond_sma50 = last_close > sma50.iloc[-1]
+    cond_sma55 = last_close > sma55.iloc[-1]
+    cond_sma200 = last_close > sma200.iloc[-1]
+    
+    cond_macd_level = last_macd > MACD_LEVEL_THRESHOLD
+    cond_macd_cross = (prev_macd <= prev_signal) and (last_macd > last_signal)
+    
+    signal = (cond_vol and cond_sma5 and cond_sma8 and cond_sma21 and 
+              cond_sma50 and cond_sma55 and cond_sma200 and 
+              cond_macd_level and cond_macd_cross)
+    
+    return {
+        'signal': signal,
+        'details': {
+            'volume_ratio': last_vol / avg_vol if avg_vol > 0 else 0,
+            'sma5': sma5.iloc[-1],
+            'sma8': sma8.iloc[-1],
+            'sma21': sma21.iloc[-1],
+            'sma50': sma50.iloc[-1],
+            'sma55': sma55.iloc[-1],
+            'sma200': sma200.iloc[-1],
+            'macd': last_macd,
+            'signal_line': last_signal,
+            'macd_above_0': cond_macd_level,
+            'macd_cross_up': cond_macd_cross
         }
     }

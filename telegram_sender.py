@@ -7,7 +7,7 @@ HTML formatında şık ve profesyonel mesajlar oluşturur.
 import logging
 import requests
 from typing import Optional, List
-from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, EMOJI_FULL_SIGNAL, EMOJI_SMI_SIGNAL, EMOJI_RSI_SIGNAL, EMOJI_NEW_SCAN_SIGNAL
 
 logger = logging.getLogger(__name__)
 
@@ -98,11 +98,15 @@ class TelegramSender:
         period: str,
         full_signals: List[dict],
         smi_signals: List[dict],
-        rsi_signals: List[dict]
+        rsi_signals: List[dict],
+        new_scan_signals: List[dict] = None
     ) -> bool:
         """
         Tarama sonuçlarını stratejiye göre gruplayarak şık bir özet mesajı gönderir.
         """
+        if new_scan_signals is None:
+            new_scan_signals = []
+            
         period_names = {
             "15m": "15 DAKİKA",
             "1H": "1 SAAT",
@@ -119,34 +123,43 @@ class TelegramSender:
         
         body = ""
         
-        # 1. Strateji: Tam Alım (SMI + MA200 + Hacim)
+        # 1. Strateji: Yeni Tarama (Scanner 3)
+        if new_scan_signals:
+            body += f"<b>{EMOJI_NEW_SCAN_SIGNAL} ÖZEL TARAMA SİNYALLERİ</b>\n"
+            body += f"<i>SMA Dizilimi + MACD Pozitif</i>\n"
+            for s in new_scan_signals:
+                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
+                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
+            body += "\n"
+
+        # 2. Strateji: Tam Alım (SMI + MA200 + Hacim)
         if full_signals:
-            body += f"<b>🚀 TAM ALIM SİNYALLERİ (GÜÇLÜ)</b>\n"
+            body += f"<b>{EMOJI_FULL_SIGNAL} TAM ALIM SİNYALLERİ (GÜÇLÜ)</b>\n"
             body += f"<i>SMI Kesişimi + MA200 Üstü + Hacim</i>\n"
             for s in full_signals:
                 c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
                 body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
             body += "\n"
 
-        # 2. Strateji: SMI/MACD Alım
+        # 3. Strateji: SMI/MACD Alım
         if smi_signals:
-            body += f"<b>🟡 SMI/MACD ALIM SİNYALLERİ</b>\n"
+            body += f"<b>{EMOJI_SMI_SIGNAL} SMI/MACD ALIM SİNYALLERİ</b>\n"
             body += f"<i>SMI/MACD Pozitif Kesişim</i>\n"
             for s in smi_signals:
                 c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
                 body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
             body += "\n"
 
-        # 3. Strateji: RSI Alım
+        # 4. Strateji: RSI Alım
         if rsi_signals:
-            body += f"<b>🔵 RSI ALIM SİNYALLERİ</b>\n"
+            body += f"<b>{EMOJI_RSI_SIGNAL} RSI ALIM SİNYALLERİ</b>\n"
             body += f"<i>RSI > 60 + RSI 50 Kesişimi</i>\n"
             for s in rsi_signals:
                 c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
                 body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
             body += "\n"
 
-        if not (full_signals or smi_signals or rsi_signals):
+        if not (full_signals or smi_signals or rsi_signals or new_scan_signals):
             body = f"<b>ℹ️ SİNYAL BULUNAMADI</b>\n\n<i>{p_name} periyodunda kriterlere uygun hisse tespit edilemedi.</i>"
         
         footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
@@ -165,18 +178,6 @@ class TelegramSender:
     ) -> bool:
         """
         Sinyal detaylarını gönder.
-        
-        Args:
-            symbol: Sembol
-            exchange: Borsa
-            period: Zaman dilimi
-            close: Kapanış fiyatı
-            change: Fiyat değişimi (%)
-            signal_type: Sinyal türü (full_buy, smi_buy, rsi_buy)
-            details: İndikatör detayları
-            
-        Returns:
-            Başarılı olup olmadığı
         """
         change_str = f"<b>+{change:.2f}%</b>" if change >= 0 else f"<b>{change:.2f}%</b>"
         
@@ -185,18 +186,25 @@ class TelegramSender:
         message += f"<b>Fiyat:</b> {close:.2f}\n"
         message += f"<b>Değişim:</b> {change_str}\n\n"
         
-        if signal_type == "full_buy":
-            message += "<b>🚀 TAM ALIM SİNYALİ</b>\n"
+        if signal_type == "new_scan":
+            message += f"<b>{EMOJI_NEW_SCAN_SIGNAL} ÖZEL TARAMA SİNYALİ</b>\n"
+            message += "Şartlar sağlanmıştır:\n"
+            message += f"  • SMA Dizilimi (5,8,21,50,55,200) ✓\n"
+            message += f"  • MACD Level > 0 ✓\n"
+            message += f"  • MACD Kesişimi ✓\n"
+            message += f"  • Hacim Artışı ✓\n"
+        elif signal_type == "full_buy":
+            message += f"<b>{EMOJI_FULL_SIGNAL} TAM ALIM SİNYALİ</b>\n"
             message += "Tüm şartlar sağlanmıştır:\n"
             message += f"  • SMI/MACD Kesişimi ✓\n"
             message += f"  • 200 MA Üstü ✓\n"
             message += f"  • Hacim Artışı ✓\n"
         elif signal_type == "smi_buy":
-            message += "<b>🟡 SMI ALIM SİNYALİ</b>\n"
+            message += f"<b>{EMOJI_SMI_SIGNAL} SMI ALIM SİNYALİ</b>\n"
             message += "SMI/MACD şartları sağlanmıştır:\n"
             message += f"  • SMI/MACD Kesişimi ✓\n"
         elif signal_type == "rsi_buy":
-            message += "<b>🔵 RSI ALIM SİNYALİ</b>\n"
+            message += f"<b>{EMOJI_RSI_SIGNAL} RSI ALIM SİNYALİ</b>\n"
             message += "RSI şartları sağlanmıştır:\n"
             message += f"  • RSI > 60 ✓\n"
             message += f"  • RSI 50 Kesişimi ✓\n"
@@ -214,12 +222,6 @@ class TelegramSender:
     def send_error(self, error_msg: str) -> bool:
         """
         Hata mesajı gönder.
-        
-        Args:
-            error_msg: Hata mesajı
-            
-        Returns:
-            Başarılı olup olmadığı
         """
         message = f"<b>❌ HATA</b>\n\n{error_msg}"
         return self.send_message(message)

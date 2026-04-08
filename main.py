@@ -10,11 +10,11 @@ from datetime import datetime
 
 from config import (
     LOG_LEVEL, LOG_FORMAT, BIST_STOCKS, COMMODITIES, CRYPTO,
-    EMOJI_FULL_SIGNAL, EMOJI_SMI_SIGNAL, EMOJI_INFO, EMOJI_ERROR, EMOJI_SUCCESS
+    EMOJI_FULL_SIGNAL, EMOJI_SMI_SIGNAL, EMOJI_RSI_SIGNAL, EMOJI_NEW_SCAN_SIGNAL,
+    EMOJI_INFO, EMOJI_ERROR, EMOJI_SUCCESS, ENABLE_SCREENSHOTS
 )
 from scanner import MarketScanner
 from telegram_sender import get_telegram_sender
-from screenshot import take_screenshot
 from scheduler import Scheduler, TZ_TURKEY
 
 # Loglama konfigürasyonu
@@ -33,19 +33,20 @@ async def main_scan_logic(market_type: str, period: str):
     logger.info(f"Tarama başlatılıyor: Pazar={market_type.upper()}, Periyot={period}")
 
     try:
-        full_signals, smi_signals, rsi_signals, total_scanned = await scanner.scan_market(
+        full_signals, smi_signals, rsi_signals, new_scan_signals, total_scanned = await scanner.scan_market(
             market_type=market_type,
             period=period,
-            strategies=["smi_macd", "rsi"]
+            strategies=["smi_macd", "rsi", "new_scan"]
         )
 
         # 1. Özet listeyi gönder (Tüm sinyalleri içeren gruplanmış özet)
-        if full_signals or smi_signals or rsi_signals:
-            telegram_sender.send_grouped_summary(period, full_signals, smi_signals, rsi_signals)
+        if full_signals or smi_signals or rsi_signals or new_scan_signals:
+            telegram_sender.send_grouped_summary(period, full_signals, smi_signals, rsi_signals, new_scan_signals)
             await asyncio.sleep(3)
 
-            # 2. Grafiklerin Gönderimi (Önce Tam Alım, Sonra SMI, Sonra RSI)
+            # 2. Detaylı Sinyal Gönderimi (Grafik özelliği devre dışı bırakıldıysa sadece metin)
             all_signals = []
+            for s in new_scan_signals: all_signals.append({**s, 'signal_type': 'new_scan'})
             for s in full_signals: all_signals.append({**s, 'signal_type': 'full_buy'})
             for s in smi_signals: all_signals.append({**s, 'signal_type': 'smi_buy'})
             for s in rsi_signals: all_signals.append({**s, 'signal_type': 'rsi_buy'})
@@ -57,30 +58,36 @@ async def main_scan_logic(market_type: str, period: str):
                 close_price = signal_data['close']
                 change_percent = signal_data['change']
                 signal_type = signal_data['signal_type']
+                details = signal_data['signals'][signal_type]['details']
 
-                # Ekran görüntüsü al ve gönder (TradingView üzerinden)
-                screenshot_path = await take_screenshot(symbol, exchange, period_str)
-                if screenshot_path:
-                    # Sinyal türüne göre emoji seç
-                    s_emoji = "🚀" if signal_type == "full_buy" else "🟡" if signal_type == "smi_buy" else "🔵"
-                    s_name = "TAM ALIM" if signal_type == "full_buy" else "SMI ALIM" if signal_type == "smi_buy" else "RSI ALIM"
-                    
-                    caption = f"<b>{s_emoji} {s_name} | #{symbol} ({period_str})</b>\n"
-                    caption += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
-                    caption += f"💰 <b>Fiyat:</b> {close_price:.2f}\n"
-                    caption += f"📈 <b>Değişim:</b> {'+' if change_percent >= 0 else ''}{change_percent:.2f}%\n"
-                    caption += f"⏱ <b>Tarih:</b> {datetime.now(TZ_TURKEY).strftime('%d.%m.%Y %H:%M')}"
-                    
-                    telegram_sender.send_photo(screenshot_path, caption=caption)
-                    await asyncio.sleep(3.0)
+                # Grafik gönderimi kullanıcı isteğiyle devre dışı bırakıldı
+                if ENABLE_SCREENSHOTS:
+                    from screenshot import take_screenshot
+                    screenshot_path = await take_screenshot(symbol, exchange, period_str)
+                    if screenshot_path:
+                        s_emoji = EMOJI_NEW_SCAN_SIGNAL if signal_type == "new_scan" else EMOJI_FULL_SIGNAL if signal_type == "full_buy" else EMOJI_SMI_SIGNAL if signal_type == "smi_buy" else EMOJI_RSI_SIGNAL
+                        s_name = "ÖZEL TARAMA" if signal_type == "new_scan" else "TAM ALIM" if signal_type == "full_buy" else "SMI ALIM" if signal_type == "smi_buy" else "RSI ALIM"
+                        
+                        caption = f"<b>{s_emoji} {s_name} | #{symbol} ({period_str})</b>\n"
+                        caption += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
+                        caption += f"💰 <b>Fiyat:</b> {close_price:.2f}\n"
+                        caption += f"📈 <b>Değişim:</b> {'+' if change_percent >= 0 else ''}{change_percent:.2f}%\n"
+                        caption += f"⏱ <b>Tarih:</b> {datetime.now(TZ_TURKEY).strftime('%d.%m.%Y %H:%M')}"
+                        
+                        telegram_sender.send_photo(screenshot_path, caption=caption)
+                        await asyncio.sleep(3.0)
+                    else:
+                        telegram_sender.send_signal_detail(symbol, exchange, period_str, close_price, change_percent, signal_type, details)
                 else:
-                    logger.warning(f"Grafik alınamadı: {symbol} ({period_str})")
+                    # Sadece detaylı metin mesajı gönder
+                    telegram_sender.send_signal_detail(symbol, exchange, period_str, close_price, change_percent, signal_type, details)
+                    await asyncio.sleep(1.0)
 
             # 3. İstatistik Mesajı
             finish_msg = f"{EMOJI_SUCCESS} <b>Tarama Tamamlandı! ({period})</b>\n"
             finish_msg += f"⏱ {datetime.now(TZ_TURKEY).strftime('%Y-%m-%d %H:%M')}\n"
             finish_msg += f"🔍 Toplam {total_scanned} hisse tarandı.\n"
-            finish_msg += f"📈 {len(full_signals)} Tam, {len(smi_signals)} SMI, {len(rsi_signals)} RSI sinyali bulundu."
+            finish_msg += f"📈 {len(new_scan_signals)} Özel, {len(full_signals)} Tam, {len(smi_signals)} SMI, {len(rsi_signals)} RSI sinyali bulundu."
             telegram_sender.send_message(finish_msg)
 
         else:
@@ -107,7 +114,6 @@ async def run_bot():
     """
     if len(sys.argv) > 1:
         # Komut satırı argümanları ile tek seferlik çalıştırma
-        # Örnek: python main.py scan 1D bist
         command = sys.argv[1]
         if command == "scan":
             period = sys.argv[2].upper() if len(sys.argv) > 2 else "1D"
