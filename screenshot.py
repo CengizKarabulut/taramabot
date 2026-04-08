@@ -1,232 +1,259 @@
 """
 Taramabot Ekran Görüntüsü Modülü
-Playwright kullanarak TradingView grafiklerinin ekran görüntüsünü alır.
-Kullanıcının TV_CHART_ID şablonunu kullanarak kendi indikatörlerini görmesini sağlar.
+undetected-chromedriver kullanarak TradingView grafiklerinin ekran görüntüsünü alır.
+finans_botu'ndaki çalışan yapı referans alınarak güncellenmiştir.
 """
 
+import os
+import time
 import asyncio
 import logging
-import os
 from pathlib import Path
-from typing import Optional
-from playwright.async_api import async_playwright, Page
+from typing import Optional, List, Dict
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+import undetected_chromedriver as uc
 
 from config import (
-    TV_USERNAME, TV_PASSWORD, TV_CHART_ID,
-    SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT, SCREENSHOT_TIMEOUT,
-    SCREENSHOT_WAIT_TIME, SCREENSHOT_RETRY_COUNT, SCREENSHOT_RETRY_DELAY,
-    SCREENSHOTS_DIR
+    TV_CHART_ID, SCREENSHOT_WIDTH, SCREENSHOT_HEIGHT, 
+    SCREENSHOT_TIMEOUT, SCREENSHOT_WAIT_TIME, SCREENSHOTS_DIR
 )
 
 logger = logging.getLogger(__name__)
 
+# Ayarlar
+PROFILE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "selenium_profile")
+COOKIE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tv_cookies.txt")
+DEFAULT_CHART_URL = "https://www.tradingview.com/chart/"
 
-class TradingViewScreenshot:
-    """TradingView ekran görüntüsü alıcı."""
+CHART_LOAD_WAIT = 8
+SYMBOL_CHANGE_WAIT = 8
+UI_HIDE_WAIT = 1
+
+def _tv_sembol_formatla(symbol: str, exchange: str) -> str:
+    """Sembolü TradingView arama formatına çevirir."""
+    s = symbol.upper().strip()
+    e = exchange.upper().strip() if exchange else ""
     
-    def __init__(self):
-        self.screenshots_dir = SCREENSHOTS_DIR
-        Path(self.screenshots_dir).mkdir(exist_ok=True)
+    if e == "BIST" or s.endswith(".IS"):
+        clean_s = s.replace(".IS", "")
+        return f"BIST:{clean_s}"
     
-    async def get_screenshot(
-        self,
-        symbol: str,
-        exchange: str,
-        interval: str,
-        retry_count: int = SCREENSHOT_RETRY_COUNT
-    ) -> Optional[str]:
-        """
-        TradingView grafiğinin ekran görüntüsünü al.
-        """
-        screenshot_path = f"{self.screenshots_dir}/{symbol}_{interval}.png"
-        
-        for attempt in range(1, retry_count + 1):
+    if e:
+        return f"{e}:{s}"
+    
+    return s
+
+def _cookie_dosyasi_oku() -> List[Dict]:
+    """tv_cookies.txt dosyasından cookie'leri okur."""
+    if not os.path.exists(COOKIE_FILE):
+        logger.warning(f"Cookie dosyası bulunamadı: {COOKIE_FILE}")
+        return []
+
+    try:
+        with open(COOKIE_FILE, "r", encoding="utf-8") as f:
+            raw = f.read().strip()
+
+        if not raw:
+            return []
+
+        cookies = []
+        for part in raw.split(";"):
+            part = part.strip()
+            if "=" not in part:
+                continue
+            idx = part.index("=")
+            name = part[:idx].strip()
+            value = part[idx + 1:].strip()
+
+            if not name:
+                continue
+
+            cookies.append({
+                "name": name,
+                "value": value,
+                "domain": ".tradingview.com",
+                "path": "/",
+                "secure": True,
+            })
+        return cookies
+    except Exception as e:
+        logger.error(f"Cookie okuma hatası: {e}")
+        return []
+
+def _cookie_enjekte(driver, cookies: List[Dict]) -> bool:
+    """Cookie'leri Selenium driver'a enjekte eder."""
+    if not cookies:
+        return False
+
+    try:
+        driver.get("https://www.tradingview.com/")
+        time.sleep(3)
+        driver.delete_all_cookies()
+
+        eklenen = 0
+        for cookie in cookies:
             try:
-                logger.info(f"Ekran görüntüsü alınıyor: {symbol} ({interval}) - Deneme {attempt}/{retry_count}")
-                
-                async with async_playwright() as p:
-                    # Tarayıcıyı başlat
-                    browser = await p.chromium.launch(
-                        headless=True,
-                        args=['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
-                    )
-                    
-                    try:
-                        context = await browser.new_context(
-                            viewport={'width': SCREENSHOT_WIDTH, 'height': SCREENSHOT_HEIGHT},
-                            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                        )
-                        page = await context.new_page()
-                        
-                        # 1. Giriş Yap (Eğer bilgiler varsa)
-                        if TV_USERNAME and TV_PASSWORD:
-                            await self._login_tradingview(page)
-                        
-                        # 2. Grafiğe Git
-                        await self._navigate_to_chart(page, symbol, exchange, interval)
-                        
-                        # 3. Ekran Görüntüsü Al
-                        # Grafik elementinin yüklenmesini bekle (TradingView'da ana grafik alanı)
-                        try:
-                            # Farklı grafik konteyner seçicilerini dene
-                            chart_selectors = [".chart-container", ".layout__area--center", "canvas.trading-chart"]
-                            found = False
-                            for selector in chart_selectors:
-                                try:
-                                    await page.wait_for_selector(selector, timeout=5000)
-                                    found = True
-                                    break
-                                except: continue
-                            
-                            if not found:
-                                logger.warning("Belirli bir grafik konteyneri bulunamadı, genel sayfa bekleniyor...")
-                                await page.wait_for_load_state("networkidle", timeout=SCREENSHOT_TIMEOUT)
-                        except:
-                            logger.warning("Bekleme sırasında hata oluştu, devam ediliyor...")
-                        
-                        # İndikatörlerin ve verilerin yüklenmesi için bekle
-                        await asyncio.sleep(SCREENSHOT_WAIT_TIME)
-                        
-                        # Ekran görüntüsü al
-                        await page.screenshot(path=screenshot_path)
-                        
-                        if os.path.exists(screenshot_path) and os.path.getsize(screenshot_path) > 1000:
-                            logger.info(f"Ekran görüntüsü başarıyla alındı: {screenshot_path}")
-                            return screenshot_path
-                        else:
-                            logger.warning("Ekran görüntüsü dosyası boş veya oluşmadı.")
-                        
-                    finally:
-                        await browser.close()
-                        
+                driver.add_cookie(cookie)
+                eklenen += 1
             except Exception as e:
-                logger.error(f"Ekran görüntüsü hatası ({symbol}, {interval}): {str(e)}")
-                if attempt < retry_count:
-                    await asyncio.sleep(SCREENSHOT_RETRY_DELAY)
-        
-        return None
-    
-    async def _login_tradingview(self, page: Page):
-        """TradingView'a giriş yap."""
+                logger.debug(f"Cookie atlandı ({cookie['name']}): {e}")
+
+        logger.info(f"{eklenen}/{len(cookies)} cookie enjekte edildi.")
+        return eklenen > 0
+    except Exception as e:
+        logger.error(f"Cookie enjeksiyon hatası: {e}")
+        return False
+
+class TVBrowser:
+    """Singleton Chrome WebDriver yöneticisi."""
+    _driver = None
+    _cookies_injected = False
+
+    @classmethod
+    def get_driver(cls, headless: bool = True):
+        if cls._driver is not None:
+            try:
+                _ = cls._driver.current_url
+                return cls._driver
+            except Exception:
+                cls._force_quit()
+
+        os.makedirs(PROFILE_DIR, exist_ok=True)
+        options = uc.ChromeOptions()
+        if headless:
+            options.add_argument("--headless=new")
+
+        options.add_argument(f"--user-data-dir={PROFILE_DIR}")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument(f"--window-size={SCREENSHOT_WIDTH},{SCREENSHOT_HEIGHT}")
+        options.add_argument("--disable-blink-features=AutomationControlled")
+
         try:
-            logger.info("TradingView'a giriş yapılıyor...")
-            # Doğrudan giriş sayfasına git
-            await page.goto("https://www.tradingview.com/#signin", timeout=SCREENSHOT_TIMEOUT)
-            await asyncio.sleep(2)
-            
-            # Zaten giriş yapılmış mı kontrol et (Kullanıcı menüsü butonu varsa)
-            user_menu_selectors = ["button[aria-label='Open user menu']", ".tv-header__user-menu-button", "button[id='header-user-menu-button']"]
-            for selector in user_menu_selectors:
-                if await page.query_selector(selector):
-                    logger.info("Zaten giriş yapılmış.")
-                    return
-
-            # Email ile giriş butonunu bul ve tıkla
-            # TradingView bazen doğrudan formu gösterir, bazen butonla seçtirir
-            email_btn_selectors = [
-                "button[name='Email']", 
-                "span:has-text('Email')", 
-                "button:has-text('Email')",
-                "div[data-name='email']"
-            ]
-            
-            for selector in email_btn_selectors:
-                btn = await page.query_selector(selector)
-                if btn:
-                    await btn.click()
-                    await asyncio.sleep(1)
-                    break
-
-            # Kullanıcı adı/Email ve şifre alanlarını doldur
-            user_selectors = ["input[name='id_username']", "input[name='username']", "#id_username", "input[id='id_username']"]
-            pass_selectors = ["input[name='id_password']", "input[name='password']", "#id_password", "input[id='id_password']"]
-            
-            user_filled = False
-            for selector in user_selectors:
-                try:
-                    input_field = await page.query_selector(selector)
-                    if input_field and await input_field.is_visible():
-                        await input_field.fill(TV_USERNAME)
-                        user_filled = True
-                        break
-                except: continue
-
-            pass_filled = False
-            for selector in pass_selectors:
-                try:
-                    input_field = await page.query_selector(selector)
-                    if input_field and await input_field.is_visible():
-                        await input_field.fill(TV_PASSWORD)
-                        pass_filled = True
-                        break
-                except: continue
-            
-            if not user_filled or not pass_filled:
-                logger.warning(f"Giriş alanları tam olarak doldurulamadı. User: {user_filled}, Pass: {pass_filled}")
-                # Hata ayıklama için ekran görüntüsü al (geçici)
-                # await page.screenshot(path=f"{self.screenshots_dir}/login_failed_fields.png")
-            
-            # Giriş butonuna tıkla
-            submit_selectors = ["button[type='submit']", "button:has-text('Sign in')", "button:has-text('Log in')", ".tv-button--primary"]
-            for selector in submit_selectors:
-                btn = await page.query_selector(selector)
-                if btn and await btn.is_visible():
-                    await btn.click()
-                    break
-            
-            # Girişin tamamlanmasını bekle
-            await asyncio.sleep(5)
-            
-            # Başarı kontrolü
-            for selector in user_menu_selectors:
-                if await page.query_selector(selector):
-                    logger.info("Giriş BAŞARILI.")
-                    return
-            
-            logger.warning("Giriş işlemi tamamlanamadı veya başarısız oldu.")
-                
+            cls._driver = uc.Chrome(options=options, version_main=146)
+            cls._driver.set_page_load_timeout(60)
+            cls._driver.implicitly_wait(5)
+            cls._cookies_injected = False
+            return cls._driver
         except Exception as e:
-            logger.error(f"Giriş sırasında hata: {str(e)}")
+            logger.error(f"WebDriver başlatılamadı: {e}")
+            cls._driver = None
+            return None
 
-    async def _navigate_to_chart(self, page: Page, symbol: str, exchange: str, interval: str):
-        """Grafik sayfasına git."""
-        # Zaman dilimi dönüşümü (TradingView URL formatı)
-        tv_intervals = {
-            "15m": "15",
-            "1H": "60",
-            "4H": "240",
-            "1D": "D",
-            "1W": "W",
-            "1M": "M"
-        }
-        tv_interval = tv_intervals.get(interval, tv_intervals.get(interval.lower(), "D"))
-        
-        # URL oluşturma
-        symbol_param = f"{exchange}:{symbol}" if exchange else symbol
-        
-        if TV_CHART_ID:
-            # Kullanıcının kendi grafik şablonu
-            chart_url = f"https://www.tradingview.com/chart/{TV_CHART_ID}/?symbol={symbol_param}&interval={tv_interval}"
-        else:
-            # Varsayılan grafik
-            chart_url = f"https://www.tradingview.com/chart/?symbol={symbol_param}&interval={tv_interval}"
-            
-        logger.info(f"Grafik URL'sine gidiliyor: {chart_url}")
-        
-        # Sayfaya git ve yüklenmesini bekle
+    @classmethod
+    def _force_quit(cls):
         try:
-            await page.goto(chart_url, wait_until="networkidle", timeout=SCREENSHOT_TIMEOUT)
-        except:
-            try:
-                await page.goto(chart_url, wait_until="domcontentloaded", timeout=SCREENSHOT_TIMEOUT)
-            except Exception as e:
-                logger.error(f"Grafik sayfasına gidilemedi: {str(e)}")
-            
-        await asyncio.sleep(3)
+            if cls._driver:
+                cls._driver.quit()
+        except: pass
+        cls._driver = None
+        cls._cookies_injected = False
 
+def _oturum_acik_mi(driver) -> bool:
+    """TradingView'da oturum açık mı kontrol eder."""
+    try:
+        current_url = driver.current_url
+        if "signin" in current_url.lower():
+            return False
+        
+        selectors = [
+            '[data-name="header-user-menu-button"]',
+            'button[aria-label="Open user menu"]',
+            '.tv-header__user-menu-button',
+        ]
+        for sel in selectors:
+            if driver.find_elements(By.CSS_SELECTOR, sel):
+                return True
+        return "/chart/" in current_url
+    except:
+        return False
 
-# Singleton instance
-_handler = TradingViewScreenshot()
+def _sembol_degistir(driver, tv_symbol: str) -> bool:
+    """TradingView grafik üzerinde sembolü değiştirir."""
+    try:
+        body = driver.find_element(By.TAG_NAME, "body")
+        body.send_keys(Keys.ESCAPE)
+        time.sleep(0.5)
+        body.send_keys(tv_symbol)
+        time.sleep(2)
+        body.send_keys(Keys.ENTER)
+        time.sleep(1)
+        return True
+    except Exception as e:
+        logger.warning(f"Sembol değiştirme hatası: {e}")
+        return False
+
+def _ui_gizle(driver):
+    """TradingView UI elemanlarını gizler."""
+    try:
+        driver.execute_script("""
+            var selectors = [
+                'header', '.tv-header', '.tv-header--mobile',
+                '[data-name="drawing-toolbar"]', '.tv-side-toolbar',
+                '.layout__area--left', '.layout__area--right',
+                '.chart-controls-bar', '.bottom-widgetbar-content',
+                '.layout__area--bottom', '[data-name="right-toolbar"]'
+            ];
+            selectors.forEach(function(s) {
+                try {
+                    document.querySelectorAll(s).forEach(function(el) {
+                        el.style.setProperty('display', 'none', 'important');
+                    });
+                } catch(e) {}
+            });
+            try {
+                var c = document.querySelector('.layout__area--center');
+                if (c) {
+                    c.style.setProperty('left', '0', 'important');
+                    c.style.setProperty('top', '0', 'important');
+                    c.style.setProperty('width', '100vw', 'important');
+                    c.style.setProperty('height', '100vh', 'important');
+                }
+            } catch(e) {}
+        """)
+    except: pass
 
 async def take_screenshot(symbol: str, exchange: str, interval: str) -> Optional[str]:
-    return await _handler.get_screenshot(symbol, exchange, interval)
+    """TradingView üzerinden grafik ekran görüntüsü alır."""
+    loop = asyncio.get_running_loop()
+    output_path = os.path.join(SCREENSHOTS_DIR, f"{symbol}_{interval}.png")
+    os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
+
+    try:
+        driver = await loop.run_in_executor(None, lambda: TVBrowser.get_driver(headless=True))
+        if not driver:
+            return None
+
+        if not TVBrowser._cookies_injected:
+            cookies = _cookie_dosyasi_oku()
+            if cookies:
+                await loop.run_in_executor(None, lambda: _cookie_enjekte(driver, cookies))
+                TVBrowser._cookies_injected = True
+
+        tv_symbol = _tv_sembol_formatla(symbol, exchange)
+        chart_url = f"{DEFAULT_CHART_URL}{TV_CHART_ID}/" if TV_CHART_ID else DEFAULT_CHART_URL
+        
+        await loop.run_in_executor(None, lambda: driver.get(chart_url))
+        await asyncio.sleep(CHART_LOAD_WAIT)
+
+        # Sembol değiştir
+        await loop.run_in_executor(None, lambda: _sembol_degistir(driver, tv_symbol))
+        await asyncio.sleep(SYMBOL_CHANGE_WAIT)
+
+        # UI gizle
+        await loop.run_in_executor(None, lambda: _ui_gizle(driver))
+        await asyncio.sleep(UI_HIDE_WAIT)
+
+        # Screenshot al
+        await loop.run_in_executor(None, lambda: driver.save_screenshot(output_path))
+        
+        if os.path.exists(output_path) and os.path.getsize(output_path) > 1000:
+            return output_path
+        return None
+
+    except Exception as e:
+        logger.error(f"Grafik çekme hatası ({symbol}): {e}")
+        return None
