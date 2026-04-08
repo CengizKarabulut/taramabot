@@ -27,6 +27,17 @@ jobs:
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
+      - name: 🍪 Setup TradingView cookies
+        env:
+          TV_COOKIES: ${{ secrets.TV_COOKIES }}
+        run: |
+          if [ -n "$TV_COOKIES" ]; then
+            echo "$TV_COOKIES" > tv_cookies.txt
+            echo "Cookies yazıldı."
+          else
+            echo "⚠️  TV_COOKIES secret yok, anonim devam edilecek."
+          fi
+
       - name: 🔍 Run Market Scan (ALL PERIODS)
         env:
           TV_USERNAME: ${{ secrets.TV_USERNAME }}
