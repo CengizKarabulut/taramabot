@@ -4,5 +4,8 @@ python-dotenv>=1.0.0
 requests>=2.31.0
 playwright>=1.40.0
 mplfinance>=0.12.9
+selenium>=4.10.0
+undetected-chromedriver>=3.5.0
+pydantic-settings>=2.0.0
 git+https://github.com/saidsurucu/borsapy.git
 git+https://github.com/rongardF/tvdatafeed.git
