@@ -8,7 +8,8 @@ import numpy as np
 from config import (
     SMI_PERIOD, SMI_EMA_PERIOD, MACD_FAST, MACD_SLOW, MACD_SIGNAL,
     MA200_PERIOD, VOLUME_MULTIPLIER, RSI_PERIOD, RSI_THRESHOLD, RSI_CROSSOVER,
-    SMA_5, SMA_8, SMA_21, SMA_50, SMA_55, SMA_200, MACD_LEVEL_THRESHOLD, VOLUME_RATIO_THRESHOLD
+    SMA_5, SMA_8, SMA_21, SMA_50, SMA_55, SMA_200, MACD_LEVEL_THRESHOLD, VOLUME_RATIO_THRESHOLD,
+    NEW_RSI_PERIOD, NEW_RSI_UP_THRESHOLD, NEW_RSI_MAX_THRESHOLD, NEW_VOLUME_RATIO
 )
 
 
@@ -308,5 +309,75 @@ def check_new_scan_signal(df: pd.DataFrame) -> dict:
             'signal_line': last_signal,
             'macd_above_0': cond_macd_level,
             'macd_cross_up': cond_macd_cross
+        }
+    }
+
+
+def check_rsi_macd_scan_signal(df: pd.DataFrame) -> dict:
+    """
+    Görseldeki kriterlere göre RSI + MACD + Hacim taraması.
+    
+    Şartlar:
+    1. RSI(14) 50'yi yukarı kesmiş (yükselen 50)
+    2. RSI(14) < 70
+    3. MACD Level yukarı keser Signal
+    4. Bağ Hacim > 1.5
+    
+    Args:
+        df: OHLCV verileri içeren DataFrame
+        
+    Returns:
+        {
+            'signal': bool,
+            'details': dict
+        }
+    """
+    if df is None or df.empty or len(df) < 35:
+        return {'signal': False, 'details': {}}
+    
+    close = df["close"].astype(float)
+    vol = df["volume"].astype(float)
+    
+    # İndikatörleri hesapla
+    rsi_values = calc_rsi(close, NEW_RSI_PERIOD)
+    macd_line, signal_line, _ = calc_macd(df)
+    
+    # Son ve önceki değerler
+    rsi_last = rsi_values.iloc[-1]
+    rsi_prev = rsi_values.iloc[-2]
+    
+    macd_last = macd_line.iloc[-1]
+    macd_prev = macd_line.iloc[-2]
+    sig_last = signal_line.iloc[-1]
+    sig_prev = signal_line.iloc[-2]
+    
+    vol_last = vol.iloc[-1]
+    vol_avg = vol.tail(20).mean()
+    vol_ratio = vol_last / vol_avg if vol_avg > 0 else 0
+    
+    # Şartlar
+    # 1. RSI(14) 50'yi yukarı kesmiş (yükselen 50)
+    cond_rsi_up = (rsi_prev <= NEW_RSI_UP_THRESHOLD) and (rsi_last > NEW_RSI_UP_THRESHOLD)
+    # 2. RSI(14) < 70
+    cond_rsi_max = rsi_last < NEW_RSI_MAX_THRESHOLD
+    # 3. MACD Level yukarı keser Signal
+    cond_macd_cross = (macd_prev <= sig_prev) and (macd_last > sig_last)
+    # 4. Bağ Hacim > 1.5
+    cond_vol = vol_ratio > NEW_VOLUME_RATIO
+    
+    signal = cond_rsi_up and cond_rsi_max and cond_macd_cross and cond_vol
+    
+    return {
+        'signal': signal,
+        'details': {
+            'rsi': rsi_last,
+            'rsi_prev': rsi_prev,
+            'macd': macd_last,
+            'signal_line': sig_last,
+            'volume_ratio': vol_ratio,
+            'rsi_up_50': cond_rsi_up,
+            'rsi_below_70': cond_rsi_max,
+            'macd_cross': cond_macd_cross,
+            'volume_ok': cond_vol
         }
     }

@@ -7,7 +7,7 @@ HTML formatında şık ve profesyonel mesajlar oluşturur.
 import logging
 import requests
 from typing import Optional, List
-from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, EMOJI_FULL_SIGNAL, EMOJI_SMI_SIGNAL, EMOJI_RSI_SIGNAL, EMOJI_NEW_SCAN_SIGNAL
+from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, EMOJI_FULL_SIGNAL, EMOJI_SMI_SIGNAL, EMOJI_RSI_SIGNAL, EMOJI_NEW_SCAN_SIGNAL, EMOJI_RSI_MACD_SIGNAL
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +53,16 @@ class TelegramSender:
         full_signals: List[dict],
         smi_signals: List[dict],
         rsi_signals: List[dict],
-        new_scan_signals: List[dict] = None
+        new_scan_signals: List[dict] = None,
+        rsi_macd_signals: List[dict] = None
     ) -> bool:
         """
         Tarama sonuçlarını stratejiye göre gruplayarak şık bir özet mesajı gönderir.
         """
         if new_scan_signals is None:
             new_scan_signals = []
+        if rsi_macd_signals is None:
+            rsi_macd_signals = []
             
         period_names = {
             "15m": "15 DAKİKA",
@@ -77,7 +80,16 @@ class TelegramSender:
         
         body = ""
         
-        # 1. Strateji: Yeni Tarama (Scanner 3)
+        # 1. Strateji: RSI + MACD + Hacim
+        if rsi_macd_signals:
+            body += f"<b>{EMOJI_RSI_MACD_SIGNAL} RSI + MACD + HACİM SİNYALLERİ</b>\n"
+            body += f"<i>RSI(14) 50 Kes. + RSI < 70 + MACD Kes.</i>\n"
+            for s in rsi_macd_signals:
+                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
+                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
+            body += "\n"
+
+        # 2. Strateji: Yeni Tarama (Scanner 3)
         if new_scan_signals:
             body += f"<b>{EMOJI_NEW_SCAN_SIGNAL} ÖZEL TARAMA SİNYALLERİ</b>\n"
             body += f"<i>SMA Dizilimi + MACD Pozitif</i>\n"
@@ -113,7 +125,7 @@ class TelegramSender:
                 body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
             body += "\n"
 
-        if not (full_signals or smi_signals or rsi_signals or new_scan_signals):
+        if not (full_signals or smi_signals or rsi_signals or new_scan_signals or rsi_macd_signals):
             body = f"<b>ℹ️ SİNYAL BULUNAMADI</b>\n\n<i>{p_name} periyodunda kriterlere uygun hisse tespit edilemedi.</i>"
         
         footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
