@@ -69,10 +69,16 @@ class TelegramSender:
             
         period_names = {
             "15m": "15 DAKİKA",
+            "15M": "15 DAKİKA",
+            "1h": "1 SAAT",
             "1H": "1 SAAT",
+            "4h": "4 SAAT",
             "4H": "4 SAAT",
+            "1d": "GÜNLÜK",
             "1D": "GÜNLÜK",
+            "1w": "HAFTALIK",
             "1W": "HAFTALIK",
+            "1m": "AYLIK",
             "1M": "AYLIK"
         }
         p_name = period_names.get(period, period)

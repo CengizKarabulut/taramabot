@@ -29,8 +29,16 @@ async def main_scan_logic(market_type: str, period: str):
     scanner = MarketScanner()
     telegram_sender = get_telegram_sender()
 
-    # Periyot ismini düzelt (Küçük harf gelirse TV formatına uygun hale getir)
-    period = period.upper() if period.lower() != "15m" else "15m"
+    # Periyot ismini düzelt (TV formatına uygun hale getir)
+    period_map = {
+        "15m": "15m", "15M": "15m",
+        "1h": "1H", "1H": "1H",
+        "4h": "4H", "4H": "4H",
+        "1d": "1D", "1D": "1D",
+        "1w": "1W", "1W": "1W",
+        "1m": "1M", "1M": "1M"
+    }
+    period = period_map.get(period, period)
     
     logger.info(f"Tarama başlatılıyor: Pazar={market_type.upper()}, Periyot={period}")
 
@@ -69,7 +77,7 @@ async def main_scan_logic(market_type: str, period: str):
         return None
 
 
-async def run_multi_scan(market_type: str = "bist"):
+async def run_multi_scan(market_type: str = "bist", period: str = "1D"):
     """Tüm zaman dilimlerini KESİN SIRAYLA (Küçükten Büyüğe) tara."""
     # Sıralama: 15m -> 1H -> 4H -> 1D -> 1W -> 1M
     periods = ["15m", "1H", "4H", "1D", "1W", "1M"]
