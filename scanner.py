@@ -61,34 +61,37 @@ class ScannerState:
         except Exception as e:
             logger.error(f"Durum kaydetme hatası: {e}")
     
-    def is_signal_sent(self, symbol: str, period: str, strategy: str) -> bool:
-        """Sinyal daha önce gönderilmiş mi kontrol et."""
+    def is_signal_sent(self, symbol: str, period: str, strategy: str, bar_time: str) -> bool:
+        """Sinyal bu bar için daha önce gönderilmiş mi kontrol et."""
         key = f"{symbol}_{period}"
-        if strategy == "smi_macd":
-            return key in self.state.get("last_sent_smi_macd", {})
-        elif strategy == "rsi":
-            return key in self.state.get("last_sent_rsi", {})
-        elif strategy == "new_scan":
-            return key in self.state.get("last_sent_new_scan", {})
-        elif strategy == "rsi_macd":
-            return key in self.state.get("last_sent_rsi_macd", {})
-        elif strategy == "ema":
-            return key in self.state.get("last_sent_ema", {})
+        strategy_map = {
+            "smi_macd": "last_sent_smi_macd",
+            "rsi": "last_sent_rsi",
+            "new_scan": "last_sent_new_scan",
+            "rsi_macd": "last_sent_rsi_macd",
+            "ema": "last_sent_ema"
+        }
+        
+        state_key = strategy_map.get(strategy)
+        if state_key:
+            last_time = self.state.get(state_key, {}).get(key)
+            return last_time == bar_time
         return False
     
     def mark_signal_sent(self, symbol: str, period: str, strategy: str, bar_time: str) -> None:
-        """Sinyali gönderildi olarak işaretle."""
+        """Sinyali bu bar için gönderildi olarak işaretle."""
         key = f"{symbol}_{period}"
-        if strategy == "smi_macd":
-            self.state.setdefault("last_sent_smi_macd", {})[key] = bar_time
-        elif strategy == "rsi":
-            self.state.setdefault("last_sent_rsi", {})[key] = bar_time
-        elif strategy == "new_scan":
-            self.state.setdefault("last_sent_new_scan", {})[key] = bar_time
-        elif strategy == "rsi_macd":
-            self.state.setdefault("last_sent_rsi_macd", {})[key] = bar_time
-        elif strategy == "ema":
-            self.state.setdefault("last_sent_ema", {})[key] = bar_time
+        strategy_map = {
+            "smi_macd": "last_sent_smi_macd",
+            "rsi": "last_sent_rsi",
+            "new_scan": "last_sent_new_scan",
+            "rsi_macd": "last_sent_rsi_macd",
+            "ema": "last_sent_ema"
+        }
+        
+        state_key = strategy_map.get(strategy)
+        if state_key:
+            self.state.setdefault(state_key, {})[key] = bar_time
 
 
 class MarketScanner:
@@ -252,12 +255,12 @@ class MarketScanner:
                 smi_result = result["signals"]["smi_macd"]
                 
                 if smi_result["full_buy_signal"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "smi_macd"):
+                    if not self.state.is_signal_sent(result["symbol"], period, "smi_macd", result["bar_time"]):
                         full_signals.append(result)
                         self.state.mark_signal_sent(result["symbol"], period, "smi_macd", result["bar_time"])
                 
                 elif smi_result["smi_macd_buy"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "smi_macd"):
+                    if not self.state.is_signal_sent(result["symbol"], period, "smi_macd", result["bar_time"]):
                         smi_signals.append(result)
                         self.state.mark_signal_sent(result["symbol"], period, "smi_macd", result["bar_time"])
             
@@ -266,7 +269,7 @@ class MarketScanner:
                 rsi_result = result["signals"]["rsi"]
                 
                 if rsi_result["signal"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "rsi"):
+                    if not self.state.is_signal_sent(result["symbol"], period, "rsi", result["bar_time"]):
                         rsi_signals.append(result)
                         self.state.mark_signal_sent(result["symbol"], period, "rsi", result["bar_time"])
             
@@ -275,7 +278,7 @@ class MarketScanner:
                 new_scan_result = result["signals"]["new_scan"]
                 
                 if new_scan_result["signal"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "new_scan"):
+                    if not self.state.is_signal_sent(result["symbol"], period, "new_scan", result["bar_time"]):
                         new_scan_signals.append(result)
                         self.state.mark_signal_sent(result["symbol"], period, "new_scan", result["bar_time"])
             
@@ -284,7 +287,7 @@ class MarketScanner:
                 rsi_macd_result = result["signals"]["rsi_macd"]
                 
                 if rsi_macd_result["signal"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "rsi_macd"):
+                    if not self.state.is_signal_sent(result["symbol"], period, "rsi_macd", result["bar_time"]):
                         rsi_macd_signals.append(result)
                         self.state.mark_signal_sent(result["symbol"], period, "rsi_macd", result["bar_time"])
             
@@ -293,7 +296,7 @@ class MarketScanner:
                 ema_result = result["signals"]["ema"]
                 
                 if ema_result["signal"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "ema"):
+                    if not self.state.is_signal_sent(result["symbol"], period, "ema", result["bar_time"]):
                         ema_signals.append(result)
                         self.state.mark_signal_sent(result["symbol"], period, "ema", result["bar_time"])
         

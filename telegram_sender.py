@@ -146,7 +146,32 @@ class TelegramSender:
         # Herhangi bir sinyal varsa mesajı gönder
         if body:
             footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
-            return self.send_message(header + body + footer)
+            full_message = header + body + footer
+            
+            # Telegram mesaj sınırı kontrolü (4096 karakter, ancak HTML tagleri ile güvenli sınır 3500)
+            if len(full_message) <= 3500:
+                return self.send_message(full_message)
+            else:
+                # Mesajı strateji bazlı bölerek gönder
+                logger.info(f"Mesaj çok uzun ({len(full_message)} karakter), bölünüyor...")
+                
+                # Stratejileri ayır (body'deki çift \n\n ile ayrılmış bloklar)
+                strategies = body.split("\n\n")
+                current_chunk = header
+                
+                for strat in strategies:
+                    if not strat.strip():
+                        continue
+                    
+                    # Eğer bu strateji bloğu tek başına bile çok uzunsa (nadir durum)
+                    if len(current_chunk + strat + "\n\n") > 3500:
+                        # Mevcut chunk'ı gönder
+                        self.send_message(current_chunk + "<b>(Devamı...)</b>")
+                        current_chunk = header + strat + "\n\n"
+                    else:
+                        current_chunk += strat + "\n\n"
+                
+                return self.send_message(current_chunk + footer)
         else:
             # Sinyal yoksa bilgilendirme mesajı gönder
             body = f"<b>ℹ️ SİNYAL BULUNAMADI</b>\n\n<i>{p_name} periyodunda kriterlere uygun hisse tespit edilemedi.</i>\n"

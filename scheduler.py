@@ -126,7 +126,11 @@ class Scheduler:
                     
                     # Sonraki tarama saatine kadar bekle
                     wait_seconds = self.get_wait_seconds()
-                    logger.info(f"Sonraki tarama: {self.get_next_scan_time().strftime('%H:%M:%S')} ({wait_seconds} saniye sonra)")
+                    # Eğer bekleme süresi çok kısaysa (örneğin 0 veya negatif), en az 60 saniye bekle
+                    if wait_seconds < 60:
+                        wait_seconds = SCAN_INTERVAL_MINUTES * 60
+                    
+                    logger.info(f"Sonraki tarama: {(self.get_current_time() + timedelta(seconds=wait_seconds)).strftime('%H:%M:%S')} ({wait_seconds} saniye sonra)")
                     await asyncio.sleep(wait_seconds)
                 else:
                     # Tarama saatleri dışında, sonraki tarama saatine kadar bekle
