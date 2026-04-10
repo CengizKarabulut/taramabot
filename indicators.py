@@ -465,3 +465,60 @@ def check_ema_scan_signal(df: pd.DataFrame) -> dict:
             'conditions': [cond1, cond2, cond3, cond4, cond5, cond6, cond7]
         }
     }
+
+def check_macd_positive_cross_signal(df: pd.DataFrame) -> dict:
+    """
+    Görseldeki kriterlere göre MACD Pozitif Kesişim taraması.
+    
+    Şartlar:
+    1. RSI(14) > 30
+    2. MACD Level yukarı keser Signal
+    3. MACD Level > 0
+    
+    Args:
+        df: OHLCV verileri içeren DataFrame
+        
+    Returns:
+        {
+            'signal': bool,
+            'details': dict
+        }
+    """
+    if df is None or df.empty or len(df) < 35:
+        return {'signal': False, 'details': {}}
+    
+    close = df["close"].astype(float)
+    
+    # İndikatörleri hesapla
+    rsi_values = calc_rsi(close, 14)
+    macd_line, signal_line, _ = calc_macd(df)
+    
+    # Son ve önceki değerler
+    rsi_last = rsi_values.iloc[-1]
+    
+    macd_last = macd_line.iloc[-1]
+    macd_prev = macd_line.iloc[-2]
+    sig_last = signal_line.iloc[-1]
+    sig_prev = signal_line.iloc[-2]
+    
+    # Şartlar
+    # 1. RSI(14) > 30
+    cond_rsi = rsi_last > 30
+    # 2. MACD Level yukarı keser Signal
+    cond_macd_cross = (macd_prev <= sig_prev) and (macd_last > sig_last)
+    # 3. MACD Level > 0
+    cond_macd_above_0 = macd_last > 0
+    
+    signal = cond_rsi and cond_macd_cross and cond_macd_above_0
+    
+    return {
+        'signal': signal,
+        'details': {
+            'rsi': rsi_last,
+            'macd': macd_last,
+            'signal_line': sig_last,
+            'rsi_above_30': cond_rsi,
+            'macd_cross': cond_macd_cross,
+            'macd_above_0': cond_macd_above_0
+        }
+    }

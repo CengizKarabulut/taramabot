@@ -16,7 +16,10 @@ from config import (
     TV_USERNAME, TV_PASSWORD, BIST_STOCKS, NASDAQ_100, SP_500, COMMODITIES, CRYPTO,
     BARS_TO_FETCH, STATE_FILE
 )
-from indicators import check_smi_macd_signal, check_rsi_signal, check_new_scan_signal, check_rsi_macd_scan_signal, check_ema_scan_signal
+from indicators import (
+    check_smi_macd_signal, check_rsi_signal, check_new_scan_signal, 
+    check_rsi_macd_scan_signal, check_ema_scan_signal, check_macd_positive_cross_signal
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +35,7 @@ class ScannerState:
         """Durumu dosyadan yükle."""
         if not os.path.exists(self.state_file):
             logger.info(f"Durum dosyası bulunamadı: {self.state_file}. Yeni durum oluşturuluyor.")
-            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}}
+            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}}
         
         try:
             with open(self.state_file, "r", encoding="utf-8") as f:
@@ -47,6 +50,8 @@ class ScannerState:
                     state["last_sent_rsi_macd"] = {}
                 if "last_sent_ema" not in state:
                     state["last_sent_ema"] = {}
+                if "last_sent_macd_cross" not in state:
+                    state["last_sent_macd_cross"] = {}
                 return state
         except (json.JSONDecodeError, FileNotFoundError) as e:
             logger.error(f"Durum dosyası yükleme hatası: {e}. Yeni durum oluşturuluyor.")
@@ -69,7 +74,8 @@ class ScannerState:
             "rsi": "last_sent_rsi",
             "new_scan": "last_sent_new_scan",
             "rsi_macd": "last_sent_rsi_macd",
-            "ema": "last_sent_ema"
+            "ema": "last_sent_ema",
+            "macd_cross": "last_sent_macd_cross"
         }
         
         state_key = strategy_map.get(strategy)
@@ -86,7 +92,8 @@ class ScannerState:
             "rsi": "last_sent_rsi",
             "new_scan": "last_sent_new_scan",
             "rsi_macd": "last_sent_rsi_macd",
-            "ema": "last_sent_ema"
+            "ema": "last_sent_ema",
+            "macd_cross": "last_sent_macd_cross"
         }
         
         state_key = strategy_map.get(strategy)
@@ -126,7 +133,7 @@ class MarketScanner:
         Bir sembolü tara.
         """
         if strategies is None:
-            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema"]
+            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross"]
         
         try:
             # Veri çek
@@ -177,6 +184,11 @@ class MarketScanner:
                 ema_result = check_ema_scan_signal(df)
                 result["signals"]["ema"] = ema_result
             
+            # MACD Pozitif Kesişim Stratejisi
+            if "macd_cross" in strategies:
+                macd_cross_result = check_macd_positive_cross_signal(df)
+                result["signals"]["macd_cross"] = macd_cross_result
+            
             return result
             
         except Exception as e:
@@ -188,13 +200,13 @@ class MarketScanner:
         market_type: str = "bist",
         period: str = "1D",
         strategies: List[str] = None
-    ) -> Tuple[List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], int]:
+    ) -> Tuple[List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], int]:
         """
         Pazarı tara.
-        Returns: (full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, total_scanned)
+        Returns: (full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, total_scanned)
         """
         if strategies is None:
-            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema"]
+            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross"]
         
         # Sembol listesini seç
         if market_type.lower() == "bist":
@@ -248,6 +260,7 @@ class MarketScanner:
         new_scan_signals = []
         rsi_macd_signals = []
         ema_signals = []
+        macd_cross_signals = []
         
         for result in results:
             # SMI/MACD sinyalleri
@@ -299,10 +312,19 @@ class MarketScanner:
                     if not self.state.is_signal_sent(result["symbol"], period, "ema", result["bar_time"]):
                         ema_signals.append(result)
                         self.state.mark_signal_sent(result["symbol"], period, "ema", result["bar_time"])
+            
+            # MACD Pozitif Kesişim sinyalleri
+            if "macd_cross" in result["signals"]:
+                macd_cross_result = result["signals"]["macd_cross"]
+                
+                if macd_cross_result["signal"]:
+                    if not self.state.is_signal_sent(result["symbol"], period, "macd_cross", result["bar_time"]):
+                        macd_cross_signals.append(result)
+                        self.state.mark_signal_sent(result["symbol"], period, "macd_cross", result["bar_time"])
         
         # Durumu kaydet
         self.state.save()
         
-        logger.info(f"Tarama tamamlandı: {total_scanned} sembol tarandı. {len(full_signals)} tam sinyal, {len(smi_signals)} SMI sinyali, {len(rsi_signals)} RSI sinyali, {len(new_scan_signals)} yeni tarama sinyali, {len(rsi_macd_signals)} RSI+MACD sinyali, {len(ema_signals)} EMA sinyali")
+        logger.info(f"Tarama tamamlandı: {total_scanned} sembol tarandı. {len(full_signals)} tam sinyal, {len(smi_signals)} SMI sinyali, {len(rsi_signals)} RSI sinyali, {len(new_scan_signals)} yeni tarama sinyali, {len(rsi_macd_signals)} RSI+MACD sinyali, {len(ema_signals)} EMA sinyali, {len(macd_cross_signals)} MACD kesişim sinyali")
         
-        return full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, total_scanned
+        return full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, total_scanned

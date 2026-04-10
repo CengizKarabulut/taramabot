@@ -43,11 +43,11 @@ async def main_scan_logic(market_type: str, period: str):
     logger.info(f"Tarama başlatılıyor: Pazar={market_type.upper()}, Periyot={period}")
 
     try:
-        # scan_market çağrısı (7 değer döndürür)
-        full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, total_scanned = await scanner.scan_market(
+        # scan_market çağrısı (8 değer döndürür)
+        full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, total_scanned = await scanner.scan_market(
             market_type=market_type,
             period=period,
-            strategies=["smi_macd", "rsi", "new_scan", "rsi_macd", "ema"]
+            strategies=["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross"]
         )
 
         # 1. Gruplanmış özet listeyi gönder (Sinyal olsun veya olmasın mesaj gönderilir)
@@ -58,14 +58,15 @@ async def main_scan_logic(market_type: str, period: str):
             rsi_signals=rsi_signals, 
             new_scan_signals=new_scan_signals, 
             rsi_macd_signals=rsi_macd_signals, 
-            ema_signals=ema_signals
+            ema_signals=ema_signals,
+            macd_cross_signals=macd_cross_signals
         )
         
         # 2. İstatistik Mesajı (Her periyot sonunda mutlaka gönderilir)
         finish_msg = f"{EMOJI_SUCCESS} <b>Tarama Tamamlandı! ({period})</b>\n"
         finish_msg += f"⏱ {datetime.now(TZ_TURKEY).strftime('%Y-%m-%d %H:%M')}\n"
         finish_msg += f"🔍 Toplam {total_scanned} hisse tarandı.\n"
-        finish_msg += f"📈 {len(ema_signals)} EMA, {len(rsi_macd_signals)} RSI+MACD, {len(new_scan_signals)} Özel, {len(full_signals)} Tam, {len(smi_signals)} SMI, {len(rsi_signals)} RSI sinyali bulundu."
+        finish_msg += f"📈 {len(ema_signals)} EMA, {len(rsi_macd_signals)} RSI+MACD, {len(new_scan_signals)} Özel, {len(full_signals)} Tam, {len(smi_signals)} SMI, {len(rsi_signals)} RSI, {len(macd_cross_signals)} MACD Kesişim sinyali bulundu."
         telegram_sender.send_message(finish_msg)
 
         # Sonuçları bir sonraki aşama (toplu özet) için döndür
@@ -76,7 +77,8 @@ async def main_scan_logic(market_type: str, period: str):
             "rsi": rsi_signals,
             "new": new_scan_signals,
             "rsi_macd": rsi_macd_signals,
-            "ema": ema_signals
+            "ema": ema_signals,
+            "macd_cross": macd_cross_signals
         }
 
     except Exception as e:
@@ -117,12 +119,13 @@ def send_final_summary(all_results: list):
         "rsi": "RSI",
         "new": "Özel Tarama",
         "rsi_macd": "RSI+MACD+Hacim",
-        "ema": "EMA Dizilimi"
+        "ema": "EMA Dizilimi",
+        "macd_cross": "MACD Pozitif Kesişim"
     }
     
     for res in all_results:
         p = res["period"]
-        for strat in ["full", "smi", "rsi", "new", "rsi_macd", "ema"]:
+        for strat in ["full", "smi", "rsi", "new", "rsi_macd", "ema", "macd_cross"]:
             for item in res[strat]:
                 sym = item["symbol"]
                 if sym not in symbol_map:

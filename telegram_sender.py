@@ -78,7 +78,8 @@ class TelegramSender:
         rsi_signals: List[dict],
         new_scan_signals: List[dict] = None,
         rsi_macd_signals: List[dict] = None,
-        ema_signals: List[dict] = None
+        ema_signals: List[dict] = None,
+        macd_cross_signals: List[dict] = None
     ) -> bool:
         """
         Tarama sonuçlarını stratejiye göre gruplayarak parçalı mesajlar halinde gönderir.
@@ -87,6 +88,7 @@ class TelegramSender:
         new_scan_signals = new_scan_signals or []
         rsi_macd_signals = rsi_macd_signals or []
         ema_signals = ema_signals or []
+        macd_cross_signals = macd_cross_signals or []
             
         period_names = {
             "15m": "15 DAKİKA", "15M": "15 DAKİKA",
@@ -103,7 +105,7 @@ class TelegramSender:
         header += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
         
         # Tüm sinyalleri kontrol et
-        all_empty = not any([full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals])
+        all_empty = not any([full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals])
         
         if all_empty:
             empty_msg = header + f"\n<b>ℹ️ SİNYAL BULUNAMADI</b>\n\n<i>{p_name} periyodunda kriterlere uygun hisse tespit edilemedi.</i>\n"
@@ -116,6 +118,7 @@ class TelegramSender:
 
         # Stratejileri tanımla
         strategies = [
+            (macd_cross_signals, "🟣", "MACD POZİTİF KESİŞİM", "RSI > 30 + MACD Kesişimi + MACD > 0"),
             (ema_signals, EMOJI_EMA_SIGNAL, "EMA DİZİLİMİ + HACİM", "EMA(5,8,13) Kesişimi + EMA(21,55,200) Altı"),
             (rsi_macd_signals, EMOJI_RSI_MACD_SIGNAL, "RSI + MACD + HACİM", "RSI(14) 50 Kes. + RSI < 70 + MACD Kes."),
             (new_scan_signals, EMOJI_NEW_SCAN_SIGNAL, "ÖZEL TARAMA", "SMA Dizilimi + MACD Pozitif"),
