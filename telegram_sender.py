@@ -6,8 +6,13 @@ HTML formatında şık ve profesyonel mesajlar oluşturur.
 
 import logging
 import requests
+import time
 from typing import Optional, List
-from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, EMOJI_FULL_SIGNAL, EMOJI_SMI_SIGNAL, EMOJI_RSI_SIGNAL, EMOJI_NEW_SCAN_SIGNAL, EMOJI_RSI_MACD_SIGNAL, EMOJI_EMA_SIGNAL
+from config import (
+    TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, 
+    EMOJI_FULL_SIGNAL, EMOJI_SMI_SIGNAL, EMOJI_RSI_SIGNAL, 
+    EMOJI_NEW_SCAN_SIGNAL, EMOJI_RSI_MACD_SIGNAL, EMOJI_EMA_SIGNAL
+)
 
 logger = logging.getLogger(__name__)
 
@@ -37,16 +42,34 @@ class TelegramSender:
                 "disable_web_page_preview": True
             }
             
-            response = requests.post(url, json=payload, timeout=10)
-            response.raise_for_status()
+            response = requests.post(url, json=payload, timeout=15)
+            if response.status_code != 200:
+                logger.error(f"Telegram API Hatası ({response.status_code}): {response.text}")
+                # Eğer HTML hatası ise düz metin olarak tekrar dene
+                if "can't parse entities" in response.text:
+                    logger.info("HTML ayrıştırma hatası, düz metin olarak tekrar deneniyor...")
+                    payload["parse_mode"] = None
+                    # HTML taglerini temizle (basitçe)
+                    import re
+                    payload["text"] = re.sub('<[^<]+?>', '', text)
+                    response = requests.post(url, json=payload, timeout=15)
             
+            response.raise_for_status()
             logger.info(f"Telegram mesajı gönderildi: {text[:50]}...")
             return True
             
         except requests.exceptions.RequestException as e:
             logger.error(f"Telegram mesaj gönderme hatası: {str(e)}")
             return False
-    
+
+    def _format_signal_list(self, signals: List[dict]) -> str:
+        """Sinyal listesini formatla."""
+        lines = []
+        for s in signals:
+            c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
+            lines.append(f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}")
+        return "\n".join(lines)
+
     def send_grouped_summary(
         self,
         period: str,
@@ -58,125 +81,71 @@ class TelegramSender:
         ema_signals: List[dict] = None
     ) -> bool:
         """
-        Tarama sonuçlarını stratejiye göre gruplayarak şık bir özet mesajı gönderir.
+        Tarama sonuçlarını stratejiye göre gruplayarak parçalı mesajlar halinde gönderir.
+        Bu yöntem Telegram karakter sınırına (4096) takılmayı önler.
         """
-        if new_scan_signals is None:
-            new_scan_signals = []
-        if rsi_macd_signals is None:
-            rsi_macd_signals = []
-        if ema_signals is None:
-            ema_signals = []
+        new_scan_signals = new_scan_signals or []
+        rsi_macd_signals = rsi_macd_signals or []
+        ema_signals = ema_signals or []
             
         period_names = {
-            "15m": "15 DAKİKA",
-            "15M": "15 DAKİKA",
-            "1h": "1 SAAT",
-            "1H": "1 SAAT",
-            "4h": "4 SAAT",
-            "4H": "4 SAAT",
-            "1d": "GÜNLÜK",
-            "1D": "GÜNLÜK",
-            "1w": "HAFTALIK",
-            "1W": "HAFTALIK",
-            "1m": "AYLIK",
-            "1M": "AYLIK"
+            "15m": "15 DAKİKA", "15M": "15 DAKİKA",
+            "1h": "1 SAAT", "1H": "1 SAAT",
+            "4h": "4 SAAT", "4H": "4 SAAT",
+            "1d": "GÜNLÜK", "1D": "GÜNLÜK",
+            "1w": "HAFTALIK", "1W": "HAFTALIK",
+            "1m": "AYLIK", "1M": "AYLIK"
         }
         p_name = period_names.get(period, period)
         
         header = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
         header += f"<b>🔍 {p_name} TARAMA ÖZETİ</b>\n"
-        header += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n\n"
+        header += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
         
-        body = ""
+        # Tüm sinyalleri kontrol et
+        all_empty = not any([full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals])
         
-        # 1. Strateji: EMA Dizilimi + Bağ Hacim
-        if ema_signals:
-            body += f"<b>{EMOJI_EMA_SIGNAL} EMA DİZİLİMİ + HACİM SİNYALLERİ</b>\n"
-            body += f"<i>EMA(5,8,13) Kesişimi + EMA(21,55,200) Altı</i>\n"
-            for s in ema_signals:
-                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
-                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
-            body += "\n"
+        if all_empty:
+            empty_msg = header + f"\n<b>ℹ️ SİNYAL BULUNAMADI</b>\n\n<i>{p_name} periyodunda kriterlere uygun hisse tespit edilemedi.</i>\n"
+            empty_msg += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
+            return self.send_message(empty_msg)
 
-        # 2. Strateji: RSI + MACD + Hacim
-        if rsi_macd_signals:
-            body += f"<b>{EMOJI_RSI_MACD_SIGNAL} RSI + MACD + HACİM SİNYALLERİ</b>\n"
-            body += f"<i>RSI(14) 50 Kes. + RSI < 70 + MACD Kes.</i>\n"
-            for s in rsi_macd_signals:
-                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
-                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
-            body += "\n"
+        # Başlık mesajını gönder
+        self.send_message(header)
+        time.sleep(0.5)
 
-        # 2. Strateji: Yeni Tarama (Scanner 3)
-        if new_scan_signals:
-            body += f"<b>{EMOJI_NEW_SCAN_SIGNAL} ÖZEL TARAMA SİNYALLERİ</b>\n"
-            body += f"<i>SMA Dizilimi + MACD Pozitif</i>\n"
-            for s in new_scan_signals:
-                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
-                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
-            body += "\n"
+        # Stratejileri tanımla
+        strategies = [
+            (ema_signals, EMOJI_EMA_SIGNAL, "EMA DİZİLİMİ + HACİM", "EMA(5,8,13) Kesişimi + EMA(21,55,200) Altı"),
+            (rsi_macd_signals, EMOJI_RSI_MACD_SIGNAL, "RSI + MACD + HACİM", "RSI(14) 50 Kes. + RSI < 70 + MACD Kes."),
+            (new_scan_signals, EMOJI_NEW_SCAN_SIGNAL, "ÖZEL TARAMA", "SMA Dizilimi + MACD Pozitif"),
+            (full_signals, EMOJI_FULL_SIGNAL, "TAM ALIM (GÜÇLÜ)", "SMI Kesişimi + MA200 Üstü + Hacim"),
+            (smi_signals, EMOJI_SMI_SIGNAL, "SMI/MACD ALIM", "SMI/MACD Pozitif Kesişim"),
+            (rsi_signals, EMOJI_RSI_SIGNAL, "RSI ALIM", "RSI > 60 + RSI 50 Kesişimi")
+        ]
 
-        # 2. Strateji: Tam Alım (SMI + MA200 + Hacim)
-        if full_signals:
-            body += f"<b>{EMOJI_FULL_SIGNAL} TAM ALIM SİNYALLERİ (GÜÇLÜ)</b>\n"
-            body += f"<i>SMI Kesişimi + MA200 Üstü + Hacim</i>\n"
-            for s in full_signals:
-                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
-                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
-            body += "\n"
-
-        # 3. Strateji: SMI/MACD Alım
-        if smi_signals:
-            body += f"<b>{EMOJI_SMI_SIGNAL} SMI/MACD ALIM SİNYALLERİ</b>\n"
-            body += f"<i>SMI/MACD Pozitif Kesişim</i>\n"
-            for s in smi_signals:
-                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
-                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
-            body += "\n"
-
-        # 4. Strateji: RSI Alım
-        if rsi_signals:
-            body += f"<b>{EMOJI_RSI_SIGNAL} RSI ALIM SİNYALLERİ</b>\n"
-            body += f"<i>RSI > 60 + RSI 50 Kesişimi</i>\n"
-            for s in rsi_signals:
-                c_str = f"🟢 +{s['change']:.2f}%" if s['change'] >= 0 else f"🔴 {s['change']:.2f}%"
-                body += f"• <code>{s['symbol']:<7}</code> | {c_str} | {s['close']:.2f}\n"
-            body += "\n"
-
-        # Herhangi bir sinyal varsa mesajı gönder
-        if body:
-            footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
-            full_message = header + body + footer
+        for signals, emoji, title, desc in strategies:
+            if not signals:
+                continue
             
-            # Telegram mesaj sınırı kontrolü (4096 karakter, ancak HTML tagleri ile güvenli sınır 3500)
-            if len(full_message) <= 3500:
-                return self.send_message(full_message)
-            else:
-                # Mesajı strateji bazlı bölerek gönder
-                logger.info(f"Mesaj çok uzun ({len(full_message)} karakter), bölünüyor...")
+            # Her strateji için mesaj oluştur
+            strat_header = f"<b>{emoji} {title} SİNYALLERİ</b>\n<i>{desc}</i>\n\n"
+            
+            # Sinyalleri 30'arlı gruplara böl (Mesaj boyutu kontrolü için)
+            for i in range(0, len(signals), 30):
+                chunk = signals[i:i+30]
+                body = self._format_signal_list(chunk)
                 
-                # Stratejileri ayır (body'deki çift \n\n ile ayrılmış bloklar)
-                strategies = body.split("\n\n")
-                current_chunk = header
+                msg = strat_header + body
+                if i + 30 < len(signals):
+                    msg += "\n\n<b>(Devamı...)</b>"
                 
-                for strat in strategies:
-                    if not strat.strip():
-                        continue
-                    
-                    # Eğer bu strateji bloğu tek başına bile çok uzunsa (nadir durum)
-                    if len(current_chunk + strat + "\n\n") > 3500:
-                        # Mevcut chunk'ı gönder
-                        self.send_message(current_chunk + "<b>(Devamı...)</b>")
-                        current_chunk = header + strat + "\n\n"
-                    else:
-                        current_chunk += strat + "\n\n"
-                
-                return self.send_message(current_chunk + footer)
-        else:
-            # Sinyal yoksa bilgilendirme mesajı gönder
-            body = f"<b>ℹ️ SİNYAL BULUNAMADI</b>\n\n<i>{p_name} periyodunda kriterlere uygun hisse tespit edilemedi.</i>\n"
-            footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
-            return self.send_message(header + body + footer)
+                self.send_message(msg)
+                time.sleep(1) # Telegram rate limit koruması
+
+        # Kapanış çizgisi
+        self.send_message(f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>")
+        return True
     
     def send_error(self, error_msg: str) -> bool:
         """

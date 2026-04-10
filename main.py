@@ -51,7 +51,15 @@ async def main_scan_logic(market_type: str, period: str):
         )
 
         # 1. Gruplanmış özet listeyi gönder (Sinyal olsun veya olmasın mesaj gönderilir)
-        telegram_sender.send_grouped_summary(period, full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals)
+        telegram_sender.send_grouped_summary(
+            period=period, 
+            full_signals=full_signals, 
+            smi_signals=smi_signals, 
+            rsi_signals=rsi_signals, 
+            new_scan_signals=new_scan_signals, 
+            rsi_macd_signals=rsi_macd_signals, 
+            ema_signals=ema_signals
+        )
         
         # 2. İstatistik Mesajı (Her periyot sonunda mutlaka gönderilir)
         finish_msg = f"{EMOJI_SUCCESS} <b>Tarama Tamamlandı! ({period})</b>\n"
@@ -155,7 +163,16 @@ def send_final_summary(all_results: list):
     
     if body:
         footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
-        telegram_sender.send_message(header + body + footer)
+        # Çoklu sinyal listesi de çok uzun olabilir, parçalayarak gönder
+        full_msg = header + body + footer
+        if len(full_msg) > 3500:
+            # Basitçe ikiye böl (veya daha fazla)
+            lines = body.split("\n")
+            mid = len(lines) // 2
+            telegram_sender.send_message(header + "\n".join(lines[:mid]) + "\n<b>(Devamı...)</b>")
+            telegram_sender.send_message(header + "<b>(Devam)</b>\n" + "\n".join(lines[mid:]) + footer)
+        else:
+            telegram_sender.send_message(full_msg)
 
 
 async def run_bot():
