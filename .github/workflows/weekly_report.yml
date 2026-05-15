@@ -1,0 +1,30 @@
+name: Weekly Performance Report
+
+on:
+  schedule:
+    # Cuma akşamı 20:00 TRT (UTC 17:00)
+    - cron: "0 17 * * 5"
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install requests
+
+      - name: 📊 Generate and Send Weekly Report
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: |
+          python weekly_report.py
