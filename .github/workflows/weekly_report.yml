@@ -23,6 +23,7 @@ jobs:
           pip install --upgrade pip
           pip install requests python-dotenv
           pip install git+https://github.com/saidsurucu/borsapy.git
+          pip install git+https://github.com/ali-raza-farooq/tvdatafeed.git
 
       - name: 📊 Generate and Send Weekly Report
         env:
