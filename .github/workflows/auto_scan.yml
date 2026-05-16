@@ -6,11 +6,20 @@ on:
     - cron: "30 7-15 * * *"
   workflow_dispatch:
 
+# state.json'u depoya geri yazabilmek için yazma izni gerekli
+permissions:
+  contents: write
+
+# Aynı anda iki çalışmanın state.json push'unu çakıştırmamak için
+concurrency:
+  group: auto-scan-state
+  cancel-in-progress: false
+
 jobs:
   scan-all-markets:
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -50,7 +59,24 @@ jobs:
           # Tüm periyotları (15m, 1H, 4H, 1D, 1W, 1M) sırayla tarar
           python main.py multi bist
 
+      - name: 💾 Persist state.json (depoya geri yaz)
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Olası uzaktan değişiklikleri al, çakışmada yerel state.json'u koru
+          git pull --rebase --autostash origin ${{ github.ref_name }} || true
+          git add state.json
+          if git diff --staged --quiet; then
+            echo "state.json değişmedi, commit gerekmiyor."
+          else
+            git commit -m "chore: update state.json [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+            echo "state.json depoya kaydedildi."
+          fi
+
       - name: 📊 Upload scan results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: scan-results-${{ github.run_number }}
