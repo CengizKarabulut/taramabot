@@ -40,22 +40,14 @@ class ScannerState:
         try:
             with open(self.state_file, "r", encoding="utf-8") as f:
                 state = json.load(f)
-                # Eski format uyumluluğu
-                if "last_sent" in state and "last_sent_smi_macd" not in state:
-                    state["last_sent_smi_macd"] = state.pop("last_sent", {})
-                    state["last_sent_rsi"] = {}
-                if "last_sent_new_scan" not in state:
-                    state["last_sent_new_scan"] = {}
-                if "last_sent_rsi_macd" not in state:
-                    state["last_sent_rsi_macd"] = {}
-                if "last_sent_ema" not in state:
-                    state["last_sent_ema"] = {}
-                if "last_sent_macd_cross" not in state:
-                    state["last_sent_macd_cross"] = {}
+                # Eksik anahtarları tamamla
+                for key in ["last_sent_smi_macd", "last_sent_rsi", "last_sent_new_scan", "last_sent_rsi_macd", "last_sent_ema", "last_sent_macd_cross"]:
+                    if key not in state:
+                        state[key] = {}
                 return state
         except (json.JSONDecodeError, FileNotFoundError) as e:
             logger.error(f"Durum dosyası yükleme hatası: {e}. Yeni durum oluşturuluyor.")
-            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}}
+            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}}
     
     def save(self) -> None:
         """Durumu dosyaya kaydet."""
@@ -80,12 +72,14 @@ class ScannerState:
         
         state_key = strategy_map.get(strategy)
         if state_key:
-            last_time = self.state.get(state_key, {}).get(key)
-            return last_time == bar_time
+            entry = self.state.get(state_key, {}).get(key)
+            if isinstance(entry, dict):
+                return entry.get("time") == bar_time
+            return entry == bar_time
         return False
     
-    def mark_signal_sent(self, symbol: str, period: str, strategy: str, bar_time: str) -> None:
-        """Sinyali bu bar için gönderildi olarak işaretle."""
+    def mark_signal_sent(self, symbol: str, period: str, strategy: str, bar_time: str, price: float = 0.0) -> None:
+        """Sinyali bu bar için gönderildi olarak işaretle ve fiyatı kaydet."""
         key = f"{symbol}_{period}"
         strategy_map = {
             "smi_macd": "last_sent_smi_macd",
@@ -98,7 +92,10 @@ class ScannerState:
         
         state_key = strategy_map.get(strategy)
         if state_key:
-            self.state.setdefault(state_key, {})[key] = bar_time
+            self.state.setdefault(state_key, {})[key] = {
+                "time": bar_time,
+                "price": price
+            }
 
 
 class MarketScanner:
@@ -159,35 +156,19 @@ class MarketScanner:
                 "signals": {}
             }
             
-            # SMI/MACD Stratejisi
+            # Stratejileri kontrol et
             if "smi_macd" in strategies:
-                smi_result = check_smi_macd_signal(df)
-                result["signals"]["smi_macd"] = smi_result
-            
-            # RSI Stratejisi
+                result["signals"]["smi_macd"] = check_smi_macd_signal(df)
             if "rsi" in strategies:
-                rsi_result = check_rsi_signal(df)
-                result["signals"]["rsi"] = rsi_result
-            
-            # Yeni Tarama Stratejisi (Scanner 3)
+                result["signals"]["rsi"] = check_rsi_signal(df)
             if "new_scan" in strategies:
-                new_scan_result = check_new_scan_signal(df)
-                result["signals"]["new_scan"] = new_scan_result
-            
-            # RSI + MACD + Hacim Stratejisi
+                result["signals"]["new_scan"] = check_new_scan_signal(df)
             if "rsi_macd" in strategies:
-                rsi_macd_result = check_rsi_macd_scan_signal(df)
-                result["signals"]["rsi_macd"] = rsi_macd_result
-            
-            # EMA Dizilimi Stratejisi
+                result["signals"]["rsi_macd"] = check_rsi_macd_scan_signal(df)
             if "ema" in strategies:
-                ema_result = check_ema_scan_signal(df)
-                result["signals"]["ema"] = ema_result
-            
-            # MACD Pozitif Kesişim Stratejisi
+                result["signals"]["ema"] = check_ema_scan_signal(df)
             if "macd_cross" in strategies:
-                macd_cross_result = check_macd_positive_cross_signal(df)
-                result["signals"]["macd_cross"] = macd_cross_result
+                result["signals"]["macd_cross"] = check_macd_positive_cross_signal(df)
             
             return result
             
@@ -203,7 +184,6 @@ class MarketScanner:
     ) -> Tuple[List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], int]:
         """
         Pazarı tara.
-        Returns: (full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, total_scanned)
         """
         if strategies is None:
             strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross"]
@@ -221,110 +201,66 @@ class MarketScanner:
             symbols = CRYPTO
         else:
             logger.error(f"Bilinmeyen pazar türü: {market_type}")
-            return [], [], [], [], [], [], 0
+            return [], [], [], [], [], [], [], 0
         
-        # Zaman dilimini TvDatafeed formatına çevir (Case-insensitive)
-        p_key = period.lower()
+        # Zaman dilimini TvDatafeed formatına çevir
         interval_map = {
-            "15m": Interval.in_15_minute,
-            "15M": Interval.in_15_minute,
-            "1h": Interval.in_1_hour,
-            "1H": Interval.in_1_hour,
-            "4h": Interval.in_4_hour,
-            "4H": Interval.in_4_hour,
-            "1d": Interval.in_daily,
-            "1D": Interval.in_daily,
-            "1w": Interval.in_weekly,
-            "1W": Interval.in_weekly,
-            "1m": Interval.in_monthly,
-            "1M": Interval.in_monthly
+            "15m": Interval.in_15_minute, "15M": Interval.in_15_minute,
+            "1h": Interval.in_1_hour, "1H": Interval.in_1_hour,
+            "4h": Interval.in_4_hour, "4H": Interval.in_4_hour,
+            "1d": Interval.in_daily, "1D": Interval.in_daily,
+            "1w": Interval.in_weekly, "1W": Interval.in_weekly,
+            "1m": Interval.in_monthly, "1M": Interval.in_monthly
         }
         interval = interval_map.get(period, Interval.in_daily)
         
         logger.info(f"{market_type.upper()} pazarı taranıyor ({period})...")
         
-        # Asenkron tarama
-        tasks = [
-            self.scan_symbol(sym, exc, interval, period, strategies)
-            for sym, exc in symbols
-        ]
-        
+        tasks = [self.scan_symbol(sym, exc, interval, period, strategies) for sym, exc in symbols]
         results = await asyncio.gather(*tasks)
-        total_scanned = len([r for r in results if r is not None])
         results = [r for r in results if r is not None]
+        total_scanned = len(results)
         
         # Sinyalleri kategorize et
-        full_signals = []
-        smi_signals = []
-        rsi_signals = []
-        new_scan_signals = []
-        rsi_macd_signals = []
-        ema_signals = []
-        macd_cross_signals = []
+        full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals = [], [], [], [], [], [], []
         
         for result in results:
-            # SMI/MACD sinyalleri
+            sym, p, bar_time, close = result["symbol"], period, result["bar_time"], result["close"]
+            
+            # SMI/MACD
             if "smi_macd" in result["signals"]:
-                smi_result = result["signals"]["smi_macd"]
-                
-                if smi_result["full_buy_signal"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "smi_macd", result["bar_time"]):
-                        full_signals.append(result)
-                        self.state.mark_signal_sent(result["symbol"], period, "smi_macd", result["bar_time"])
-                
-                elif smi_result["smi_macd_buy"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "smi_macd", result["bar_time"]):
-                        smi_signals.append(result)
-                        self.state.mark_signal_sent(result["symbol"], period, "smi_macd", result["bar_time"])
+                smi_res = result["signals"]["smi_macd"]
+                if smi_res["full_buy_signal"] and not self.state.is_signal_sent(sym, p, "smi_macd", bar_time):
+                    full_signals.append(result)
+                    self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close)
+                elif smi_res["smi_macd_buy"] and not self.state.is_signal_sent(sym, p, "smi_macd", bar_time):
+                    smi_signals.append(result)
+                    self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close)
             
-            # RSI sinyalleri
-            if "rsi" in result["signals"]:
-                rsi_result = result["signals"]["rsi"]
-                
-                if rsi_result["signal"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "rsi", result["bar_time"]):
-                        rsi_signals.append(result)
-                        self.state.mark_signal_sent(result["symbol"], period, "rsi", result["bar_time"])
+            # RSI
+            if "rsi" in result["signals"] and result["signals"]["rsi"]["signal"] and not self.state.is_signal_sent(sym, p, "rsi", bar_time):
+                rsi_signals.append(result)
+                self.state.mark_signal_sent(sym, p, "rsi", bar_time, close)
             
-            # Yeni Tarama sinyalleri
-            if "new_scan" in result["signals"]:
-                new_scan_result = result["signals"]["new_scan"]
-                
-                if new_scan_result["signal"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "new_scan", result["bar_time"]):
-                        new_scan_signals.append(result)
-                        self.state.mark_signal_sent(result["symbol"], period, "new_scan", result["bar_time"])
+            # New Scan
+            if "new_scan" in result["signals"] and result["signals"]["new_scan"]["signal"] and not self.state.is_signal_sent(sym, p, "new_scan", bar_time):
+                new_scan_signals.append(result)
+                self.state.mark_signal_sent(sym, p, "new_scan", bar_time, close)
             
-            # RSI + MACD sinyalleri
-            if "rsi_macd" in result["signals"]:
-                rsi_macd_result = result["signals"]["rsi_macd"]
-                
-                if rsi_macd_result["signal"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "rsi_macd", result["bar_time"]):
-                        rsi_macd_signals.append(result)
-                        self.state.mark_signal_sent(result["symbol"], period, "rsi_macd", result["bar_time"])
+            # RSI MACD
+            if "rsi_macd" in result["signals"] and result["signals"]["rsi_macd"]["signal"] and not self.state.is_signal_sent(sym, p, "rsi_macd", bar_time):
+                rsi_macd_signals.append(result)
+                self.state.mark_signal_sent(sym, p, "rsi_macd", bar_time, close)
             
-            # EMA sinyalleri
-            if "ema" in result["signals"]:
-                ema_result = result["signals"]["ema"]
-                
-                if ema_result["signal"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "ema", result["bar_time"]):
-                        ema_signals.append(result)
-                        self.state.mark_signal_sent(result["symbol"], period, "ema", result["bar_time"])
+            # EMA
+            if "ema" in result["signals"] and result["signals"]["ema"]["signal"] and not self.state.is_signal_sent(sym, p, "ema", bar_time):
+                ema_signals.append(result)
+                self.state.mark_signal_sent(sym, p, "ema", bar_time, close)
             
-            # MACD Pozitif Kesişim sinyalleri
-            if "macd_cross" in result["signals"]:
-                macd_cross_result = result["signals"]["macd_cross"]
-                
-                if macd_cross_result["signal"]:
-                    if not self.state.is_signal_sent(result["symbol"], period, "macd_cross", result["bar_time"]):
-                        macd_cross_signals.append(result)
-                        self.state.mark_signal_sent(result["symbol"], period, "macd_cross", result["bar_time"])
+            # MACD Cross
+            if "macd_cross" in result["signals"] and result["signals"]["macd_cross"]["signal"] and not self.state.is_signal_sent(sym, p, "macd_cross", bar_time):
+                macd_cross_signals.append(result)
+                self.state.mark_signal_sent(sym, p, "macd_cross", bar_time, close)
         
-        # Durumu kaydet
         self.state.save()
-        
-        logger.info(f"Tarama tamamlandı: {total_scanned} sembol tarandı. {len(full_signals)} tam sinyal, {len(smi_signals)} SMI sinyali, {len(rsi_signals)} RSI sinyali, {len(new_scan_signals)} yeni tarama sinyali, {len(rsi_macd_signals)} RSI+MACD sinyali, {len(ema_signals)} EMA sinyali, {len(macd_cross_signals)} MACD kesişim sinyali")
-        
         return full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, total_scanned
