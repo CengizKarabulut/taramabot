@@ -1,6 +1,6 @@
 """
 Taramabot Zamanlayıcı Modülü
-Botun belirli saatlerde (10:30-18:30) çalışmasını sağlar.
+Belirli saatlerde ve sadece hafta içi çalışmasını sağlar.
 """
 
 import asyncio
@@ -9,11 +9,7 @@ from datetime import datetime, time, timedelta
 from typing import Callable, Optional
 import pytz
 
-from config import (
-    SCAN_START_HOUR, SCAN_START_MINUTE,
-    SCAN_END_HOUR, SCAN_END_MINUTE,
-    SCAN_INTERVAL_MINUTES
-)
+from config import SCAN_TIMES, SCAN_WEEKENDS
 
 logger = logging.getLogger(__name__)
 
@@ -34,63 +30,52 @@ class Scheduler:
         return datetime.now(TZ_TURKEY)
     
     @staticmethod
-    def is_within_scan_hours() -> bool:
-        """Şu anki saat, tarama saatleri içinde mi?"""
-        now = Scheduler.get_current_time()
-        current_time = now.time()
-        
-        start_time = time(SCAN_START_HOUR, SCAN_START_MINUTE)
-        end_time = time(SCAN_END_HOUR, SCAN_END_MINUTE)
-        
-        return start_time <= current_time <= end_time
-    
+    def get_scan_times() -> list[time]:
+        """Konfigürasyondaki tarama saatlerini time objesi olarak al."""
+        times = []
+        for t_str in SCAN_TIMES:
+            hour, minute = map(int, t_str.split(':'))
+            times.append(time(hour, minute))
+        return sorted(times)
+
+    @staticmethod
+    def is_scan_day(dt: datetime) -> bool:
+        """Verilen tarih tarama günü mü? (Haftasonu kontrolü)"""
+        if not SCAN_WEEKENDS and dt.weekday() >= 5:  # 5: Cumartesi, 6: Pazar
+            return False
+        return True
+
     @staticmethod
     def get_next_scan_time() -> datetime:
-        """Sonraki tarama saatini al."""
+        """Sonraki tarama saatini hesapla."""
         now = Scheduler.get_current_time()
-        current_time = now.time()
+        scan_times = Scheduler.get_scan_times()
         
-        start_time = time(SCAN_START_HOUR, SCAN_START_MINUTE)
-        end_time = time(SCAN_END_HOUR, SCAN_END_MINUTE)
+        # Bugün için sonraki saatleri kontrol et
+        if Scheduler.is_scan_day(now):
+            for s_time in scan_times:
+                if s_time > now.time():
+                    return now.replace(
+                        hour=s_time.hour,
+                        minute=s_time.minute,
+                        second=0,
+                        microsecond=0
+                    )
         
-        # Eğer tarama saatleri içindeyse, sonraki tarama saatini hesapla
-        if start_time <= current_time <= end_time:
-            # Sonraki tarama saati
-            next_scan = now + timedelta(minutes=SCAN_INTERVAL_MINUTES)
-            
-            # Eğer tarama saatleri dışına çıkacaksa, ertesi gün başlangıç saatine ayarla
-            if next_scan.time() > end_time:
-                next_scan = next_scan + timedelta(days=1)
-                next_scan = next_scan.replace(
-                    hour=SCAN_START_HOUR,
-                    minute=SCAN_START_MINUTE,
-                    second=0,
-                    microsecond=0
-                )
-            
-            return next_scan
+        # Bugün bitti veya bugün haftasonu, sonraki günlere bak
+        next_day = now + timedelta(days=1)
+        while not Scheduler.is_scan_day(next_day):
+            next_day += timedelta(days=1)
         
-        # Tarama saatleri dışındaysa, ertesi gün başlangıç saatine ayarla
-        if current_time > end_time:
-            # Ertesi gün
-            next_scan = now + timedelta(days=1)
-            next_scan = next_scan.replace(
-                hour=SCAN_START_HOUR,
-                minute=SCAN_START_MINUTE,
-                second=0,
-                microsecond=0
-            )
-        else:
-            # Bugün
-            next_scan = now.replace(
-                hour=SCAN_START_HOUR,
-                minute=SCAN_START_MINUTE,
-                second=0,
-                microsecond=0
-            )
-        
-        return next_scan
-    
+        # Bir sonraki çalışma gününün ilk saati
+        first_scan_time = scan_times[0]
+        return next_day.replace(
+            hour=first_scan_time.hour,
+            minute=first_scan_time.minute,
+            second=0,
+            microsecond=0
+        )
+
     @staticmethod
     def get_wait_seconds() -> int:
         """Sonraki taramaya kadar beklenecek saniye sayısını al."""
@@ -107,41 +92,33 @@ class Scheduler:
     ) -> None:
         """
         Zamanlayıcıyı başlat.
-        
-        Args:
-            scan_func: Çalıştırılacak tarama fonksiyonu (async)
-            market_type: Pazar türü
-            period: Zaman dilimi
         """
         self.is_running = True
         logger.info(f"Zamanlayıcı başlatılıyor (Türkiye saati: {self.get_current_time()})")
-        logger.info(f"Tarama saatleri: {SCAN_START_HOUR}:{SCAN_START_MINUTE:02d} - {SCAN_END_HOUR}:{SCAN_END_MINUTE:02d}")
-        logger.info(f"Tarama aralığı: {SCAN_INTERVAL_MINUTES} dakika")
+        logger.info(f"Planlanan tarama saatleri: {SCAN_TIMES}")
+        logger.info(f"Haftasonu çalışma: {SCAN_WEEKENDS}")
         
         while self.is_running:
             try:
-                if self.is_within_scan_hours():
-                    logger.info(f"Tarama başlatılıyor ({market_type.upper()}, {period})...")
+                wait_seconds = self.get_wait_seconds()
+                next_scan = Scheduler.get_next_scan_time()
+                
+                if wait_seconds > 0:
+                    logger.info(f"Sonraki tarama bekliyor: {next_scan.strftime('%Y-%m-%d %H:%M:%S')} ({wait_seconds} saniye sonra)")
+                    # Çok uzun beklemelerde ara ara kontrol etmek için max 5 dakika bekle
+                    await asyncio.sleep(min(wait_seconds, 300))
+                else:
+                    # Tarama saati geldi
+                    logger.info(f"Tarama saati geldi, başlatılıyor ({market_type.upper()}, {period})...")
                     await scan_func(market_type, period)
                     
-                    # Sonraki tarama saatine kadar bekle
-                    wait_seconds = self.get_wait_seconds()
-                    # Eğer bekleme süresi çok kısaysa (örneğin 0 veya negatif), en az 60 saniye bekle
-                    if wait_seconds < 60:
-                        wait_seconds = SCAN_INTERVAL_MINUTES * 60
-                    
-                    logger.info(f"Sonraki tarama: {(self.get_current_time() + timedelta(seconds=wait_seconds)).strftime('%H:%M:%S')} ({wait_seconds} saniye sonra)")
-                    await asyncio.sleep(wait_seconds)
-                else:
-                    # Tarama saatleri dışında, sonraki tarama saatine kadar bekle
-                    wait_seconds = self.get_wait_seconds()
-                    next_scan = self.get_next_scan_time()
-                    logger.info(f"Tarama saatleri dışında. Sonraki tarama: {next_scan.strftime('%H:%M:%S')} ({wait_seconds} saniye sonra)")
-                    await asyncio.sleep(min(wait_seconds, 300))  # Max 5 dakika bekle
+                    # Aynı dakikada tekrar çalışmaması için biraz bekle
+                    logger.info("Tarama tamamlandı, bir sonraki periyot için bekleniyor...")
+                    await asyncio.sleep(61) 
             
             except Exception as e:
                 logger.error(f"Zamanlayıcı hatası: {str(e)}")
-                await asyncio.sleep(60)  # Hata durumunda 1 dakika bekle
+                await asyncio.sleep(60)
     
     def stop(self) -> None:
         """Zamanlayıcıyı durdur."""
