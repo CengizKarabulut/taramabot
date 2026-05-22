@@ -2,7 +2,7 @@ name: Weekly Performance Report
 
 on:
   schedule:
-    # Cuma akşamı 20:00 TRT (UTC 17:00)
+    # Cuma akşamı 18:30 TRT (UTC 15:30)
     - cron: "0 17 * * 5"
   workflow_dispatch:
 
