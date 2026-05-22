@@ -1,23 +1,16 @@
-name: Auto Market Scanner (Custom Times TRT)
+name: Auto Market Scanner (Smart Scheduler)
 
 on:
   schedule:
-    # Türkiye Saati (UTC+3) -> UTC Dönüşümü:
-    # 09:30 TRT -> 06:30 UTC
-    # 12:30 TRT -> 09:30 UTC
-    # 15:30 TRT -> 12:30 UTC
-    # 17:15 TRT -> 14:15 UTC
-    # 18:30 TRT -> 15:30 UTC
-    # Haftasonu (Cumartesi-Pazar) çalışmaması için: 1-5 (Pazartesi-Cuma)
-    - cron: "30 6,9,12,15 * * 1-5"
-    - cron: "15 14 * * 1-5"
+    # Her 15 dakikada bir çalışarak tarama saatlerini kollar.
+    # GitHub gecikse bile 45 dakikalık tolerans sayesinde taramayı kaçırmaz.
+    # Türkiye saati ile 09:00 - 19:00 arasını kapsar.
+    - cron: "*/15 6-16 * * 1-5"
   workflow_dispatch:
 
-# state.json'u depoya geri yazabilmek için yazma izni gerekli
 permissions:
   contents: write
 
-# Aynı anda iki çalışmanın state.json push'unu çakıştırmamak için
 concurrency:
   group: auto-scan-state
   cancel-in-progress: false
@@ -49,12 +42,9 @@ jobs:
         run: |
           if [ -n "$TV_COOKIES" ]; then
             echo "$TV_COOKIES" > tv_cookies.txt
-            echo "Cookies yazıldı."
-          else
-            echo "⚠️  TV_COOKIES secret yok, anonim devam edilecek."
           fi
 
-      - name: 🔍 Run Market Scan (ALL PERIODS)
+      - name: 🔍 Run Market Scan (Smart Mode)
         env:
           TV_USERNAME: ${{ secrets.TV_USERNAME }}
           TV_PASSWORD: ${{ secrets.TV_PASSWORD }}
@@ -62,51 +52,17 @@ jobs:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: |
-          echo "🚀 ÇOKLU TARAMA BAŞLIYOR..."
-          # Tüm periyotları (15m, 1H, 4H, 1D, 1W, 1M) sırayla tarar
-          python main.py multi bist
+          # 'auto' komutu ile bot sadece zamanı gelmişse çalışır
+          python main.py auto
 
-      - name: 💾 Persist state.json (depoya geri yaz)
+      - name: 💾 Persist state.json
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Olası uzaktan değişiklikleri al, çakışmada yerel state.json'u koru
           git pull --rebase --autostash origin ${{ github.ref_name }} || true
           git add state.json
-          if git diff --staged --quiet; then
-            echo "state.json değişmedi, commit gerekmiyor."
-          else
+          if ! git diff --staged --quiet; then
             git commit -m "chore: update state.json [skip ci]"
             git push origin HEAD:${{ github.ref_name }}
-            echo "state.json depoya kaydedildi."
-          fi
-
-      - name: 📊 Upload scan results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: scan-results-${{ github.run_number }}
-          path: |
-            state.json
-            screenshots/*.png
-          retention-days: 7
-
-      - name: 📧 Send completion notification
-        if: always()
-        env:
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-        run: |
-          if [ -n "$TG_BOT_TOKEN" ] && [ -n "$TG_CHAT_ID" ]; then
-            TR_TIME=$(TZ='Europe/Istanbul' date '+%Y-%m-%d %H:%M')
-            if [ "${{ job.status }}" == "success" ]; then
-              MESSAGE="✅ Tüm Taramalar Tamamlandı! (15m, 1H, 4H, 1D, 1W, 1M)%0A🕐 $TR_TIME%0A📁 Grafikler Telegram'a gönderildi."
-            else
-              MESSAGE="❌ Tarama HATALI!%0A🕐 $TR_TIME%0A⚠️ Lütfen GitHub Actions loglarını kontrol edin."
-            fi
-            curl -s -X POST "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
-              -d "chat_id=${TG_CHAT_ID}" \
-              -d "text=${MESSAGE}" \
-              -d "parse_mode=HTML" || true
           fi
