@@ -2,14 +2,38 @@ name: Weekly Performance Report
 
 on:
   schedule:
-    # Cuma akşamı 18:30 TRT (UTC 15:30)
+    # Cuma günü TRT 20:00 (UTC 17:00). GitHub Actions zaman zaman gecikebilir;
+    # ekrana erken gelmesi için saati erken alabilirsin.
     - cron: "0 17 * * 5"
   workflow_dispatch:
+    inputs:
+      strategy:
+        description: 'Hangi strateji için rapor üretilsin?'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - smi_macd
+          - rsi
+          - new_scan
+          - rsi_macd
+          - ema
+          - macd_cross
 
 jobs:
   report:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
+    strategy:
+      # Bir strateji çökse bile diğerleri devam etsin
+      fail-fast: false
+      # Aynı anda 2 paralel job: tvdatafeed rate-limit'ine takılmamak için tutuyoruz
+      max-parallel: 2
+      matrix:
+        strategy: [smi_macd, rsi, new_scan, rsi_macd, ema, macd_cross]
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -25,15 +49,29 @@ jobs:
           pip install --upgrade pip
           pip install requests python-dotenv pandas numpy
           pip install git+https://github.com/saidsurucu/borsapy.git
-          # DİKKAT: Projenin geri kalanıyla aynı (çalışan) tvdatafeed kaynağı.
           pip install git+https://github.com/rongardF/tvdatafeed.git
 
-      - name: 📊 Generate and Send Weekly Report
+      - name: 🔎 Should this matrix entry run?
+        id: gate
+        run: |
+          # workflow_dispatch ile 'all' veya bu stratejinin kendisi seçilirse,
+          # ya da schedule ile tetiklenirse çalıştır
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "run=true" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.inputs.strategy }}" = "all" ] || \
+               [ "${{ github.event.inputs.strategy }}" = "${{ matrix.strategy }}" ]; then
+            echo "run=true" >> $GITHUB_OUTPUT
+          else
+            echo "run=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📊 Generate and Send Report (${{ matrix.strategy }})
+        if: steps.gate.outputs.run == 'true'
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
-          # Opsiyonel: anonim tvdatafeed limitlerine takılmamak için ekleyin
           TV_USERNAME: ${{ secrets.TV_USERNAME }}
           TV_PASSWORD: ${{ secrets.TV_PASSWORD }}
         run: |
-          python weekly_report.py
+          echo "🚀 ${{ matrix.strategy }} haftalık raporu hazırlanıyor..."
+          python weekly_report.py ${{ matrix.strategy }}
