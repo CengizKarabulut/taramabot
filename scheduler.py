@@ -1,15 +1,17 @@
 """
 Taramabot Zamanlayıcı Modülü
-Belirli saatlerde ve sadece hafta içi çalışmasını sağlar.
+GitHub Actions gecikmelerine karşı dayanıklı akıllı zamanlama sistemi.
 """
 
 import asyncio
 import logging
+import json
+import os
 from datetime import datetime, time, timedelta
 from typing import Callable, Optional
 import pytz
 
-from config import SCAN_TIMES, SCAN_WEEKENDS
+from config import SCAN_TIMES, SCAN_WEEKENDS, STATE_FILE
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +24,6 @@ class Scheduler:
     
     def __init__(self):
         self.is_running = False
-        self.scan_task: Optional[asyncio.Task] = None
     
     @staticmethod
     def get_current_time() -> datetime:
@@ -46,92 +47,91 @@ class Scheduler:
         return True
 
     @staticmethod
-    def get_next_scan_time() -> datetime:
-        """Sonraki tarama saatini hesapla."""
-        now = Scheduler.get_current_time()
-        scan_times = Scheduler.get_scan_times()
-        
-        # Bugün için sonraki saatleri kontrol et
-        if Scheduler.is_scan_day(now):
-            for s_time in scan_times:
-                if s_time > now.time():
-                    return now.replace(
-                        hour=s_time.hour,
-                        minute=s_time.minute,
-                        second=0,
-                        microsecond=0
-                    )
-        
-        # Bugün bitti veya bugün haftasonu, sonraki günlere bak
-        next_day = now + timedelta(days=1)
-        while not Scheduler.is_scan_day(next_day):
-            next_day += timedelta(days=1)
-        
-        # Bir sonraki çalışma gününün ilk saati
-        first_scan_time = scan_times[0]
-        return next_day.replace(
-            hour=first_scan_time.hour,
-            minute=first_scan_time.minute,
-            second=0,
-            microsecond=0
-        )
+    def get_last_scan_state() -> dict:
+        """Son yapılan taramaların durumunu state.json'dan oku."""
+        if os.path.exists(STATE_FILE):
+            try:
+                with open(STATE_FILE, 'r') as f:
+                    data = json.load(f)
+                    return data.get("last_successful_scans", {})
+            except:
+                return {}
+        return {}
 
     @staticmethod
-    def get_wait_seconds() -> int:
-        """Sonraki taramaya kadar beklenecek saniye sayısını al."""
-        next_scan = Scheduler.get_next_scan_time()
-        now = Scheduler.get_current_time()
-        wait_delta = next_scan - now
-        return max(0, int(wait_delta.total_seconds()))
-    
-    async def start(
-        self,
-        scan_func: Callable,
-        market_type: str = "bist",
-        period: str = "1D"
-    ) -> None:
-        """
-        Zamanlayıcıyı başlat.
-        """
-        self.is_running = True
-        logger.info(f"Zamanlayıcı başlatılıyor (Türkiye saati: {self.get_current_time()})")
-        logger.info(f"Planlanan tarama saatleri: {SCAN_TIMES}")
-        logger.info(f"Haftasonu çalışma: {SCAN_WEEKENDS}")
-        
-        while self.is_running:
+    def save_scan_state(scan_key: str):
+        """Başarılı taramayı state.json'a kaydet."""
+        data = {}
+        if os.path.exists(STATE_FILE):
             try:
-                wait_seconds = self.get_wait_seconds()
-                next_scan = Scheduler.get_next_scan_time()
-                
-                if wait_seconds > 0:
-                    logger.info(f"Sonraki tarama bekliyor: {next_scan.strftime('%Y-%m-%d %H:%M:%S')} ({wait_seconds} saniye sonra)")
-                    # Çok uzun beklemelerde ara ara kontrol etmek için max 5 dakika bekle
-                    await asyncio.sleep(min(wait_seconds, 300))
-                else:
-                    # Tarama saati geldi
-                    logger.info(f"Tarama saati geldi, başlatılıyor ({market_type.upper()}, {period})...")
-                    await scan_func(market_type, period)
-                    
-                    # Aynı dakikada tekrar çalışmaması için biraz bekle
-                    logger.info("Tarama tamamlandı, bir sonraki periyot için bekleniyor...")
-                    await asyncio.sleep(61) 
+                with open(STATE_FILE, 'r') as f:
+                    data = json.load(f)
+            except:
+                data = {}
+        
+        if "last_successful_scans" not in data:
+            data["last_successful_scans"] = {}
+        
+        data["last_successful_scans"][scan_key] = datetime.now(TZ_TURKEY).strftime("%Y-%m-%d %H:%M:%S")
+        
+        with open(STATE_FILE, 'w') as f:
+            json.dump(data, f, indent=2)
+
+    @staticmethod
+    def should_run_now() -> Optional[str]:
+        """
+        Şu an bir tarama yapılması gerekiyor mu?
+        GitHub Actions gecikmelerini tolere etmek için 30 dakikalık bir pencere kullanır.
+        """
+        now = Scheduler.get_current_time()
+        
+        if not Scheduler.is_scan_day(now):
+            logger.info("Bugün haftasonu, tarama yapılmayacak.")
+            return None
             
-            except Exception as e:
-                logger.error(f"Zamanlayıcı hatası: {str(e)}")
-                await asyncio.sleep(60)
-    
-    def stop(self) -> None:
-        """Zamanlayıcıyı durdur."""
-        self.is_running = False
-        logger.info("Zamanlayıcı durduruldu")
+        scan_times = Scheduler.get_scan_times()
+        last_scans = Scheduler.get_last_scan_state()
+        today_str = now.strftime("%Y-%m-%d")
+
+        for s_time in scan_times:
+            # Tarama vaktinden itibaren 45 dakika boyunca bu taramayı yapmaya çalışır (gecikme toleransı)
+            scan_start = now.replace(hour=s_time.hour, minute=s_time.minute, second=0, microsecond=0)
+            scan_end = scan_start + timedelta(minutes=45)
+            
+            scan_key = f"{today_str}_{s_time.strftime('%H:%M')}"
+            
+            if scan_start <= now <= scan_end:
+                if scan_key not in last_scans:
+                    return scan_key
+                else:
+                    logger.info(f"{s_time.strftime('%H:%M')} taraması bugün zaten yapılmış.")
+            
+        return None
+
+    async def run_once_if_needed(self, scan_func: Callable, market_type: str = "bist"):
+        """GitHub Actions gibi tek seferlik çalışmalarda kullanılır."""
+        scan_key = self.should_run_now()
+        if scan_key:
+            logger.info(f"Uygun tarama vakti bulundu: {scan_key}. Tarama başlatılıyor...")
+            await scan_func(market_type)
+            self.save_scan_state(scan_key)
+            logger.info(f"Tarama başarıyla tamamlandı ve {scan_key} olarak kaydedildi.")
+        else:
+            logger.info("Şu an planlanmış bir tarama vakti değil veya bekleyen tarama yok.")
+
+    async def start(self, scan_func: Callable, market_type: str = "bist", period: str = "1D") -> None:
+        """Sürekli çalışan (server) modu için zamanlayıcı."""
+        self.is_running = True
+        logger.info("Sürekli zamanlayıcı başlatıldı.")
+        while self.is_running:
+            await self.run_once_if_needed(scan_func, market_type)
+            await asyncio.sleep(60) # Her dakika kontrol et
 
 
 # Global singleton instance
 _scheduler_instance: Optional[Scheduler] = None
 
-
 def get_scheduler() -> Scheduler:
-    """Singleton zamanlayıcıyı al."""
     global _scheduler_instance
     if _scheduler_instance is None:
         _scheduler_instance = Scheduler()

@@ -191,11 +191,17 @@ async def run_bot():
         elif command == "multi":
             market_type = sys.argv[2].lower() if len(sys.argv) > 2 else "bist"
             await run_multi_scan(market_type)
+        elif command == "auto":
+            # GitHub Actions için akıllı mod
+            from scheduler import get_scheduler
+            scheduler = get_scheduler()
+            await scheduler.run_once_if_needed(run_multi_scan, market_type="bist")
         else:
             logger.warning(f"Bilinmeyen komut: {command}")
             sys.exit(1)
     else:
-        scheduler = Scheduler()
+        from scheduler import get_scheduler
+        scheduler = get_scheduler()
         await scheduler.start(run_multi_scan, market_type="bist")
 
 
