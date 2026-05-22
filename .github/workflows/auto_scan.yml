@@ -1,9 +1,16 @@
-name: Auto Market Scanner (Hourly 10:30-18:30 TRT)
+name: Auto Market Scanner (Custom Times TRT)
 
 on:
   schedule:
-    # Türkiye saati ile 10:30 - 18:30 arası her saat başı (UTC 7:30 - 15:30)
-    - cron: "30 7-15 * * *"
+    # Türkiye Saati (UTC+3) -> UTC Dönüşümü:
+    # 09:30 TRT -> 06:30 UTC
+    # 12:30 TRT -> 09:30 UTC
+    # 15:30 TRT -> 12:30 UTC
+    # 17:15 TRT -> 14:15 UTC
+    # 18:30 TRT -> 15:30 UTC
+    # Haftasonu (Cumartesi-Pazar) çalışmaması için: 1-5 (Pazartesi-Cuma)
+    - cron: "30 6,9,12,15 * * 1-5"
+    - cron: "15 14 * * 1-5"
   workflow_dispatch:
 
 # state.json'u depoya geri yazabilmek için yazma izni gerekli
