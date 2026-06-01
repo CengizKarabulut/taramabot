@@ -37,13 +37,13 @@ async def run_strategy_scan(market_type="bist"):
             # Sadece bu stratejiye ait sinyalleri gönder
             telegram_sender.send_grouped_summary(
                 period=p,
-                full_signals=full_signals if "rsi_macd" == "smi_macd" else [],
-                smi_signals=smi_signals if "rsi_macd" == "smi_macd" else [],
-                rsi_signals=rsi_signals if "rsi_macd" == "rsi" else [],
-                new_scan_signals=new_scan_signals if "rsi_macd" == "new_scan" else [],
-                rsi_macd_signals=rsi_macd_signals if "rsi_macd" == "rsi_macd" else [],
-                ema_signals=ema_signals if "rsi_macd" == "ema" else [],
-                macd_cross_signals=macd_cross_signals if "rsi_macd" == "macd_cross" else []
+                full_signals=[],
+                smi_signals=[],
+                rsi_signals=[],
+                new_scan_signals=[],
+                rsi_macd_signals=rsi_macd_signals,
+                ema_signals=[],
+                macd_cross_signals=[]
             )
         except Exception as e:
             logger.error(f"Hata: {str(e)}")

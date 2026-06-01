@@ -81,7 +81,7 @@ class Scheduler:
     def should_run_now() -> Optional[str]:
         """
         Şu an bir tarama yapılması gerekiyor mu?
-        GitHub Actions gecikmelerini tolere etmek için 30 dakikalık bir pencere kullanır.
+        Gecikmeleri tolere etmek için geçmişteki ama bugün henüz yapılmamış taramaları kontrol eder.
         """
         now = Scheduler.get_current_time()
         
@@ -93,18 +93,25 @@ class Scheduler:
         last_scans = Scheduler.get_last_scan_state()
         today_str = now.strftime("%Y-%m-%d")
 
-        for s_time in scan_times:
-            # Tarama vaktinden itibaren 45 dakika boyunca bu taramayı yapmaya çalışır (gecikme toleransı)
-            scan_start = now.replace(hour=s_time.hour, minute=s_time.minute, second=0, microsecond=0)
-            scan_end = scan_start + timedelta(minutes=45)
+        # Tarama saatlerini tersten kontrol et (en sonuncudan başlayarak)
+        for s_time in reversed(scan_times):
+            scan_dt = now.replace(hour=s_time.hour, minute=s_time.minute, second=0, microsecond=0)
             
-            scan_key = f"{today_str}_{s_time.strftime('%H:%M')}"
-            
-            if scan_start <= now <= scan_end:
+            # Eğer şu anki zaman, tarama vaktinden sonraysa
+            if now >= scan_dt:
+                scan_key = f"{today_str}_{s_time.strftime('%H:%M')}"
+                
+                # Ve bu tarama bugün henüz yapılmamışsa
                 if scan_key not in last_scans:
-                    return scan_key
+                    # Çok eski bir taramayı (örn: 3 saatten fazla geçmiş) yapma
+                    if now <= scan_dt + timedelta(hours=3):
+                        return scan_key
+                    else:
+                        logger.info(f"{s_time.strftime('%H:%M')} taraması üzerinden çok zaman geçmiş (3 saat+), atlanıyor.")
                 else:
-                    logger.info(f"{s_time.strftime('%H:%M')} taraması bugün zaten yapılmış.")
+                    # En güncel tarama zaten yapılmışsa, daha eski olanlara bakmaya gerek yok
+                    logger.info(f"En güncel planlı tarama ({s_time.strftime('%H:%M')}) zaten yapılmış.")
+                    break
             
         return None
 

@@ -35,15 +35,16 @@ async def run_strategy_scan(market_type="bist"):
              rsi_macd_signals, ema_signals, macd_cross_signals, total_scanned) = results
             
             # Sadece bu stratejiye ait sinyalleri gönder
+            # Not: SMI/MACD stratejisi hem 'full_signals' hem de 'smi_signals' döndürebilir
             telegram_sender.send_grouped_summary(
                 period=p,
-                full_signals=full_signals if "smi_macd" == "smi_macd" else [],
-                smi_signals=smi_signals if "smi_macd" == "smi_macd" else [],
-                rsi_signals=rsi_signals if "smi_macd" == "rsi" else [],
-                new_scan_signals=new_scan_signals if "smi_macd" == "new_scan" else [],
-                rsi_macd_signals=rsi_macd_signals if "smi_macd" == "rsi_macd" else [],
-                ema_signals=ema_signals if "smi_macd" == "ema" else [],
-                macd_cross_signals=macd_cross_signals if "smi_macd" == "macd_cross" else []
+                full_signals=full_signals,
+                smi_signals=smi_signals,
+                rsi_signals=[],
+                new_scan_signals=[],
+                rsi_macd_signals=[],
+                ema_signals=[],
+                macd_cross_signals=[]
             )
         except Exception as e:
             logger.error(f"Hata: {str(e)}")
