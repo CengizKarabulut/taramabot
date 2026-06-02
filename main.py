@@ -65,8 +65,7 @@ async def main_scan_logic(market_type: str, period: str):
         # 2. İstatistik Mesajı (Her periyot sonunda mutlaka gönderilir)
         finish_msg = f"{EMOJI_SUCCESS} <b>Tarama Tamamlandı! ({period})</b>\n"
         finish_msg += f"⏱ {datetime.now(TZ_TURKEY).strftime('%Y-%m-%d %H:%M')}\n"
-        finish_msg += f"🔍 Toplam {total_scanned} hisse tarandı.\n"
-        finish_msg += f"📈 {len(ema_signals)} EMA, {len(rsi_macd_signals)} RSI+MACD, {len(new_scan_signals)} Özel, {len(full_signals)} Tam, {len(smi_signals)} SMI, {len(rsi_signals)} RSI, {len(macd_cross_signals)} MACD Kesişim sinyali bulundu."
+        finish_msg += f"🔍 {total_scanned} sembol tarandı."
         telegram_sender.send_message(finish_msg)
 
         # Sonuçları bir sonraki aşama (toplu özet) için döndür
@@ -114,13 +113,13 @@ def send_final_summary(all_results: list):
     symbol_map = {} # symbol -> { period -> [strategies] }
     
     strategy_names = {
-        "full": "Tam Alım",
-        "smi": "SMI/MACD",
-        "rsi": "RSI",
-        "new": "Özel Tarama",
-        "rsi_macd": "RSI+MACD+Hacim",
-        "ema": "EMA Dizilimi",
-        "macd_cross": "MACD Pozitif Kesişim"
+        "full": "S5",
+        "smi": "S6",
+        "rsi": "S7",
+        "new": "S4",
+        "rsi_macd": "S3",
+        "ema": "S2",
+        "macd_cross": "S1"
     }
     
     for res in all_results:

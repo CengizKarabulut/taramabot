@@ -19,6 +19,7 @@ load_dotenv()
 # ============================================================================
 TELEGRAM_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TG_CHAT_ID")
+TELEGRAM_THREAD_ID = os.getenv("TG_THREAD_ID")
 
 # ============================================================================
 # TRADİNGVİEW KONFİGÜRASYONU

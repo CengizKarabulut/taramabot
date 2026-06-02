@@ -136,8 +136,16 @@ class MarketScanner:
             # Veri çek
             df = self.tv.get_hist(symbol, exchange, interval=interval, n_bars=BARS_TO_FETCH)
             
-            if df is None or df.empty:
+            if df is None or df.empty or len(df) < 2:
                 return None
+            
+            # Endeks kapalıyken (BIST için) son verinin güncelliğini kontrol et
+            if exchange == "BIST":
+                last_bar_time = df.index[-1]
+                now = datetime.now(last_bar_time.tzinfo)
+                if interval in [Interval.in_15_minute, Interval.in_1_hour, Interval.in_4_hour]:
+                    if (now - last_bar_time).total_seconds() > 86400: # 24 saat
+                        return None
             
             # Son bar bilgisi
             last_bar = df.iloc[-1]

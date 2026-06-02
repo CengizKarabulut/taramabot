@@ -9,7 +9,7 @@ import requests
 import time
 from typing import Optional, List
 from config import (
-    TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, 
+    TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_THREAD_ID,
     EMOJI_FULL_SIGNAL, EMOJI_SMI_SIGNAL, EMOJI_RSI_SIGNAL, 
     EMOJI_NEW_SCAN_SIGNAL, EMOJI_RSI_MACD_SIGNAL, EMOJI_EMA_SIGNAL
 )
@@ -20,9 +20,10 @@ logger = logging.getLogger(__name__)
 class TelegramSender:
     """Telegram mesaj gönderici."""
     
-    def __init__(self, bot_token: str, chat_id: str):
+    def __init__(self, bot_token: str, chat_id: str, thread_id: Optional[str] = None):
         self.bot_token = bot_token
         self.chat_id = chat_id
+        self.thread_id = thread_id
         self.base_url = f"https://api.telegram.org/bot{bot_token}"
     
     def send_message(self, text: str, parse_mode: str = "HTML") -> bool:
@@ -41,6 +42,9 @@ class TelegramSender:
                 "parse_mode": parse_mode,
                 "disable_web_page_preview": True
             }
+            
+            if self.thread_id:
+                payload["message_thread_id"] = self.thread_id
             
             response = requests.post(url, json=payload, timeout=15)
             if response.status_code != 200:
@@ -101,14 +105,14 @@ class TelegramSender:
         p_name = period_names.get(period, period)
         
         header = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
-        header += f"<b>🔍 {p_name} TARAMA ÖZETİ</b>\n"
+        header += f"<b>🔍 {p_name}</b>\n"
         header += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
         
         # Tüm sinyalleri kontrol et
         all_empty = not any([full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals])
         
         if all_empty:
-            empty_msg = header + f"\n<b>ℹ️ SİNYAL BULUNAMADI</b>\n\n<i>{p_name} periyodunda kriterlere uygun hisse tespit edilemedi.</i>\n"
+            empty_msg = header + f"\n<b>ℹ️</b>\n\n<i>Sinyal yok.</i>\n"
             empty_msg += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
             return self.send_message(empty_msg)
 
@@ -116,15 +120,15 @@ class TelegramSender:
         self.send_message(header)
         time.sleep(0.5)
 
-        # Stratejileri tanımla
+        # Stratejileri tanımla (Gizli kodlar ile)
         strategies = [
-            (macd_cross_signals, "🟣", "MACD POZİTİF KESİŞİM", "RSI > 30 + MACD Kesişimi + MACD > 0"),
-            (ema_signals, EMOJI_EMA_SIGNAL, "EMA DİZİLİMİ + HACİM", "EMA(5,8,13) Kesişimi + EMA(21,55,200) Altı"),
-            (rsi_macd_signals, EMOJI_RSI_MACD_SIGNAL, "RSI + MACD + HACİM", "RSI(14) 50 Kes. + RSI < 70 + MACD Kes."),
-            (new_scan_signals, EMOJI_NEW_SCAN_SIGNAL, "ÖZEL TARAMA", "SMA Dizilimi + MACD Pozitif"),
-            (full_signals, EMOJI_FULL_SIGNAL, "TAM ALIM (GÜÇLÜ)", "SMI Kesişimi + MA200 Üstü + Hacim"),
-            (smi_signals, EMOJI_SMI_SIGNAL, "SMI/MACD ALIM", "SMI/MACD Pozitif Kesişim"),
-            (rsi_signals, EMOJI_RSI_SIGNAL, "RSI ALIM", "RSI > 60 + RSI 50 Kesişimi")
+            (macd_cross_signals, "🟣", "S1", ""),
+            (ema_signals, EMOJI_EMA_SIGNAL, "S2", ""),
+            (rsi_macd_signals, EMOJI_RSI_MACD_SIGNAL, "S3", ""),
+            (new_scan_signals, EMOJI_NEW_SCAN_SIGNAL, "S4", ""),
+            (full_signals, EMOJI_FULL_SIGNAL, "S5", ""),
+            (smi_signals, EMOJI_SMI_SIGNAL, "S6", ""),
+            (rsi_signals, EMOJI_RSI_SIGNAL, "S7", "")
         ]
 
         for signals, emoji, title, desc in strategies:
@@ -132,7 +136,7 @@ class TelegramSender:
                 continue
             
             # Her strateji için mesaj oluştur
-            strat_header = f"<b>{emoji} {title} SİNYALLERİ</b>\n<i>{desc}</i>\n\n"
+            strat_header = f"<b>{emoji} {title}</b>\n"
             
             # Sinyalleri 30'arlı gruplara böl (Mesaj boyutu kontrolü için)
             for i in range(0, len(signals), 30):
@@ -166,6 +170,6 @@ def get_telegram_sender() -> TelegramSender:
     """Singleton Telegram gönderici'yi al."""
     global _sender_instance
     if _sender_instance is None:
-        from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
-        _sender_instance = TelegramSender(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+        from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_THREAD_ID
+        _sender_instance = TelegramSender(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_THREAD_ID)
     return _sender_instance
