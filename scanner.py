@@ -18,7 +18,7 @@ from config import (
 )
 from indicators import (
     check_smi_macd_signal, check_rsi_signal, check_new_scan_signal, 
-    check_rsi_macd_scan_signal, check_ema_scan_signal, check_macd_positive_cross_signal
+    check_rsi_macd_scan_signal, check_ema_scan_signal, check_macd_positive_cross_signal, check_h8_smi_macd_positive_signal, check_i9_smi_macd_positive_full_signal
 )
 
 logger = logging.getLogger(__name__)
@@ -35,19 +35,19 @@ class ScannerState:
         """Durumu dosyadan yükle."""
         if not os.path.exists(self.state_file):
             logger.info(f"Durum dosyası bulunamadı: {self.state_file}. Yeni durum oluşturuluyor.")
-            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}}
+            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}, "last_sent_h8": {}, "last_sent_i9": {}}
         
         try:
             with open(self.state_file, "r", encoding="utf-8") as f:
                 state = json.load(f)
                 # Eksik anahtarları tamamla
-                for key in ["last_sent_smi_macd", "last_sent_rsi", "last_sent_new_scan", "last_sent_rsi_macd", "last_sent_ema", "last_sent_macd_cross"]:
+                for key in ["last_sent_smi_macd", "last_sent_rsi", "last_sent_new_scan", "last_sent_rsi_macd", "last_sent_ema", "last_sent_macd_cross", "last_sent_h8", "last_sent_i9"]:
                     if key not in state:
                         state[key] = {}
                 return state
         except (json.JSONDecodeError, FileNotFoundError) as e:
             logger.error(f"Durum dosyası yükleme hatası: {e}. Yeni durum oluşturuluyor.")
-            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}}
+            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}, "last_sent_h8": {}, "last_sent_i9": {}}
     
     def save(self) -> None:
         """Durumu dosyaya kaydet."""
@@ -67,7 +67,7 @@ class ScannerState:
             "new_scan": "last_sent_new_scan",
             "rsi_macd": "last_sent_rsi_macd",
             "ema": "last_sent_ema",
-            "macd_cross": "last_sent_macd_cross"
+            "macd_cross": "last_sent_macd_cross", "h8": "last_sent_h8", "i9": "last_sent_i9"
         }
         
         state_key = strategy_map.get(strategy)
@@ -87,7 +87,7 @@ class ScannerState:
             "new_scan": "last_sent_new_scan",
             "rsi_macd": "last_sent_rsi_macd",
             "ema": "last_sent_ema",
-            "macd_cross": "last_sent_macd_cross"
+            "macd_cross": "last_sent_macd_cross", "h8": "last_sent_h8", "i9": "last_sent_i9"
         }
         
         state_key = strategy_map.get(strategy)
@@ -177,6 +177,11 @@ class MarketScanner:
                 result["signals"]["ema"] = check_ema_scan_signal(df)
             if "macd_cross" in strategies:
                 result["signals"]["macd_cross"] = check_macd_positive_cross_signal(df)
+            if "h8" in strategies:
+                result["signals"]["h8"] = check_h8_smi_macd_positive_signal(df)
+            if "i9" in strategies:
+                result["signals"]["i9"] = check_i9_smi_macd_positive_full_signal(df)
+                result["signals"]["macd_cross"] = check_macd_positive_cross_signal(df)
             
             return result
             
@@ -189,7 +194,7 @@ class MarketScanner:
         market_type: str = "bist",
         period: str = "1D",
         strategies: List[str] = None
-    ) -> Tuple[List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], int]:
+    ) -> Tuple[List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], int]:
         """
         Pazarı tara.
         """
@@ -230,7 +235,7 @@ class MarketScanner:
         total_scanned = len(results)
         
         # Sinyalleri kategorize et
-        full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals = [], [], [], [], [], [], []
+        full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals = [], [], [], [], [], [], [], [], []
         
         for result in results:
             sym, p, bar_time, close = result["symbol"], period, result["bar_time"], result["close"]
@@ -270,5 +275,20 @@ class MarketScanner:
                 macd_cross_signals.append(result)
                 self.state.mark_signal_sent(sym, p, "macd_cross", bar_time, close)
         
+        
+            # H8
+            if "h8" in result["signals"] and result["signals"]["h8"]["signal"] and not self.state.is_signal_sent(sym, p, "h8", bar_time):
+                h8_signals.append(result)
+                self.state.mark_signal_sent(sym, p, "h8", bar_time, close)
+            # I9
+            if "i9" in result["signals"]:
+                i9_res = result["signals"]["i9"]
+                if i9_res["full_signal"] and not self.state.is_signal_sent(sym, p, "i9", bar_time):
+                    i9_signals.append(result)
+                    self.state.mark_signal_sent(sym, p, "i9", bar_time, close)
+                elif i9_res["h8_signal"] and not self.state.is_signal_sent(sym, p, "i9", bar_time):
+                    h8_signals.append(result)
+                    self.state.mark_signal_sent(sym, p, "i9", bar_time, close)
+        
         self.state.save()
-        return full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, total_scanned
+        return full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned

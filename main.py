@@ -44,10 +44,10 @@ async def main_scan_logic(market_type: str, period: str):
 
     try:
         # scan_market çağrısı (8 değer döndürür)
-        full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, total_scanned = await scanner.scan_market(
+        full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned = await scanner.scan_market(
             market_type=market_type,
             period=period,
-            strategies=["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross"]
+            strategies=["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross", "h8", "i9"]
         )
 
         # 1. Gruplanmış özet listeyi gönder (Sinyal olsun veya olmasın mesaj gönderilir)
@@ -59,7 +59,9 @@ async def main_scan_logic(market_type: str, period: str):
             new_scan_signals=new_scan_signals, 
             rsi_macd_signals=rsi_macd_signals, 
             ema_signals=ema_signals,
-            macd_cross_signals=macd_cross_signals
+            macd_cross_signals=macd_cross_signals,
+            h8_signals=h8_signals,
+            i9_signals=i9_signals
         )
         
         # 2. İstatistik Mesajı (Her periyot sonunda mutlaka gönderilir)
@@ -119,12 +121,14 @@ def send_final_summary(all_results: list):
         "new": "S4",
         "rsi_macd": "S3",
         "ema": "S2",
-        "macd_cross": "S1"
+        "macd_cross": "S1",
+        "h8": "S8",
+        "i9": "S9"
     }
     
     for res in all_results:
         p = res["period"]
-        for strat in ["full", "smi", "rsi", "new", "rsi_macd", "ema", "macd_cross"]:
+        for strat in ["full", "smi", "rsi", "new", "rsi_macd", "ema", "macd_cross", "h8", "i9"]:
             for item in res[strat]:
                 sym = item["symbol"]
                 if sym not in symbol_map:

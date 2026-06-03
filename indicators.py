@@ -522,3 +522,51 @@ def check_macd_positive_cross_signal(df: pd.DataFrame) -> dict:
             'macd_above_0': cond_macd_above_0
         }
     }
+
+def check_h8_smi_macd_positive_signal(df: pd.DataFrame) -> dict:
+    if df is None or df.empty or len(df) < 200:
+        return {'signal': False, 'details': {}}
+    smi, smi_ema = calc_smi(df)
+    macd, signal, hist = calc_macd(df)
+    last_smi = smi.iloc[-1]
+    prev_smi = smi.iloc[-2]
+    last_smi_ema = smi_ema.iloc[-1]
+    prev_smi_ema = smi_ema.iloc[-2]
+    last_hist = hist.iloc[-1]
+    prev_hist = hist.iloc[-2]
+    cross_up = prev_smi <= prev_smi_ema and last_smi > last_smi_ema
+    smi_pos = last_smi > 0
+    hist_pos = last_hist > 0
+    hist_up = last_hist > prev_hist
+    signal = cross_up and smi_pos and hist_pos and hist_up
+    return {
+        'signal': signal,
+        'details': {
+            'smi': last_smi, 'smi_ema': last_smi_ema, 'macd': macd.iloc[-1],
+            'signal': signal.iloc[-1], 'hist': last_hist, 'cross_up': cross_up,
+            'smi_positive': smi_pos, 'hist_positive': hist_pos, 'hist_up': hist_up
+        }
+    }
+
+def check_i9_smi_macd_positive_full_signal(df: pd.DataFrame) -> dict:
+    if df is None or df.empty or len(df) < 200:
+        return {'full_signal': False, 'h8_signal': False, 'details': {}}
+    h8_result = check_h8_smi_macd_positive_signal(df)
+    h8_signal = h8_result['signal']
+    smi, smi_ema = calc_smi(df)
+    macd, signal, hist = calc_macd(df)
+    ma200 = calc_ma200(df)
+    last = df.iloc[-1]
+    ma200_val = ma200.iloc[-1] if len(df) > 200 else 0
+    above_ma200 = last["close"] > ma200_val
+    vol_ma = df["volume"].rolling(20).mean().iloc[-1]
+    vol_ok = last["volume"] > (vol_ma * VOLUME_MULTIPLIER) if vol_ma > 0 else False
+    full_signal = h8_signal and above_ma200 and vol_ok
+    return {
+        'full_signal': full_signal, 'h8_signal': h8_signal,
+        'details': {
+            'smi': last_smi, 'smi_ema': smi_ema.iloc[-1], 'macd': macd.iloc[-1],
+            'signal': signal.iloc[-1], 'hist': last_hist, 'ma200': ma200_val,
+            'above_ma200': above_ma200, 'volume_ok': vol_ok
+        }
+    }
