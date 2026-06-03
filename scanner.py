@@ -214,7 +214,7 @@ class MarketScanner:
             symbols = CRYPTO
         else:
             logger.error(f"Bilinmeyen pazar türü: {market_type}")
-            return [], [], [], [], [], [], [], 0
+            return [], [], [], [], [], [], [], [], [], 0
         
         # Zaman dilimini TvDatafeed formatına çevir
         interval_map = {
