@@ -79,7 +79,9 @@ async def main_scan_logic(market_type: str, period: str):
             "new": new_scan_signals,
             "rsi_macd": rsi_macd_signals,
             "ema": ema_signals,
-            "macd_cross": macd_cross_signals
+            "macd_cross": macd_cross_signals,
+            "h8": h8_signals,
+            "i9": i9_signals
         }
 
     except Exception as e:

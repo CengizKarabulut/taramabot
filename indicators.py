@@ -538,9 +538,9 @@ def check_h8_smi_macd_positive_signal(df: pd.DataFrame) -> dict:
     smi_pos = last_smi > 0
     hist_pos = last_hist > 0
     hist_up = last_hist > prev_hist
-    signal = cross_up and smi_pos and hist_pos and hist_up
+    is_signal = cross_up and smi_pos and hist_pos and hist_up
     return {
-        'signal': signal,
+        'signal': is_signal,
         'details': {
             'smi': last_smi, 'smi_ema': last_smi_ema, 'macd': macd.iloc[-1],
             'signal': signal.iloc[-1], 'hist': last_hist, 'cross_up': cross_up,
@@ -557,6 +557,10 @@ def check_i9_smi_macd_positive_full_signal(df: pd.DataFrame) -> dict:
     macd, signal, hist = calc_macd(df)
     ma200 = calc_ma200(df)
     last = df.iloc[-1]
+    
+    last_smi = smi.iloc[-1]
+    last_hist = hist.iloc[-1]
+    
     ma200_val = ma200.iloc[-1] if len(df) > 200 else 0
     above_ma200 = last["close"] > ma200_val
     vol_ma = df["volume"].rolling(20).mean().iloc[-1]

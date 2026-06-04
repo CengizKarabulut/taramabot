@@ -286,9 +286,9 @@ class MarketScanner:
                 if i9_res["full_signal"] and not self.state.is_signal_sent(sym, p, "i9", bar_time):
                     i9_signals.append(result)
                     self.state.mark_signal_sent(sym, p, "i9", bar_time, close)
-                elif i9_res["h8_signal"] and not self.state.is_signal_sent(sym, p, "i9", bar_time):
+                elif i9_res["h8_signal"] and not self.state.is_signal_sent(sym, p, "h8", bar_time):
                     h8_signals.append(result)
-                    self.state.mark_signal_sent(sym, p, "i9", bar_time, close)
+                    self.state.mark_signal_sent(sym, p, "h8", bar_time, close)
         
         self.state.save()
         return full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned
