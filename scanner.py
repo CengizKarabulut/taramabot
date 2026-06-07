@@ -193,7 +193,8 @@ class MarketScanner:
         self,
         market_type: str = "bist",
         period: str = "1D",
-        strategies: List[str] = None
+        strategies: List[str] = None,
+        use_state: bool = True
     ) -> Tuple[List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], int]:
         """
         Pazarı tara.
@@ -243,52 +244,53 @@ class MarketScanner:
             # SMI/MACD
             if "smi_macd" in result["signals"]:
                 smi_res = result["signals"]["smi_macd"]
-                if smi_res["full_buy_signal"] and not self.state.is_signal_sent(sym, p, "smi_macd", bar_time):
+                if smi_res["full_buy_signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "smi_macd", bar_time)):
                     full_signals.append(result)
-                    self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close)
-                elif smi_res["smi_macd_buy"] and not self.state.is_signal_sent(sym, p, "smi_macd", bar_time):
+                    if use_state: self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close)
+                elif smi_res["smi_macd_buy"] and (not use_state or not self.state.is_signal_sent(sym, p, "smi_macd", bar_time)):
                     smi_signals.append(result)
-                    self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close)
+                    if use_state: self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close)
             
             # RSI
-            if "rsi" in result["signals"] and result["signals"]["rsi"]["signal"] and not self.state.is_signal_sent(sym, p, "rsi", bar_time):
+            if "rsi" in result["signals"] and result["signals"]["rsi"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "rsi", bar_time)):
                 rsi_signals.append(result)
-                self.state.mark_signal_sent(sym, p, "rsi", bar_time, close)
+                if use_state: self.state.mark_signal_sent(sym, p, "rsi", bar_time, close)
             
             # New Scan
-            if "new_scan" in result["signals"] and result["signals"]["new_scan"]["signal"] and not self.state.is_signal_sent(sym, p, "new_scan", bar_time):
+            if "new_scan" in result["signals"] and result["signals"]["new_scan"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "new_scan", bar_time)):
                 new_scan_signals.append(result)
-                self.state.mark_signal_sent(sym, p, "new_scan", bar_time, close)
+                if use_state: self.state.mark_signal_sent(sym, p, "new_scan", bar_time, close)
             
             # RSI MACD
-            if "rsi_macd" in result["signals"] and result["signals"]["rsi_macd"]["signal"] and not self.state.is_signal_sent(sym, p, "rsi_macd", bar_time):
+            if "rsi_macd" in result["signals"] and result["signals"]["rsi_macd"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "rsi_macd", bar_time)):
                 rsi_macd_signals.append(result)
-                self.state.mark_signal_sent(sym, p, "rsi_macd", bar_time, close)
+                if use_state: self.state.mark_signal_sent(sym, p, "rsi_macd", bar_time, close)
             
             # EMA
-            if "ema" in result["signals"] and result["signals"]["ema"]["signal"] and not self.state.is_signal_sent(sym, p, "ema", bar_time):
+            if "ema" in result["signals"] and result["signals"]["ema"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "ema", bar_time)):
                 ema_signals.append(result)
-                self.state.mark_signal_sent(sym, p, "ema", bar_time, close)
+                if use_state: self.state.mark_signal_sent(sym, p, "ema", bar_time, close)
             
             # MACD Cross
-            if "macd_cross" in result["signals"] and result["signals"]["macd_cross"]["signal"] and not self.state.is_signal_sent(sym, p, "macd_cross", bar_time):
+            if "macd_cross" in result["signals"] and result["signals"]["macd_cross"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "macd_cross", bar_time)):
                 macd_cross_signals.append(result)
-                self.state.mark_signal_sent(sym, p, "macd_cross", bar_time, close)
+                if use_state: self.state.mark_signal_sent(sym, p, "macd_cross", bar_time, close)
         
         
             # H8
-            if "h8" in result["signals"] and result["signals"]["h8"]["signal"] and not self.state.is_signal_sent(sym, p, "h8", bar_time):
+            if "h8" in result["signals"] and result["signals"]["h8"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "h8", bar_time)):
                 h8_signals.append(result)
-                self.state.mark_signal_sent(sym, p, "h8", bar_time, close)
+                if use_state: self.state.mark_signal_sent(sym, p, "h8", bar_time, close)
             # I9
             if "i9" in result["signals"]:
                 i9_res = result["signals"]["i9"]
-                if i9_res["full_signal"] and not self.state.is_signal_sent(sym, p, "i9", bar_time):
+                if i9_res["full_signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "i9", bar_time)):
                     i9_signals.append(result)
-                    self.state.mark_signal_sent(sym, p, "i9", bar_time, close)
-                elif i9_res["h8_signal"] and not self.state.is_signal_sent(sym, p, "h8", bar_time):
+                    if use_state: self.state.mark_signal_sent(sym, p, "i9", bar_time, close)
+                elif i9_res["h8_signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "h8", bar_time)):
                     h8_signals.append(result)
-                    self.state.mark_signal_sent(sym, p, "h8", bar_time, close)
+                    if use_state: self.state.mark_signal_sent(sym, p, "h8", bar_time, close)
         
-        self.state.save()
+        if use_state:
+            self.state.save()
         return full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned

@@ -136,12 +136,14 @@ def check_smi_macd_signal(df: pd.DataFrame) -> dict:
     prev_hist = hist.iloc[-2]
     
     # SMI/MACD Şartları
-    cross_up = prev_smi <= prev_smi_ema and last_smi > last_smi_ema
+    # Sadece o anki kesişim değil, SMI'nın EMA üzerinde olduğu ve yükseldiği durumu da kapsayalım
+    is_above = last_smi > last_smi_ema
+    smi_up = last_smi > prev_smi
     smi_neg = last_smi < 0
     hist_neg = last_hist < 0
     hist_up = last_hist > prev_hist
     
-    smi_macd_buy = cross_up and smi_neg and hist_neg and hist_up
+    smi_macd_buy = is_above and smi_up and smi_neg and hist_neg and hist_up
     
     # Ek Şartlar (Tam Alım Sinyali)
     ma200_val = ma200.iloc[-1] if len(df) > 200 else 0
@@ -534,16 +536,17 @@ def check_h8_smi_macd_positive_signal(df: pd.DataFrame) -> dict:
     prev_smi_ema = smi_ema.iloc[-2]
     last_hist = hist.iloc[-1]
     prev_hist = hist.iloc[-2]
-    cross_up = prev_smi <= prev_smi_ema and last_smi > last_smi_ema
+    is_above = last_smi > last_smi_ema
+    smi_up = last_smi > prev_smi
     smi_pos = last_smi > 0
     hist_pos = last_hist > 0
     hist_up = last_hist > prev_hist
-    is_signal = cross_up and smi_pos and hist_pos and hist_up
+    is_signal = is_above and smi_up and smi_pos and hist_pos and hist_up
     return {
         'signal': is_signal,
         'details': {
             'smi': last_smi, 'smi_ema': last_smi_ema, 'macd': macd.iloc[-1],
-            'signal': signal.iloc[-1], 'hist': last_hist, 'cross_up': cross_up,
+            'signal': signal.iloc[-1], 'hist': last_hist, 'is_above': is_above,
             'smi_positive': smi_pos, 'hist_positive': hist_pos, 'hist_up': hist_up
         }
     }

@@ -27,12 +27,13 @@ async def run_strategy_scan(market_type="bist"):
             results = await scanner.scan_market(
                 market_type=market_type,
                 period=p,
-                strategies=["smi_macd"]
+                strategies=["smi_macd"],
+                use_state=False
             )
             
-            # scan_market 8 değer döndürüyor
+            # scan_market 10 değer döndürüyor
             (full_signals, smi_signals, rsi_signals, new_scan_signals, 
-             rsi_macd_signals, ema_signals, macd_cross_signals, total_scanned) = results
+             rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned) = results
             
             # Sadece bu stratejiye ait sinyalleri gönder
             # Not: SMI/MACD stratejisi hem 'full_signals' hem de 'smi_signals' döndürebilir
@@ -44,7 +45,9 @@ async def run_strategy_scan(market_type="bist"):
                 new_scan_signals=[],
                 rsi_macd_signals=[],
                 ema_signals=[],
-                macd_cross_signals=[]
+                macd_cross_signals=[],
+                h8_signals=[],
+                i9_signals=[]
             )
         except Exception as e:
             logger.error(f"Hata: {str(e)}")
