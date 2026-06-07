@@ -78,51 +78,60 @@ class Scheduler:
             json.dump(data, f, indent=2)
 
     @staticmethod
-    def should_run_now() -> Optional[str]:
+    def should_run_now(force: bool = False) -> Optional[str]:
         """
         Şu an bir tarama yapılması gerekiyor mu?
         Gecikmeleri tolere etmek için geçmişteki ama bugün henüz yapılmamış taramaları kontrol eder.
         """
         now = Scheduler.get_current_time()
         
-        if not Scheduler.is_scan_day(now):
-            logger.info("Bugün haftasonu, tarama yapılmayacak.")
+        # Eğer zorunlu (manuel) değilse hafta sonu kontrolü yap
+        if not force and not Scheduler.is_scan_day(now):
+            logger.info("Bugün haftasonu, planlı tarama yapılmayacak.")
             return None
             
         scan_times = Scheduler.get_scan_times()
         last_scans = Scheduler.get_last_scan_state()
         today_str = now.strftime("%Y-%m-%d")
 
-        # Tarama saatlerini tersten kontrol et (en sonuncudan başlayarak)
+        # Manuel çalıştırmada (force=True) eğer planlı bir saat diliminde değilsek bile çalışması için
+        # en yakın/son planlı saati döndürelim veya özel bir key üretelim.
+        if force:
+            # En yakın geçmişteki tarama saatini bul
+            for s_time in reversed(scan_times):
+                scan_dt = now.replace(hour=s_time.hour, minute=s_time.minute, second=0, microsecond=0)
+                if now >= scan_dt:
+                    return f"manual_{today_str}_{s_time.strftime('%H:%M')}"
+            # Eğer günün ilk tarama saatinden önceyse bile manuel çalıştır
+            return f"manual_{today_str}_forced"
+
+        # Planlı akış kontrolü
         for s_time in reversed(scan_times):
             scan_dt = now.replace(hour=s_time.hour, minute=s_time.minute, second=0, microsecond=0)
             
-            # Eğer şu anki zaman, tarama vaktinden sonraysa
             if now >= scan_dt:
                 scan_key = f"{today_str}_{s_time.strftime('%H:%M')}"
                 
-                # Ve bu tarama bugün henüz yapılmamışsa
                 if scan_key not in last_scans:
-                    # Çok eski bir taramayı (örn: 3 saatten fazla geçmiş) yapma
                     if now <= scan_dt + timedelta(hours=3):
                         return scan_key
                     else:
                         logger.info(f"{s_time.strftime('%H:%M')} taraması üzerinden çok zaman geçmiş (3 saat+), atlanıyor.")
                 else:
-                    # En güncel tarama zaten yapılmışsa, daha eski olanlara bakmaya gerek yok
                     logger.info(f"En güncel planlı tarama ({s_time.strftime('%H:%M')}) zaten yapılmış.")
                     break
             
         return None
 
-    async def run_once_if_needed(self, scan_func: Callable, market_type: str = "bist"):
-        """GitHub Actions gibi tek seferlik çalışmalarda kullanılır."""
-        scan_key = self.should_run_now()
+    async def run_once_if_needed(self, scan_func: Callable, market_type: str = "bist", force: bool = False):
+        """GitHub Actions veya manuel çalışmalarda kullanılır."""
+        scan_key = self.should_run_now(force=force)
         if scan_key:
-            logger.info(f"Uygun tarama vakti bulundu: {scan_key}. Tarama başlatılıyor...")
+            logger.info(f"Tarama başlatılıyor: {scan_key}")
             await scan_func(market_type)
-            self.save_scan_state(scan_key)
-            logger.info(f"Tarama başarıyla tamamlandı ve {scan_key} olarak kaydedildi.")
+            if not scan_key.startswith("manual"):
+                self.save_scan_state(scan_key)
+            logger.info(f"Tarama başarıyla tamamlandı.")
         else:
             logger.info("Şu an planlanmış bir tarama vakti değil veya bekleyen tarama yok.")
 

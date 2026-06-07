@@ -200,7 +200,9 @@ async def run_bot():
             # GitHub Actions için akıllı mod
             from scheduler import get_scheduler
             scheduler = get_scheduler()
-            await scheduler.run_once_if_needed(run_multi_scan, market_type="bist")
+            # Eğer 'force' argümanı varsa veya manuel tetiklenmişse hafta sonu engelini aş
+            force = "--force" in sys.argv
+            await scheduler.run_once_if_needed(run_multi_scan, market_type="bist", force=force)
         else:
             logger.warning(f"Bilinmeyen komut: {command}")
             sys.exit(1)
