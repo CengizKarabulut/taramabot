@@ -136,14 +136,13 @@ def check_smi_macd_signal(df: pd.DataFrame) -> dict:
     prev_hist = hist.iloc[-2]
     
     # SMI/MACD Şartları
-    # Sadece o anki kesişim değil, SMI'nın EMA üzerinde olduğu ve yükseldiği durumu da kapsayalım
-    is_above = last_smi > last_smi_ema
-    smi_up = last_smi > prev_smi
+    # Sadece o anki kesişim değil, SMI'nın EMA üzerinde olduğu durumu da kapsayalım (esneklik için)
+    cross_up = (prev_smi <= prev_smi_ema and last_smi > last_smi_ema) or (last_smi > last_smi_ema and last_smi > prev_smi)
     smi_neg = last_smi < 0
     hist_neg = last_hist < 0
     hist_up = last_hist > prev_hist
     
-    smi_macd_buy = is_above and smi_up and smi_neg and hist_neg and hist_up
+    smi_macd_buy = cross_up and smi_neg and hist_neg and hist_up
     
     # Ek Şartlar (Tam Alım Sinyali)
     ma200_val = ma200.iloc[-1] if len(df) > 200 else 0
@@ -177,20 +176,6 @@ def check_smi_macd_signal(df: pd.DataFrame) -> dict:
 def check_rsi_signal(df: pd.DataFrame) -> dict:
     """
     RSI tabanlı alım sinyalini kontrol et.
-    
-    Şartlar:
-    1. RSI(7) > 60
-    2. RSI 50'yi yukarı kesmiş
-    3. Hacim, ortalamanın 1.5 katı
-    
-    Args:
-        df: OHLCV verileri içeren DataFrame
-        
-    Returns:
-        {
-            'signal': bool,
-            'details': dict
-        }
     """
     if df is None or df.empty or len(df) < 30:
         return {'signal': False, 'details': {}}
@@ -208,8 +193,8 @@ def check_rsi_signal(df: pd.DataFrame) -> dict:
     # Şart 1: RSI > 60
     cond1 = rsi_last > RSI_THRESHOLD
     
-    # Şart 2: RSI 50'yi yukarı kesmiş
-    cond2 = (rsi_prev <= RSI_CROSSOVER) and (rsi_last > RSI_CROSSOVER)
+    # Şart 2: RSI 50'yi yukarı kesmiş veya 50 üzerinde yükseliyor
+    cond2 = (rsi_prev <= RSI_CROSSOVER and rsi_last > RSI_CROSSOVER) or (rsi_last > RSI_CROSSOVER and rsi_last > rsi_prev)
     
     # Şart 3: Hacim kontrol
     vol_last = vol.iloc[-1]
@@ -234,26 +219,6 @@ def check_rsi_signal(df: pd.DataFrame) -> dict:
 def check_new_scan_signal(df: pd.DataFrame) -> dict:
     """
     Görseldeki kriterlere göre yeni tarama (Scanner 3) kontrolü.
-    
-    Şartlar:
-    1. Bağ Hacim > 1.5
-    2. SMA(55) < Fiyat
-    3. SMA(21) < Fiyat
-    4. SMA(200) < Fiyat
-    5. SMA(5) < Fiyat
-    6. SMA(8) < Fiyat
-    7. SMA(50) < Fiyat
-    8. MACD Level > 0
-    9. MACD Level yukarı keser Signal
-    
-    Args:
-        df: OHLCV verileri içeren DataFrame
-        
-    Returns:
-        {
-            'signal': bool,
-            'details': dict
-        }
     """
     if df is None or df.empty or len(df) < 200:
         return {'signal': False, 'details': {}}
@@ -292,7 +257,8 @@ def check_new_scan_signal(df: pd.DataFrame) -> dict:
     cond_sma200 = last_close > sma200.iloc[-1]
     
     cond_macd_level = last_macd > MACD_LEVEL_THRESHOLD
-    cond_macd_cross = (prev_macd <= prev_signal) and (last_macd > last_signal)
+    # MACD kesişimi veya MACD'nin sinyal üzerinde yükselmesi
+    cond_macd_cross = (prev_macd <= prev_signal and last_macd > last_signal) or (last_macd > last_signal and last_macd > prev_macd)
     
     signal = (cond_vol and cond_sma5 and cond_sma8 and cond_sma21 and 
               cond_sma50 and cond_sma55 and cond_sma200 and 
@@ -319,21 +285,6 @@ def check_new_scan_signal(df: pd.DataFrame) -> dict:
 def check_rsi_macd_scan_signal(df: pd.DataFrame) -> dict:
     """
     Görseldeki kriterlere göre RSI + MACD + Hacim taraması.
-    
-    Şartlar:
-    1. RSI(14) 50'yi yukarı kesmiş (yükselen 50)
-    2. RSI(14) < 70
-    3. MACD Level yukarı keser Signal
-    4. Bağ Hacim > 1.5
-    
-    Args:
-        df: OHLCV verileri içeren DataFrame
-        
-    Returns:
-        {
-            'signal': bool,
-            'details': dict
-        }
     """
     if df is None or df.empty or len(df) < 35:
         return {'signal': False, 'details': {}}
@@ -359,13 +310,13 @@ def check_rsi_macd_scan_signal(df: pd.DataFrame) -> dict:
     vol_ratio = vol_last / vol_avg if vol_avg > 0 else 0
     
     # Şartlar
-    # 1. RSI(14) 50'yi yukarı kesmiş (yükselen 50)
-    cond_rsi_up = (rsi_prev <= NEW_RSI_UP_THRESHOLD) and (rsi_last > NEW_RSI_UP_THRESHOLD)
-    # 2. RSI(14) < 70
+    # RSI(14) 50'yi yukarı kesmiş veya 50 üzerinde yükseliyor
+    cond_rsi_up = (rsi_prev <= NEW_RSI_UP_THRESHOLD and rsi_last > NEW_RSI_UP_THRESHOLD) or (rsi_last > NEW_RSI_UP_THRESHOLD and rsi_last > rsi_prev)
+    # RSI(14) < 70
     cond_rsi_max = rsi_last < NEW_RSI_MAX_THRESHOLD
-    # 3. MACD Level yukarı keser Signal
-    cond_macd_cross = (macd_prev <= sig_prev) and (macd_last > sig_last)
-    # 4. Bağ Hacim > 1.5
+    # MACD Level yukarı keser Signal veya üzerinde yükseliyor
+    cond_macd_cross = (macd_prev <= sig_prev and macd_last > sig_last) or (macd_last > sig_last and macd_last > macd_prev)
+    # Bağ Hacim > 1.5
     cond_vol = vol_ratio > NEW_VOLUME_RATIO
     
     signal = cond_rsi_up and cond_rsi_max and cond_macd_cross and cond_vol
@@ -389,24 +340,6 @@ def check_rsi_macd_scan_signal(df: pd.DataFrame) -> dict:
 def check_ema_scan_signal(df: pd.DataFrame) -> dict:
     """
     Görseldeki kriterlere göre EMA Dizilimi ve Bağ Hacim taraması.
-    
-    Şartlar:
-    1. EMA(200) < Fiyat
-    2. EMA(55) < Fiyat
-    3. EMA(21) < Fiyat
-    4. EMA(8) EMA(13)'ü yukarı keser
-    5. EMA(5) EMA(8)'i yukarı keser
-    6. EMA(5) EMA(13)'ü yukarı keser
-    7. Bağ Hacim > 1.5
-    
-    Args:
-        df: OHLCV verileri içeren DataFrame
-        
-    Returns:
-        {
-            'signal': bool,
-            'details': dict
-        }
     """
     if df is None or df.empty or len(df) < 200:
         return {'signal': False, 'details': {}}
@@ -437,19 +370,13 @@ def check_ema_scan_signal(df: pd.DataFrame) -> dict:
     vol_ratio = vol_last / vol_avg if vol_avg > 0 else 0
     
     # Şartlar
-    # 1. EMA(200) < Fiyat
     cond1 = e200_last < last_close
-    # 2. EMA(55) < Fiyat
     cond2 = e55_last < last_close
-    # 3. EMA(21) < Fiyat
     cond3 = e21_last < last_close
-    # 4. EMA(8) EMA(13)'ü yukarı keser
-    cond4 = (e8_prev <= e13_prev) and (e8_last > e13_last)
-    # 5. EMA(5) EMA(8)'i yukarı keser
-    cond5 = (e5_prev <= e8_prev) and (e5_last > e8_last)
-    # 6. EMA(5) EMA(13)'ü yukarı keser
-    cond6 = (e5_prev <= e13_prev) and (e5_last > e13_last)
-    # 7. Bağ Hacim > 1.5
+    # Kesişim veya üzerinde olma durumu
+    cond4 = (e8_prev <= e13_prev and e8_last > e13_last) or (e8_last > e13_last and e8_last > e8_prev)
+    cond5 = (e5_prev <= e8_prev and e5_last > e8_last) or (e5_last > e8_last and e5_last > e5_prev)
+    cond6 = (e5_prev <= e13_prev and e5_last > e13_last) or (e5_last > e13_last and e5_last > e5_prev)
     cond7 = vol_ratio > 1.5
     
     signal = cond1 and cond2 and cond3 and cond4 and cond5 and cond6 and cond7
@@ -468,23 +395,10 @@ def check_ema_scan_signal(df: pd.DataFrame) -> dict:
         }
     }
 
+
 def check_macd_positive_cross_signal(df: pd.DataFrame) -> dict:
     """
     Görseldeki kriterlere göre MACD Pozitif Kesişim taraması.
-    
-    Şartlar:
-    1. RSI(14) > 30
-    2. MACD Level yukarı keser Signal
-    3. MACD Level > 0
-    
-    Args:
-        df: OHLCV verileri içeren DataFrame
-        
-    Returns:
-        {
-            'signal': bool,
-            'details': dict
-        }
     """
     if df is None or df.empty or len(df) < 35:
         return {'signal': False, 'details': {}}
@@ -497,18 +411,14 @@ def check_macd_positive_cross_signal(df: pd.DataFrame) -> dict:
     
     # Son ve önceki değerler
     rsi_last = rsi_values.iloc[-1]
-    
     macd_last = macd_line.iloc[-1]
     macd_prev = macd_line.iloc[-2]
     sig_last = signal_line.iloc[-1]
     sig_prev = signal_line.iloc[-2]
     
     # Şartlar
-    # 1. RSI(14) > 30
     cond_rsi = rsi_last > 30
-    # 2. MACD Level yukarı keser Signal
-    cond_macd_cross = (macd_prev <= sig_prev) and (macd_last > sig_last)
-    # 3. MACD Level > 0
+    cond_macd_cross = (macd_prev <= sig_prev and macd_last > sig_last) or (macd_last > sig_last and macd_last > macd_prev)
     cond_macd_above_0 = macd_last > 0
     
     signal = cond_rsi and cond_macd_cross and cond_macd_above_0
@@ -525,55 +435,72 @@ def check_macd_positive_cross_signal(df: pd.DataFrame) -> dict:
         }
     }
 
+
 def check_h8_smi_macd_positive_signal(df: pd.DataFrame) -> dict:
+    """
+    H8 Stratejisi: SMI/MACD Alım Sinyali (Pozitif Bölge)
+    """
     if df is None or df.empty or len(df) < 200:
         return {'signal': False, 'details': {}}
+    
     smi, smi_ema = calc_smi(df)
     macd, signal, hist = calc_macd(df)
+    
     last_smi = smi.iloc[-1]
     prev_smi = smi.iloc[-2]
     last_smi_ema = smi_ema.iloc[-1]
     prev_smi_ema = smi_ema.iloc[-2]
     last_hist = hist.iloc[-1]
     prev_hist = hist.iloc[-2]
-    is_above = last_smi > last_smi_ema
-    smi_up = last_smi > prev_smi
+    
+    # H8 Şartları
+    cross_up = (prev_smi <= prev_smi_ema and last_smi > last_smi_ema) or (last_smi > last_smi_ema and last_smi > prev_smi)
     smi_pos = last_smi > 0
     hist_pos = last_hist > 0
     hist_up = last_hist > prev_hist
-    is_signal = is_above and smi_up and smi_pos and hist_pos and hist_up
+    
+    signal = cross_up and smi_pos and hist_pos and hist_up
+    
     return {
-        'signal': is_signal,
+        'signal': signal,
         'details': {
-            'smi': last_smi, 'smi_ema': last_smi_ema, 'macd': macd.iloc[-1],
-            'signal': signal.iloc[-1], 'hist': last_hist, 'is_above': is_above,
-            'smi_positive': smi_pos, 'hist_positive': hist_pos, 'hist_up': hist_up
+            'smi': last_smi,
+            'smi_ema': last_smi_ema,
+            'hist': last_hist,
+            'cross_up': cross_up,
+            'smi_positive': smi_pos,
+            'hist_positive': hist_pos,
+            'hist_up': hist_up
         }
     }
 
+
 def check_i9_smi_macd_positive_full_signal(df: pd.DataFrame) -> dict:
+    """
+    I9 Stratejisi: SMI/MACD Tam Alım (Güçlü) - Pozitif Bölge
+    """
     if df is None or df.empty or len(df) < 200:
         return {'full_signal': False, 'h8_signal': False, 'details': {}}
+    
     h8_result = check_h8_smi_macd_positive_signal(df)
     h8_signal = h8_result['signal']
-    smi, smi_ema = calc_smi(df)
-    macd, signal, hist = calc_macd(df)
+    
     ma200 = calc_ma200(df)
     last = df.iloc[-1]
-    
-    last_smi = smi.iloc[-1]
-    last_hist = hist.iloc[-1]
-    
-    ma200_val = ma200.iloc[-1] if len(df) > 200 else 0
+    ma200_val = ma200.iloc[-1]
     above_ma200 = last["close"] > ma200_val
+    
     vol_ma = df["volume"].rolling(20).mean().iloc[-1]
     vol_ok = last["volume"] > (vol_ma * VOLUME_MULTIPLIER) if vol_ma > 0 else False
+    
     full_signal = h8_signal and above_ma200 and vol_ok
+    
     return {
-        'full_signal': full_signal, 'h8_signal': h8_signal,
+        'full_signal': full_signal,
+        'h8_signal': h8_signal,
         'details': {
-            'smi': last_smi, 'smi_ema': smi_ema.iloc[-1], 'macd': macd.iloc[-1],
-            'signal': signal.iloc[-1], 'hist': last_hist, 'ma200': ma200_val,
-            'above_ma200': above_ma200, 'volume_ok': vol_ok
+            'above_ma200': above_ma200,
+            'volume_ok': vol_ok,
+            'h8_details': h8_result['details']
         }
     }

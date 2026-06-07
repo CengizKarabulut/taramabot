@@ -124,11 +124,11 @@ class TelegramSender:
         self.send_message(header)
         time.sleep(0.5)
 
-        # Stratejileri tanımla (Gizli kodlar ile)
+        # Stratejileri tanımla
         strategies = [
             (macd_cross_signals, "🟣", "S1", ""),
-            (h8_signals, "🔷", "S8", ""),
-            (i9_signals, "🔹", "S9", ""),
+            (h8_signals, "🔷", "H8", ""),
+            (i9_signals, "🔹", "I9", ""),
             (ema_signals, EMOJI_EMA_SIGNAL, "S2", ""),
             (rsi_macd_signals, EMOJI_RSI_MACD_SIGNAL, "S3", ""),
             (new_scan_signals, EMOJI_NEW_SCAN_SIGNAL, "S4", ""),

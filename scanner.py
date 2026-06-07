@@ -130,7 +130,7 @@ class MarketScanner:
         Bir sembolü tara.
         """
         if strategies is None:
-            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross"]
+            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross", "h8", "i9"]
         
         try:
             # Veri çek
@@ -143,8 +143,9 @@ class MarketScanner:
             if exchange == "BIST":
                 last_bar_time = df.index[-1]
                 now = datetime.now(last_bar_time.tzinfo)
+                # Hafta sonu boşluğunu (Cuma akşamından Pazartesi sabahına) kapsayacak şekilde 90 saate esnetildi.
                 if interval in [Interval.in_15_minute, Interval.in_1_hour, Interval.in_4_hour]:
-                    if (now - last_bar_time).total_seconds() > 86400: # 24 saat
+                    if (now - last_bar_time).total_seconds() > 324000: # 90 saat (90 * 3600)
                         return None
             
             # Son bar bilgisi
@@ -181,7 +182,6 @@ class MarketScanner:
                 result["signals"]["h8"] = check_h8_smi_macd_positive_signal(df)
             if "i9" in strategies:
                 result["signals"]["i9"] = check_i9_smi_macd_positive_full_signal(df)
-                result["signals"]["macd_cross"] = check_macd_positive_cross_signal(df)
             
             return result
             
@@ -200,7 +200,7 @@ class MarketScanner:
         Pazarı tara.
         """
         if strategies is None:
-            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross"]
+            strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross", "h8", "i9"]
         
         # Sembol listesini seç
         if market_type.lower() == "bist":
@@ -276,11 +276,11 @@ class MarketScanner:
                 macd_cross_signals.append(result)
                 if use_state: self.state.mark_signal_sent(sym, p, "macd_cross", bar_time, close)
         
-        
             # H8
             if "h8" in result["signals"] and result["signals"]["h8"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "h8", bar_time)):
                 h8_signals.append(result)
                 if use_state: self.state.mark_signal_sent(sym, p, "h8", bar_time, close)
+            
             # I9
             if "i9" in result["signals"]:
                 i9_res = result["signals"]["i9"]

@@ -43,7 +43,7 @@ async def main_scan_logic(market_type: str, period: str):
     logger.info(f"Tarama başlatılıyor: Pazar={market_type.upper()}, Periyot={period}")
 
     try:
-        # scan_market çağrısı (8 değer döndürür)
+        # scan_market çağrısı
         full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned = await scanner.scan_market(
             market_type=market_type,
             period=period,
@@ -124,8 +124,8 @@ def send_final_summary(all_results: list):
         "rsi_macd": "S3",
         "ema": "S2",
         "macd_cross": "S1",
-        "h8": "S8",
-        "i9": "S9"
+        "h8": "H8",
+        "i9": "I9"
     }
     
     for res in all_results:
