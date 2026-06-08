@@ -67,6 +67,7 @@ class TelegramSender:
                         import re
                         payload["text"] = re.sub('<[^<]+?>', '', text)
                         payload["parse_mode"] = None
+                        # Recursion with plain text
                         return self.send_message(payload["text"], parse_mode=None)
                 
                 response.raise_for_status()
@@ -187,7 +188,7 @@ _sender_instance: Optional[TelegramSender] = None
 
 def get_telegram_sender() -> TelegramSender:
     """Singleton Telegram gönderici'yi al."""
-    global _scheduler_instance
+    global _sender_instance
     if _sender_instance is None:
         from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_THREAD_ID
         _sender_instance = TelegramSender(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_THREAD_ID)

@@ -110,7 +110,9 @@ class MarketScanner:
         if TV_USERNAME and TV_PASSWORD:
             try:
                 logger.info(f"TradingView'a giriş yapılıyor: {TV_USERNAME}")
-                return TvDatafeed(username=TV_USERNAME, password=TV_PASSWORD)
+                # Hata durumunda programın çökmesini engellemek için try-except
+                tv = TvDatafeed(username=TV_USERNAME, password=TV_PASSWORD)
+                return tv
             except Exception as e:
                 logger.warning(f"tvDatafeed giriş hatası: {e}. Anonim (nologin) modda devam ediliyor.")
                 return TvDatafeed()
