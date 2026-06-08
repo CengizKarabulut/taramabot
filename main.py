@@ -21,7 +21,7 @@ logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
 logger = logging.getLogger(__name__)
 
 
-async def main_scan_logic(market_type: str, period: str):
+async def main_scan_logic(market_type: str, period: str, use_state: bool = True):
     """
     Ana tarama mantığını çalıştırır.
     Sembolleri tarar, sinyalleri işler ve Telegram'a rapor gönderir.
@@ -40,14 +40,15 @@ async def main_scan_logic(market_type: str, period: str):
     }
     period = period_map.get(period, period)
     
-    logger.info(f"Tarama başlatılıyor: Pazar={market_type.upper()}, Periyot={period}")
+    logger.info(f"Tarama başlatılıyor: Pazar={market_type.upper()}, Periyot={period}, State={use_state}")
 
     try:
         # scan_market çağrısı
         full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned = await scanner.scan_market(
             market_type=market_type,
             period=period,
-            strategies=["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross", "h8", "i9"]
+            strategies=["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross", "h8", "i9"],
+            use_state=use_state
         )
 
         # 1. Gruplanmış özet listeyi gönder (Sinyal olsun veya olmasın mesaj gönderilir)
@@ -90,19 +91,19 @@ async def main_scan_logic(market_type: str, period: str):
         return None
 
 
-async def run_multi_scan(market_type: str = "bist", period: str = "1D"):
+async def run_multi_scan(market_type: str = "bist", period: str = "1D", use_state: bool = True):
     """Tüm zaman dilimlerini KESİN SIRAYLA (Küçükten Büyüğe) tara."""
     # Sıralama: 15m -> 1H -> 4H -> 1D -> 1W -> 1M
     periods = ["15m", "1H", "4H", "1D", "1W", "1M"]
-    logger.info(f"Çoklu tarama başlatılıyor: {periods}")
+    logger.info(f"Çoklu tarama başlatılıyor: {periods}, State={use_state}")
     
     all_results = []
     for p in periods:
-        res = await main_scan_logic(market_type, p)
+        res = await main_scan_logic(market_type, p, use_state=use_state)
         if res:
             all_results.append(res)
-        # Her periyot arasında güvenli bir bekleme (Mesajların sırasının karışmaması için)
-        await asyncio.sleep(3)
+        # Her periyot arasında güvenli bir bekleme
+        await asyncio.sleep(5)
     
     # Tüm taramalar bitince BİRDEN FAZLA taramada çıkan hisseleri belirtecek özel özet raporu oluştur
     if all_results:
@@ -171,42 +172,37 @@ def send_final_summary(all_results: list):
     
     if body:
         footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
-        # Çoklu sinyal listesi de çok uzun olabilir, parçalayarak gönder
         full_msg = header + body + footer
-        if len(full_msg) > 3500:
-            # Basitçe ikiye böl (veya daha fazla)
-            lines = body.split("\n")
-            mid = len(lines) // 2
-            telegram_sender.send_message(header + "\n".join(lines[:mid]) + "\n<b>(Devamı...)</b>")
-            telegram_sender.send_message(header + "<b>(Devam)</b>\n" + "\n".join(lines[mid:]) + footer)
-        else:
-            telegram_sender.send_message(full_msg)
+        telegram_sender.send_message(full_msg)
 
 
 async def run_bot():
     """
     Botu çalıştıran ana fonksiyon.
     """
-    if len(sys.argv) > 1:
+    # Argümanları kontrol et
+    force = "--force" in sys.argv
+    nostate = "--nostate" in sys.argv # Daha önce gönderilenleri dikkate alma, hepsini tara
+    
+    if len(sys.argv) > 1 and sys.argv[1] not in ["--force", "--nostate"]:
         command = sys.argv[1]
         if command == "scan":
             period = sys.argv[2]
             market_type = sys.argv[3].lower() if len(sys.argv) > 3 else "bist"
-            await main_scan_logic(market_type, period)
+            await main_scan_logic(market_type, period, use_state=(not nostate))
         elif command == "multi":
             market_type = sys.argv[2].lower() if len(sys.argv) > 2 else "bist"
-            await run_multi_scan(market_type)
+            await run_multi_scan(market_type, use_state=(not nostate))
         elif command == "auto":
-            # GitHub Actions için akıllı mod
             from scheduler import get_scheduler
             scheduler = get_scheduler()
-            # Eğer 'force' argümanı varsa veya manuel tetiklenmişse hafta sonu engelini aş
-            force = "--force" in sys.argv
+            # auto komutu ile birlikte --force gelirse scheduler'daki kontrolleri atla
             await scheduler.run_once_if_needed(run_multi_scan, market_type="bist", force=force)
         else:
             logger.warning(f"Bilinmeyen komut: {command}")
             sys.exit(1)
     else:
+        # Hiç komut yoksa veya sadece flaglar varsa normal scheduler başlat
         from scheduler import get_scheduler
         scheduler = get_scheduler()
         await scheduler.start(run_multi_scan, market_type="bist")

@@ -81,12 +81,16 @@ class Scheduler:
     def should_run_now(force: bool = False) -> Optional[str]:
         """
         Şu an bir tarama yapılması gerekiyor mu?
-        Gecikmeleri tolere etmek için geçmişteki ama bugün henüz yapılmamış taramaları kontrol eder.
         """
         now = Scheduler.get_current_time()
         
-        # Eğer zorunlu (manuel) değilse hafta sonu kontrolü yap
-        if not force and not Scheduler.is_scan_day(now):
+        # MANUEL ÇALIŞTIRMA: Eğer force=True ise hiçbir kontrol yapmadan özel bir key döndür
+        if force:
+            logger.info("Manuel (zorunlu) çalıştırma tetiklendi. Kontroller atlanıyor.")
+            return f"manual_{now.strftime('%Y%m%d_%H%M%S')}"
+        
+        # Planlı çalıştırma için hafta sonu kontrolü
+        if not Scheduler.is_scan_day(now):
             logger.info("Bugün haftasonu, planlı tarama yapılmayacak.")
             return None
             
@@ -94,18 +98,6 @@ class Scheduler:
         last_scans = Scheduler.get_last_scan_state()
         today_str = now.strftime("%Y-%m-%d")
 
-        # Manuel çalıştırmada (force=True) eğer planlı bir saat diliminde değilsek bile çalışması için
-        # en yakın/son planlı saati döndürelim veya özel bir key üretelim.
-        if force:
-            # En yakın geçmişteki tarama saatini bul
-            for s_time in reversed(scan_times):
-                scan_dt = now.replace(hour=s_time.hour, minute=s_time.minute, second=0, microsecond=0)
-                if now >= scan_dt:
-                    return f"manual_{today_str}_{s_time.strftime('%H:%M')}"
-            # Eğer günün ilk tarama saatinden önceyse bile manuel çalıştır
-            return f"manual_{today_str}_forced"
-
-        # Planlı akış kontrolü
         for s_time in reversed(scan_times):
             scan_dt = now.replace(hour=s_time.hour, minute=s_time.minute, second=0, microsecond=0)
             
@@ -129,6 +121,7 @@ class Scheduler:
         if scan_key:
             logger.info(f"Tarama başlatılıyor: {scan_key}")
             await scan_func(market_type)
+            # Manuel taramaları state'e kaydetme ki planlı akışı etkilemesin
             if not scan_key.startswith("manual"):
                 self.save_scan_state(scan_key)
             logger.info(f"Tarama başarıyla tamamlandı.")

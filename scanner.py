@@ -143,9 +143,9 @@ class MarketScanner:
             if exchange == "BIST":
                 last_bar_time = df.index[-1]
                 now = datetime.now(last_bar_time.tzinfo)
-                # Hafta sonu boşluğunu (Cuma akşamından Pazartesi sabahına) kapsayacak şekilde 90 saate esnetildi.
+                # Hafta sonu boşluğunu kapsayacak şekilde 90 saate esnetildi.
                 if interval in [Interval.in_15_minute, Interval.in_1_hour, Interval.in_4_hour]:
-                    if (now - last_bar_time).total_seconds() > 324000: # 90 saat (90 * 3600)
+                    if (now - last_bar_time).total_seconds() > 324000: # 90 saat
                         return None
             
             # Son bar bilgisi
@@ -230,9 +230,18 @@ class MarketScanner:
         
         logger.info(f"{market_type.upper()} pazarı taranıyor ({period})...")
         
-        tasks = [self.scan_symbol(sym, exc, interval, period, strategies) for sym, exc in symbols]
-        results = await asyncio.gather(*tasks)
-        results = [r for r in results if r is not None]
+        # Paralel tarama için sembolleri parçalara böl (TV rate limit koruması)
+        chunk_size = 50
+        all_results = []
+        for i in range(0, len(symbols), chunk_size):
+            chunk = symbols[i:i+chunk_size]
+            tasks = [self.scan_symbol(sym, exc, interval, period, strategies) for sym, exc in chunk]
+            chunk_results = await asyncio.gather(*tasks)
+            all_results.extend([r for r in chunk_results if r is not None])
+            if i + chunk_size < len(symbols):
+                await asyncio.sleep(1) # Chunklar arası kısa bekleme
+        
+        results = all_results
         total_scanned = len(results)
         
         # Sinyalleri kategorize et

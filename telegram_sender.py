@@ -26,45 +26,59 @@ class TelegramSender:
         self.thread_id = thread_id
         self.base_url = f"https://api.telegram.org/bot{bot_token}"
     
-    def send_message(self, text: str, parse_mode: str = "HTML") -> bool:
+    def send_message(self, text: str, parse_mode: str = "HTML", retry_count: int = 3) -> bool:
         """
-        Telegram'a mesaj gönder.
+        Telegram'a mesaj gönder. 429 hatalarında otomatik bekler ve tekrar dener.
         """
         if not self.bot_token or not self.chat_id:
             logger.warning(f"Telegram konfigürasyonu eksik. Mesaj: {text[:50]}...")
             return False
         
-        try:
-            url = f"{self.base_url}/sendMessage"
-            payload = {
-                "chat_id": self.chat_id,
-                "text": text,
-                "parse_mode": parse_mode,
-                "disable_web_page_preview": True
-            }
+        url = f"{self.base_url}/sendMessage"
+        payload = {
+            "chat_id": self.chat_id,
+            "text": text,
+            "parse_mode": parse_mode,
+            "disable_web_page_preview": True
+        }
+        
+        if self.thread_id:
+            payload["message_thread_id"] = self.thread_id
             
-            if self.thread_id:
-                payload["message_thread_id"] = self.thread_id
-            
-            response = requests.post(url, json=payload, timeout=15)
-            if response.status_code != 200:
-                logger.error(f"Telegram API Hatası ({response.status_code}): {response.text}")
-                # Eğer HTML hatası ise düz metin olarak tekrar dene
-                if "can't parse entities" in response.text:
-                    logger.info("HTML ayrıştırma hatası, düz metin olarak tekrar deneniyor...")
-                    payload["parse_mode"] = None
-                    # HTML taglerini temizle (basitçe)
-                    import re
-                    payload["text"] = re.sub('<[^<]+?>', '', text)
-                    response = requests.post(url, json=payload, timeout=15)
-            
-            response.raise_for_status()
-            logger.info(f"Telegram mesajı gönderildi: {text[:50]}...")
-            return True
-            
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Telegram mesaj gönderme hatası: {str(e)}")
-            return False
+        for attempt in range(retry_count):
+            try:
+                response = requests.post(url, json=payload, timeout=15)
+                
+                if response.status_code == 200:
+                    logger.info(f"Telegram mesajı gönderildi: {text[:50]}...")
+                    return True
+                
+                if response.status_code == 429:
+                    retry_after = response.json().get("parameters", {}).get("retry_after", 30)
+                    logger.warning(f"Telegram 429 (Too Many Requests). {retry_after} saniye bekleniyor... (Deneme {attempt+1}/{retry_count})")
+                    time.sleep(retry_after + 1)
+                    continue
+                
+                if response.status_code != 200:
+                    logger.error(f"Telegram API Hatası ({response.status_code}): {response.text}")
+                    # Eğer HTML hatası ise düz metin olarak tekrar dene
+                    if "can't parse entities" in response.text and parse_mode == "HTML":
+                        logger.info("HTML ayrıştırma hatası, düz metin olarak tekrar deneniyor...")
+                        import re
+                        payload["text"] = re.sub('<[^<]+?>', '', text)
+                        payload["parse_mode"] = None
+                        return self.send_message(payload["text"], parse_mode=None)
+                
+                response.raise_for_status()
+                
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Telegram mesaj gönderme hatası (Deneme {attempt+1}): {str(e)}")
+                if attempt < retry_count - 1:
+                    time.sleep(2)
+                else:
+                    return False
+        
+        return False
 
     def _format_signal_list(self, signals: List[dict]) -> str:
         """Sinyal listesini formatla."""
@@ -89,7 +103,6 @@ class TelegramSender:
     ) -> bool:
         """
         Tarama sonuçlarını stratejiye göre gruplayarak parçalı mesajlar halinde gönderir.
-        Bu yöntem Telegram karakter sınırına (4096) takılmayı önler.
         """
         new_scan_signals = new_scan_signals or []
         rsi_macd_signals = rsi_macd_signals or []
@@ -122,7 +135,7 @@ class TelegramSender:
 
         # Başlık mesajını gönder
         self.send_message(header)
-        time.sleep(0.5)
+        time.sleep(1)
 
         # Stratejileri tanımla
         strategies = [
@@ -144,17 +157,17 @@ class TelegramSender:
             # Her strateji için mesaj oluştur
             strat_header = f"<b>{emoji} {title}</b>\n"
             
-            # Sinyalleri 30'arlı gruplara böl (Mesaj boyutu kontrolü için)
-            for i in range(0, len(signals), 30):
-                chunk = signals[i:i+30]
+            # Sinyalleri 20'şerli gruplara böl (Daha küçük gruplar 429 riskini azaltır)
+            for i in range(0, len(signals), 20):
+                chunk = signals[i:i+20]
                 body = self._format_signal_list(chunk)
                 
                 msg = strat_header + body
-                if i + 30 < len(signals):
+                if i + 20 < len(signals):
                     msg += "\n\n<b>(Devamı...)</b>"
                 
                 self.send_message(msg)
-                time.sleep(1) # Telegram rate limit koruması
+                time.sleep(2) # Mesajlar arası daha uzun bekleme
 
         # Kapanış çizgisi
         self.send_message(f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>")
@@ -174,7 +187,7 @@ _sender_instance: Optional[TelegramSender] = None
 
 def get_telegram_sender() -> TelegramSender:
     """Singleton Telegram gönderici'yi al."""
-    global _sender_instance
+    global _scheduler_instance
     if _sender_instance is None:
         from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_THREAD_ID
         _sender_instance = TelegramSender(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_THREAD_ID)
