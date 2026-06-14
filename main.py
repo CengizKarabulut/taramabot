@@ -153,6 +153,8 @@ def send_final_summary(all_results: list):
     if not filtered_map:
         return
 
+    telegram_sender.send_common_signal_visuals(filtered_map)
+
     header = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
     header += f"<b>💎 ÇOKLU SİNYAL VEREN HİSSELER</b>\n"
     header += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n\n"

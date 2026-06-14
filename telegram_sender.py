@@ -11,7 +11,7 @@ import requests
 import textwrap
 import time
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict
 from config import (
     TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_THREAD_ID,
     EMOJI_FULL_SIGNAL, EMOJI_SMI_SIGNAL, EMOJI_RSI_SIGNAL, 
@@ -20,6 +20,10 @@ from config import (
 )
 
 logger = logging.getLogger(__name__)
+
+SCAN_RESULT_IMAGE_MAX_ROWS = 30
+COMMON_SIGNAL_IMAGE_MAX_ROWS = 24
+PERIOD_ORDER = ["15m", "1H", "4H", "1D", "1W", "1M"]
 
 
 class TelegramSender:
@@ -342,27 +346,30 @@ class TelegramSender:
         plt.close(fig)
         return path
 
-    def _write_scan_result_image(
-        self,
-        period: str,
-        strategies: List[dict],
-        market_type: Optional[str],
-        total_scanned: Optional[int]
-    ) -> Optional[str]:
-        plt, Rectangle = self._load_matplotlib()
-        os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
+    def _enabled_strategies(self, strategies: List[dict]) -> List[dict]:
+        return [s for s in strategies if s.get("enabled", True)] or strategies
 
-        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        path = os.path.join(
-            SCREENSHOTS_DIR,
-            f"scan_result_{self._safe_filename_part(market_type)}_{self._safe_filename_part(period)}_{stamp}.png"
-        )
+    def _balanced_chunks(self, items: List[dict], max_items_per_chunk: int) -> List[List[dict]]:
+        if not items:
+            return [items]
 
-        enabled = [s for s in strategies if s.get("enabled", True)] or strategies
+        max_items_per_chunk = max(1, max_items_per_chunk)
+        page_count = (len(items) + max_items_per_chunk - 1) // max_items_per_chunk
+        base_size, extra = divmod(len(items), page_count)
+        chunks = []
+        start = 0
+        for idx in range(page_count):
+            size = base_size + (1 if idx < extra else 0)
+            chunks.append(items[start:start + size])
+            start += size
+        return chunks
+
+    def _scan_result_rows(self, strategies: List[dict]) -> List[dict]:
         rows = []
-        for strategy in enabled:
+        for strategy_index, strategy in enumerate(self._enabled_strategies(strategies)):
             for signal in strategy["signals"]:
                 rows.append({
+                    "order": strategy_index,
                     "code": strategy["code"],
                     "name": strategy["name"],
                     "color": strategy["color"],
@@ -370,9 +377,33 @@ class TelegramSender:
                     "change": float(signal.get("change", 0) or 0),
                     "close": float(signal.get("close", 0) or 0),
                 })
-        rows.sort(key=lambda row: (row["code"], row["symbol"]))
-        visible_rows = rows[:80]
-        extra_count = max(0, len(rows) - len(visible_rows))
+        rows.sort(key=lambda row: (row["order"], row["symbol"]))
+        return rows
+
+    def _write_scan_result_image(
+        self,
+        period: str,
+        strategies: List[dict],
+        market_type: Optional[str],
+        total_scanned: Optional[int],
+        rows: Optional[List[dict]] = None,
+        page_number: int = 1,
+        page_count: int = 1,
+        total_signal_count: Optional[int] = None
+    ) -> Optional[str]:
+        plt, Rectangle = self._load_matplotlib()
+        os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
+
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        page_suffix = f"_{page_number:02d}_of_{page_count:02d}" if page_count > 1 else ""
+        path = os.path.join(
+            SCREENSHOTS_DIR,
+            f"scan_result_{self._safe_filename_part(market_type)}_{self._safe_filename_part(period)}_{stamp}{page_suffix}.png"
+        )
+
+        enabled = self._enabled_strategies(strategies)
+        visible_rows = rows if rows is not None else self._scan_result_rows(strategies)
+        total_signal_count = total_signal_count if total_signal_count is not None else len(visible_rows)
 
         fig_height = min(18, max(8, 4.8 + len(visible_rows) * 0.22))
         fig, ax = plt.subplots(figsize=(12, fig_height), dpi=150)
@@ -382,9 +413,11 @@ class TelegramSender:
         ax.add_patch(Rectangle((0, 0.89), 1, 0.11, transform=ax.transAxes, color="#0f172a"))
         ax.text(0.055, 0.95, "TARAMA SONUCU", transform=ax.transAxes, color="white",
                 fontsize=23, fontweight="bold", va="center")
-        subtitle = f"{(market_type or 'BIST').upper()} | {self._period_name(period)} | {len(rows)} sinyal"
+        subtitle = f"{(market_type or 'BIST').upper()} | {self._period_name(period)} | {total_signal_count} sinyal"
         if total_scanned is not None:
             subtitle += f" | {total_scanned} sembol tarandı"
+        if page_count > 1:
+            subtitle += f" | Sayfa {page_number}/{page_count} ({len(visible_rows)} sinyal)"
         ax.text(0.055, 0.908, subtitle, transform=ax.transAxes, color="#cbd5e1",
                 fontsize=12, va="center")
 
@@ -408,7 +441,7 @@ class TelegramSender:
             summary_x += 0.18
 
         table_top = summary_y - 0.07
-        if not rows:
+        if not visible_rows:
             ax.add_patch(Rectangle((0.055, 0.24), 0.89, 0.22, transform=ax.transAxes,
                                    color="white", ec="#d1d5db", lw=1.2))
             ax.text(0.50, 0.35, "Bu periyotta yeni sinyal yok.",
@@ -450,13 +483,131 @@ class TelegramSender:
                         color="#334155", fontsize=font_size, va="center")
                 y -= row_step
 
-            if extra_count:
-                ax.text(0.055, max(y - 0.02, 0.04), f"+{extra_count} sinyal daha mesajlarda listelendi.",
-                        transform=ax.transAxes, color="#64748b", fontsize=10, va="center")
+        fig.savefig(path, bbox_inches="tight", facecolor=fig.get_facecolor())
+        plt.close(fig)
+        return path
+
+    def _common_signal_rows(self, signal_map: Dict[str, dict]) -> List[dict]:
+        rows = []
+        for symbol in sorted(signal_map.keys()):
+            periods = signal_map[symbol]
+            details = []
+            total_signals = 0
+            ordered_periods = PERIOD_ORDER + sorted(p for p in periods if p not in PERIOD_ORDER)
+            for period in ordered_periods:
+                if period not in periods:
+                    continue
+                strategies = list(dict.fromkeys(periods[period]))
+                total_signals += len(strategies)
+                details.append(f"{period}: {', '.join(strategies)}")
+            rows.append({
+                "symbol": symbol,
+                "count": total_signals,
+                "details": " | ".join(details),
+            })
+        rows.sort(key=lambda row: (-row["count"], row["symbol"]))
+        return rows
+
+    def _write_common_signal_image(
+        self,
+        signal_rows: List[dict],
+        page_number: int,
+        page_count: int,
+        total_symbol_count: int
+    ) -> Optional[str]:
+        plt, Rectangle = self._load_matplotlib()
+        os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
+
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        page_suffix = f"_{page_number:02d}_of_{page_count:02d}" if page_count > 1 else ""
+        path = os.path.join(SCREENSHOTS_DIR, f"common_signals_{stamp}{page_suffix}.png")
+
+        wrapped_rows = []
+        total_line_count = 0
+        for row in signal_rows:
+            detail_lines = textwrap.wrap(row["details"], width=92) or [""]
+            wrapped_rows.append((row, detail_lines))
+            total_line_count += max(1, len(detail_lines))
+
+        fig_height = min(18, max(8, 4.4 + total_line_count * 0.31))
+        fig, ax = plt.subplots(figsize=(12, fig_height), dpi=150)
+        fig.patch.set_facecolor("#f8fafc")
+        ax.set_axis_off()
+
+        ax.add_patch(Rectangle((0, 0.89), 1, 0.11, transform=ax.transAxes, color="#312e81"))
+        ax.text(0.055, 0.95, "ÇOKLU SİNYAL VEREN HİSSELER", transform=ax.transAxes,
+                color="white", fontsize=22, fontweight="bold", va="center")
+        subtitle = f"{total_symbol_count} hisse"
+        if page_count > 1:
+            subtitle += f" | Sayfa {page_number}/{page_count} ({len(signal_rows)} hisse)"
+        ax.text(0.055, 0.908, subtitle, transform=ax.transAxes, color="#ddd6fe",
+                fontsize=12, va="center")
+
+        ax.add_patch(Rectangle((0.055, 0.80), 0.89, 0.045, transform=ax.transAxes,
+                               color="#e5e7eb", ec="#d1d5db", lw=1))
+        ax.text(0.075, 0.823, "Sembol", transform=ax.transAxes, color="#111827",
+                fontsize=10, fontweight="bold", va="center")
+        ax.text(0.22, 0.823, "Sinyal", transform=ax.transAxes, color="#111827",
+                fontsize=10, fontweight="bold", va="center")
+        ax.text(0.34, 0.823, "Periyot / Tarama", transform=ax.transAxes, color="#111827",
+                fontsize=10, fontweight="bold", va="center")
+
+        if not wrapped_rows:
+            ax.add_patch(Rectangle((0.055, 0.30), 0.89, 0.20, transform=ax.transAxes,
+                                   color="white", ec="#d1d5db", lw=1.2))
+            ax.text(0.50, 0.40, "Birden fazla sinyal alan hisse yok.",
+                    transform=ax.transAxes, color="#334155", fontsize=17,
+                    fontweight="bold", ha="center", va="center")
+        else:
+            row_units = max(total_line_count + len(wrapped_rows) * 0.2, 1)
+            unit_step = min(0.035, 0.70 / row_units)
+            y = 0.765
+            for idx, (row, detail_lines) in enumerate(wrapped_rows):
+                row_height = unit_step * max(1, len(detail_lines))
+                bg = "#ffffff" if idx % 2 == 0 else "#f1f5f9"
+                ax.add_patch(Rectangle((0.055, y - row_height + unit_step * 0.15), 0.89,
+                                       row_height + unit_step * 0.25, transform=ax.transAxes,
+                                       color=bg, ec="#e5e7eb", lw=0.4))
+                ax.text(0.075, y, row["symbol"], transform=ax.transAxes, color="#111827",
+                        fontsize=9.5, fontweight="bold", va="top")
+                ax.text(0.23, y, str(row["count"]), transform=ax.transAxes, color="#312e81",
+                        fontsize=9.5, fontweight="bold", va="top")
+                for line in detail_lines:
+                    ax.text(0.34, y, line, transform=ax.transAxes, color="#334155",
+                            fontsize=8.8, va="top")
+                    y -= unit_step
+                y -= unit_step * 0.2
 
         fig.savefig(path, bbox_inches="tight", facecolor=fig.get_facecolor())
         plt.close(fig)
         return path
+
+    def send_common_signal_visuals(self, signal_map: Dict[str, dict]) -> bool:
+        rows = self._common_signal_rows(signal_map)
+        chunks = self._balanced_chunks(rows, COMMON_SIGNAL_IMAGE_MAX_ROWS)
+
+        try:
+            image_paths = [
+                self._write_common_signal_image(
+                    signal_rows=chunk,
+                    page_number=idx,
+                    page_count=len(chunks),
+                    total_symbol_count=len(rows),
+                )
+                for idx, chunk in enumerate(chunks, start=1)
+            ]
+        except Exception as e:
+            logger.warning(f"Ortak sinyal görseli oluşturulamadı: {e}")
+            return False
+
+        ok = True
+        for idx, image_path in enumerate(image_paths, start=1):
+            caption = "<b>Çoklu Sinyal Özeti</b>"
+            if len(image_paths) > 1:
+                caption += f" — Sayfa {idx}/{len(image_paths)}"
+            ok = self.send_photo(image_path, caption=caption) and ok
+            time.sleep(1)
+        return ok
 
     def send_scan_visuals(
         self,
@@ -470,7 +621,21 @@ class TelegramSender:
         """
         try:
             info_path = self._write_scan_info_image(period, strategies, market_type, total_scanned)
-            result_path = self._write_scan_result_image(period, strategies, market_type, total_scanned)
+            rows = self._scan_result_rows(strategies)
+            row_chunks = self._balanced_chunks(rows, SCAN_RESULT_IMAGE_MAX_ROWS)
+            result_paths = [
+                self._write_scan_result_image(
+                    period=period,
+                    strategies=strategies,
+                    market_type=market_type,
+                    total_scanned=total_scanned,
+                    rows=chunk,
+                    page_number=idx,
+                    page_count=len(row_chunks),
+                    total_signal_count=len(rows),
+                )
+                for idx, chunk in enumerate(row_chunks, start=1)
+            ]
         except Exception as e:
             logger.warning(f"Tarama görselleri oluşturulamadı: {e}")
             return False
@@ -478,8 +643,14 @@ class TelegramSender:
         p_name = self._period_name(period)
         ok_info = self.send_photo(info_path, caption=f"<b>Tarama Bilgisi</b> — {p_name}")
         time.sleep(1)
-        ok_result = self.send_photo(result_path, caption=f"<b>Tarama Sonucu</b> — {p_name}")
-        return ok_info and ok_result
+        ok_results = True
+        for idx, result_path in enumerate(result_paths, start=1):
+            caption = f"<b>Tarama Sonucu</b> — {p_name}"
+            if len(result_paths) > 1:
+                caption += f" — Sayfa {idx}/{len(result_paths)}"
+            ok_results = self.send_photo(result_path, caption=caption) and ok_results
+            time.sleep(1)
+        return ok_info and ok_results
 
     def send_grouped_summary(
         self,
