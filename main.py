@@ -6,7 +6,7 @@ Botun ana giriş noktasıdır. Tarama işlemlerini başlatır ve yönetir.
 import asyncio
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, time
 
 from config import (
     LOG_LEVEL, LOG_FORMAT, BIST_STOCKS, COMMODITIES, CRYPTO,
@@ -19,6 +19,23 @@ from scheduler import Scheduler, TZ_TURKEY
 # Loglama konfigürasyonu
 logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
 logger = logging.getLogger(__name__)
+
+BIST_OPEN_TIME = time(10, 0)
+BIST_CLOSE_TIME = time(18, 10)
+
+
+def _is_bist_market_closed(market_type: str) -> bool:
+    if market_type.lower() != "bist":
+        return False
+
+    now = datetime.now(TZ_TURKEY)
+    if now.weekday() >= 5:
+        return True
+    return not (BIST_OPEN_TIME <= now.time() <= BIST_CLOSE_TIME)
+
+
+def _signal_count(*signal_groups: list[dict]) -> int:
+    return sum(len(group or []) for group in signal_groups)
 
 
 async def main_scan_logic(market_type: str, period: str, use_state: bool = True):
@@ -44,12 +61,39 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
 
     try:
         # scan_market çağrısı
-        full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned = await scanner.scan_market(
+        scan_results = await scanner.scan_market(
             market_type=market_type,
             period=period,
             strategies=["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross", "h8", "i9"],
             use_state=use_state
         )
+        full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned = scan_results
+
+        if (
+            use_state
+            and _is_bist_market_closed(market_type)
+            and _signal_count(
+                full_signals,
+                smi_signals,
+                rsi_signals,
+                new_scan_signals,
+                rsi_macd_signals,
+                ema_signals,
+                macd_cross_signals,
+                h8_signals,
+                i9_signals,
+            ) == 0
+        ):
+            logger.info(
+                "BIST kapalıyken state filtresi hiç sinyal bırakmadı; mevcut sinyaller için state filtresiz tekrar taranıyor."
+            )
+            scan_results = await scanner.scan_market(
+                market_type=market_type,
+                period=period,
+                strategies=["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross", "h8", "i9"],
+                use_state=False
+            )
+            full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned = scan_results
 
         # 1. Gruplanmış özet listeyi gönder (Sinyal olsun veya olmasın mesaj gönderilir)
         telegram_sender.send_grouped_summary(

@@ -143,14 +143,21 @@ class MarketScanner:
             if df is None or df.empty or len(df) < 2:
                 return None
             
-            # Endeks kapalıyken (BIST için) son verinin güncelliğini kontrol et
+            stale_bar = False
+            # Endeks kapalıyken (BIST için) son veri eski kalabilir; yine de rapor üret.
             if exchange == "BIST":
                 last_bar_time = df.index[-1]
                 now = datetime.now(last_bar_time.tzinfo)
                 # Hafta sonu boşluğunu kapsayacak şekilde 90 saate esnetildi.
                 if interval in [Interval.in_15_minute, Interval.in_1_hour, Interval.in_4_hour]:
                     if (now - last_bar_time).total_seconds() > 324000: # 90 saat
-                        return None
+                        stale_bar = True
+                        logger.debug(
+                            "BIST verisi eski ama taramaya dahil ediliyor: %s %s son_bar=%s",
+                            symbol,
+                            period_str,
+                            last_bar_time,
+                        )
             
             # Son bar bilgisi
             last_bar = df.iloc[-1]
@@ -166,6 +173,7 @@ class MarketScanner:
                 "close": last_bar['close'],
                 "change": change_percent,
                 "bar_time": df.index[-1].isoformat(),
+                "stale_bar": stale_bar,
                 "signals": {}
             }
             
