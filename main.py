@@ -199,8 +199,12 @@ async def run_bot():
         elif command == "auto":
             from scheduler import get_scheduler
             scheduler = get_scheduler()
+            auto_args = [arg for arg in sys.argv[2:] if not arg.startswith("--")]
+            market_type = auto_args[0].lower() if auto_args else "bist"
+            async def run_multi_scan_with_state(selected_market_type):
+                await run_multi_scan(selected_market_type, use_state=(not nostate))
             # auto komutu ile birlikte --force gelirse scheduler'daki kontrolleri atla
-            await scheduler.run_once_if_needed(run_multi_scan, market_type="bist", force=force)
+            await scheduler.run_once_if_needed(run_multi_scan_with_state, market_type=market_type, force=force)
         else:
             logger.warning(f"Bilinmeyen komut: {command}")
             sys.exit(1)

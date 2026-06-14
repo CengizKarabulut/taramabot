@@ -7,6 +7,44 @@ on:
     # Türkiye saati ile 09:00 - 19:00 arasını kapsar.
     - cron: "*/15 6-16 * * 1-5"
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Manuel calistirma modu"
+        required: true
+        default: "multi"
+        type: choice
+        options:
+          - multi
+          - single
+          - smart_force
+      market_type:
+        description: "Taranacak pazar"
+        required: true
+        default: "bist"
+        type: choice
+        options:
+          - bist
+          - nasdaq
+          - sp500
+          - emtia
+          - kripto
+      period:
+        description: "single modu icin zaman dilimi"
+        required: true
+        default: "1D"
+        type: choice
+        options:
+          - 15m
+          - 1H
+          - 4H
+          - 1D
+          - 1W
+          - 1M
+      use_state:
+        description: "Daha once gonderilen sinyalleri filtrele"
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: write
@@ -44,7 +82,7 @@ jobs:
             echo "$TV_COOKIES" > tv_cookies.txt
           fi
 
-      - name: 🔍 Run Market Scan (Smart Mode)
+      - name: Run Market Scan
         env:
           TV_USERNAME: ${{ secrets.TV_USERNAME }}
           TV_PASSWORD: ${{ secrets.TV_PASSWORD }}
@@ -52,8 +90,26 @@ jobs:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: |
-          # 'auto' komutu ile bot sadece zamanı gelmişse çalışır
-          python main.py auto
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            # Planli kosularda bot sadece zamani gelmis taramayi calistirir.
+            python main.py auto bist
+            exit 0
+          fi
+
+          STATE_FLAG=""
+          if [ "${{ inputs.use_state }}" = "false" ]; then
+            STATE_FLAG="--nostate"
+          fi
+
+          if [ "${{ inputs.mode }}" = "single" ]; then
+            python main.py scan "${{ inputs.period }}" "${{ inputs.market_type }}" $STATE_FLAG
+          elif [ "${{ inputs.mode }}" = "smart_force" ]; then
+            # Zaman kontrolunu atlar, tum periyotlari hemen tarar.
+            python main.py auto "${{ inputs.market_type }}" --force $STATE_FLAG
+          else
+            # Manuel varsayilan: tum periyotlari hemen tarar.
+            python main.py multi "${{ inputs.market_type }}" $STATE_FLAG
+          fi
 
       - name: 💾 Persist state.json
         if: always()
