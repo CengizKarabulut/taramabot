@@ -19,15 +19,42 @@ from tvDatafeed import Interval
 # --------------------------------------------------------------------------
 
 STRATEGY_META = {
-    "macd_cross": {"key": "last_sent_macd_cross", "emoji": "🟣", "title": "S1"},
-    "ema":        {"key": "last_sent_ema",        "emoji": "🟠", "title": "S2"},
-    "rsi_macd":   {"key": "last_sent_rsi_macd",   "emoji": "🟢", "title": "S3"},
-    "new_scan":   {"key": "last_sent_new_scan",   "emoji": "🟡", "title": "S4"},
-    "smi_macd_full": {"key": "last_sent_smi_macd", "emoji": "🚀", "title": "S5"},
-    "smi_macd":   {"key": "last_sent_smi_macd",   "emoji": "⭐", "title": "S6"},
-    "rsi":        {"key": "last_sent_rsi",        "emoji": "💎", "title": "S7"},
-    "h8":         {"key": "last_sent_h8",         "emoji": "🔷", "title": "S8"},
-    "i9":         {"key": "last_sent_i9",         "emoji": "🔹", "title": "S9"},
+    "macd_cross": {
+        "key": "last_sent_macd_cross", "emoji": "🟣", "title": "S1",
+        "name": "MACD Pozitif Kesişim",
+    },
+    "ema": {
+        "key": "last_sent_ema", "emoji": "🟠", "title": "S2",
+        "name": "EMA Dizilimi",
+    },
+    "rsi_macd": {
+        "key": "last_sent_rsi_macd", "emoji": "🟢", "title": "S3",
+        "name": "RSI + MACD + Hacim",
+    },
+    "new_scan": {
+        "key": "last_sent_new_scan", "emoji": "🟡", "title": "S4",
+        "name": "SMA + MACD + Hacim",
+    },
+    "smi_macd_full": {
+        "key": "last_sent_smi_macd", "emoji": "🚀", "title": "S5",
+        "name": "SMI/MACD Full",
+    },
+    "smi_macd": {
+        "key": "last_sent_smi_macd", "emoji": "⭐", "title": "S6",
+        "name": "SMI/MACD",
+    },
+    "rsi": {
+        "key": "last_sent_rsi", "emoji": "💎", "title": "S7",
+        "name": "RSI",
+    },
+    "h8": {
+        "key": "last_sent_h8", "emoji": "🔷", "title": "H8",
+        "name": "SMI/MACD Pozitif",
+    },
+    "i9": {
+        "key": "last_sent_i9", "emoji": "🔹", "title": "I9",
+        "name": "SMI/MACD Pozitif Full",
+    },
 }
 
 PERIOD_ORDER = ["15m", "1H", "4H", "1D", "1W", "1M"]
@@ -145,7 +172,8 @@ async def _build_strategy_messages(strategy_key: str, state: dict, scanner, pric
     if not any(grouped.values()) and not unknown_period: return []
 
     messages = []
-    header = (f"{DIVIDER}\n<b>{meta['emoji']} HAFTALIK RAPOR — {meta['title']}</b>\n"
+    display_title = f"{meta['title']} - {meta['name']}"
+    header = (f"{DIVIDER}\n<b>{meta['emoji']} HAFTALIK RAPOR — {display_title}</b>\n"
               f"<b>📅 {datetime.now().strftime('%d.%m.%Y %H:%M')}</b>\n{DIVIDER}")
     messages.append(header)
 
@@ -155,18 +183,18 @@ async def _build_strategy_messages(strategy_key: str, state: dict, scanner, pric
         if not rows: continue
         all_rows.extend(rows)
         rows.sort(key=lambda r: (1 if r[5] is None else 0, -(r[5] if r[5] is not None else 0)))
-        msg = f"<b>⏱ {meta['emoji']} {meta['title']} — {PERIOD_NAMES[period]}</b>\n\n"
+        msg = f"<b>⏱ {meta['emoji']} {display_title} — {PERIOD_NAMES[period]}</b>\n\n"
         msg += _format_signal_lines(rows) + "\n" + _stats_block(PERIOD_NAMES[period], rows)
         messages.append(msg)
 
     if unknown_period:
         unknown_period.sort(key=lambda r: (1 if r[5] is None else 0, -(r[5] if r[5] is not None else 0)))
         all_rows.extend(unknown_period)
-        msg = f"<b>⏱ {meta['emoji']} {meta['title']} — DİĞER</b>\n\n"
+        msg = f"<b>⏱ {meta['emoji']} {display_title} — DİĞER</b>\n\n"
         msg += _format_signal_lines(unknown_period) + "\n" + _stats_block("DİĞER", unknown_period)
         messages.append(msg)
 
-    summary = f"{DIVIDER}\n<b>🎯 {meta['emoji']} {meta['title']} — GENEL TOPLAM</b>\n\n"
+    summary = f"{DIVIDER}\n<b>🎯 {meta['emoji']} {display_title} — GENEL TOPLAM</b>\n\n"
     summary += _stats_block("GENEL", all_rows)
     summary += "\n<b>📦 Zaman dilimi dağılımı:</b>\n"
     for period in PERIOD_ORDER:
@@ -215,4 +243,3 @@ if __name__ == "__main__":
             _send_chunked(sender, msg)
             if i < len(messages) - 1: time.sleep(1.2)
     asyncio.run(main())
-"""

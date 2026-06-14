@@ -46,7 +46,10 @@ async def run_strategy_scan(market_type="bist"):
                 ema_signals=[],
                 macd_cross_signals=[],
                 h8_signals=[],
-                i9_signals=[]
+                i9_signals=[],
+                market_type=market_type,
+                total_scanned=total_scanned,
+                enabled_strategy_codes=["S7"]
             )
         except Exception as e:
             logger.error(f"Hata: {str(e)}")

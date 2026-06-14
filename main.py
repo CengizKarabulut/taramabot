@@ -62,7 +62,10 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
             ema_signals=ema_signals,
             macd_cross_signals=macd_cross_signals,
             h8_signals=h8_signals,
-            i9_signals=i9_signals
+            i9_signals=i9_signals,
+            market_type=market_type,
+            total_scanned=total_scanned,
+            enabled_strategy_codes=["S1", "H8", "I9", "S2", "S3", "S4", "S5", "S6", "S7"]
         )
         
         # 2. İstatistik Mesajı (Her periyot sonunda mutlaka gönderilir)

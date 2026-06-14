@@ -78,7 +78,7 @@ class ScannerState:
             return entry == bar_time
         return False
     
-    def mark_signal_sent(self, symbol: str, period: str, strategy: str, bar_time: str, price: float = 0.0) -> None:
+    def mark_signal_sent(self, symbol: str, period: str, strategy: str, bar_time: str, price: float = 0.0, **metadata) -> None:
         """Sinyali bu bar için gönderildi olarak işaretle ve fiyatı kaydet."""
         key = f"{symbol}_{period}"
         strategy_map = {
@@ -92,10 +92,12 @@ class ScannerState:
         
         state_key = strategy_map.get(strategy)
         if state_key:
-            self.state.setdefault(state_key, {})[key] = {
+            entry = {
                 "time": bar_time,
                 "price": price
             }
+            entry.update(metadata)
+            self.state.setdefault(state_key, {})[key] = entry
 
 
 class MarketScanner:
@@ -257,10 +259,10 @@ class MarketScanner:
                 smi_res = result["signals"]["smi_macd"]
                 if smi_res["full_buy_signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "smi_macd", bar_time)):
                     full_signals.append(result)
-                    if use_state: self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close)
+                    if use_state: self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close, is_full=True)
                 elif smi_res["smi_macd_buy"] and (not use_state or not self.state.is_signal_sent(sym, p, "smi_macd", bar_time)):
                     smi_signals.append(result)
-                    if use_state: self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close)
+                    if use_state: self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close, is_full=False)
             
             # RSI
             if "rsi" in result["signals"] and result["signals"]["rsi"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "rsi", bar_time)):
