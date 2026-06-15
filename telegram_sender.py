@@ -200,66 +200,76 @@ class TelegramSender:
         enabled = {str(code).lower() for code in (enabled_strategy_codes or [])}
         groups = [
             {
-                "key": "macd_cross", "signals": macd_cross_signals or [], "emoji": "🟣", "code": "S1",
-                "name": "MACD Pozitif Kesişim",
+                "key": "macd_cross", "signals": macd_cross_signals or [], "emoji": "🟣", "code": "T1",
+                "name": "Tarama 1",
+                "aliases": ["S1"],
                 "description": "RSI 50 üstü, MACD sinyal çizgisini yukarı keser ve MACD pozitif bölgede kalır.",
                 "color": "#7c3aed",
             },
             {
-                "key": "h8", "signals": h8_signals or [], "emoji": "🔷", "code": "H8",
-                "name": "SMI/MACD Pozitif",
+                "key": "h8", "signals": h8_signals or [], "emoji": "🔷", "code": "T2",
+                "name": "Tarama 2",
+                "aliases": ["H8"],
                 "description": "SMI yukarı kesişim, MACD histogram pozitif ve güçlenen momentum koşullarını arar.",
                 "color": "#2563eb",
             },
             {
-                "key": "i9", "signals": i9_signals or [], "emoji": "🔹", "code": "I9",
-                "name": "SMI/MACD Pozitif Full",
+                "key": "i9", "signals": i9_signals or [], "emoji": "🔹", "code": "T3",
+                "name": "Tarama 3",
+                "aliases": ["I9"],
                 "description": "H8 koşullarına ek olarak MA200 üstü fiyat ve güçlü hacim onayı ister.",
                 "color": "#0891b2",
             },
             {
-                "key": "ema", "signals": ema_signals or [], "emoji": EMOJI_EMA_SIGNAL, "code": "S2",
-                "name": "EMA Dizilimi",
+                "key": "ema", "signals": ema_signals or [], "emoji": EMOJI_EMA_SIGNAL, "code": "T4",
+                "name": "Tarama 4",
+                "aliases": ["S2"],
                 "description": "Kısa EMA'ların uzun EMA'lar üstünde hizalandığı ve hacmin desteklediği trend düzenini tarar.",
                 "color": "#f97316",
             },
             {
-                "key": "rsi_macd", "signals": rsi_macd_signals or [], "emoji": EMOJI_RSI_MACD_SIGNAL, "code": "S3",
-                "name": "RSI + MACD + Hacim",
+                "key": "rsi_macd", "signals": rsi_macd_signals or [], "emoji": EMOJI_RSI_MACD_SIGNAL, "code": "T5",
+                "name": "Tarama 5",
+                "aliases": ["S3"],
                 "description": "RSI güçlenirken MACD yukarı kesişim ve hacim artışı birlikte oluşur.",
                 "color": "#16a34a",
             },
             {
-                "key": "new_scan", "signals": new_scan_signals or [], "emoji": EMOJI_NEW_SCAN_SIGNAL, "code": "S4",
-                "name": "SMA + MACD + Hacim",
+                "key": "new_scan", "signals": new_scan_signals or [], "emoji": EMOJI_NEW_SCAN_SIGNAL, "code": "T6",
+                "name": "Tarama 6",
+                "aliases": ["S4"],
                 "description": "SMA 5/8/21 dizilimi, MACD pozitifliği, RSI aralığı ve hacim onayını birleştirir.",
                 "color": "#ca8a04",
             },
             {
-                "key": "full", "signals": full_signals or [], "emoji": EMOJI_FULL_SIGNAL, "code": "S5",
-                "name": "SMI/MACD Full",
+                "key": "full", "signals": full_signals or [], "emoji": EMOJI_FULL_SIGNAL, "code": "T7",
+                "name": "Tarama 7",
+                "aliases": ["S5"],
                 "description": "SMI/MACD alım sinyaline MA200 üstü fiyat ve hacim filtresi ekler.",
                 "color": "#dc2626",
             },
             {
-                "key": "smi", "signals": smi_signals or [], "emoji": EMOJI_SMI_SIGNAL, "code": "S6",
-                "name": "SMI/MACD",
+                "key": "smi", "signals": smi_signals or [], "emoji": EMOJI_SMI_SIGNAL, "code": "T8",
+                "name": "Tarama 8",
+                "aliases": ["S6"],
                 "description": "SMI ve MACD momentum kesişimlerini temel alan erken alım sinyalidir.",
                 "color": "#9333ea",
             },
             {
-                "key": "rsi", "signals": rsi_signals or [], "emoji": EMOJI_RSI_SIGNAL, "code": "S7",
-                "name": "RSI",
+                "key": "rsi", "signals": rsi_signals or [], "emoji": EMOJI_RSI_SIGNAL, "code": "T9",
+                "name": "Tarama 9",
+                "aliases": ["S7"],
                 "description": "RSI'ın güç bölgesine geçişini ve yükseliş momentumunu izler.",
                 "color": "#0ea5e9",
             },
         ]
 
         for group in groups:
+            aliases = {group["key"].lower(), group["code"].lower()}
+            aliases.update(str(alias).lower() for alias in group.get("aliases", []))
             group["enabled"] = (
                 not enabled
-                or group["code"].lower() in enabled
-                or group["key"].lower() in enabled
+                or bool(enabled.intersection(aliases))
             )
         return groups
 
@@ -489,9 +499,6 @@ class TelegramSender:
                     color="#111827", fontsize=10, fontweight="bold", va="center")
             ax.text(0.49, table_top + 0.022, "Kapanış", transform=ax.transAxes,
                     color="#111827", fontsize=10, fontweight="bold", va="center")
-            ax.text(0.64, table_top + 0.022, "Tarama", transform=ax.transAxes,
-                    color="#111827", fontsize=10, fontweight="bold", va="center")
-
             row_step = min(0.034, 0.64 / max(len(visible_rows), 1))
             font_size = 9.5 if len(visible_rows) <= 40 else 8
             y = table_top - row_step
@@ -509,8 +516,6 @@ class TelegramSender:
                 ax.text(0.34, y, f"{row['change']:+.2f}%", transform=ax.transAxes,
                         color=change_color, fontsize=font_size, fontweight="bold", va="center")
                 ax.text(0.49, y, f"{row['close']:.2f}", transform=ax.transAxes,
-                        color="#334155", fontsize=font_size, va="center")
-                ax.text(0.64, y, row["name"], transform=ax.transAxes,
                         color="#334155", fontsize=font_size, va="center")
                 y -= row_step
 
@@ -679,10 +684,9 @@ class TelegramSender:
         total_scanned: Optional[int] = None
     ) -> bool:
         """
-        Tarama icin iki gorsel gonder: once bilgi, sonra sonuc.
+        Tarama icin sadece sonuc gorselini gonder.
         """
         try:
-            info_path = self._write_scan_info_image(period, strategies, market_type, total_scanned)
             enabled_strategies = self._enabled_strategies(strategies)
             result_groups = []
 
@@ -692,7 +696,7 @@ class TelegramSender:
                     continue
 
                 row_chunks = self._balanced_chunks(rows, SCAN_RESULT_IMAGE_MAX_ROWS)
-                strategy_label = f"{strategy['code']} - {strategy['name']}"
+                strategy_label = strategy["name"]
                 image_paths = [
                     self._write_scan_result_image(
                         period=period,
@@ -726,19 +730,17 @@ class TelegramSender:
             return False
 
         p_name = self._period_name(period)
-        ok_info = self.send_photo(info_path, caption=f"<b>Tarama Bilgisi</b> — {p_name}")
-        time.sleep(1)
         ok_results = True
         for strategy, result_paths in result_groups:
             for idx, result_path in enumerate(result_paths, start=1):
                 caption = f"<b>Tarama Sonucu</b> — {p_name}"
                 if strategy:
-                    caption += f" — {strategy['code']}"
+                    caption += f" — {strategy['name']}"
                 if len(result_paths) > 1:
                     caption += f" — Sayfa {idx}/{len(result_paths)}"
                 ok_results = self.send_photo(result_path, caption=caption) and ok_results
                 time.sleep(1)
-        return ok_info and ok_results
+        return ok_results
 
     def send_grouped_summary(
         self,

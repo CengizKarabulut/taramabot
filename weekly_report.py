@@ -22,40 +22,40 @@ from tvDatafeed import Interval
 
 STRATEGY_META = {
     "macd_cross": {
-        "key": "last_sent_macd_cross", "emoji": "🟣", "title": "S1",
+        "key": "last_sent_macd_cross", "emoji": "🟣", "title": "Tarama 1",
         "name": "MACD Pozitif Kesişim",
     },
-    "ema": {
-        "key": "last_sent_ema", "emoji": "🟠", "title": "S2",
-        "name": "EMA Dizilimi",
-    },
-    "rsi_macd": {
-        "key": "last_sent_rsi_macd", "emoji": "🟢", "title": "S3",
-        "name": "RSI + MACD + Hacim",
-    },
-    "new_scan": {
-        "key": "last_sent_new_scan", "emoji": "🟡", "title": "S4",
-        "name": "SMA + MACD + Hacim",
-    },
-    "smi_macd_full": {
-        "key": "last_sent_smi_macd", "emoji": "🚀", "title": "S5",
-        "name": "SMI/MACD Full",
-    },
-    "smi_macd": {
-        "key": "last_sent_smi_macd", "emoji": "⭐", "title": "S6",
-        "name": "SMI/MACD",
-    },
-    "rsi": {
-        "key": "last_sent_rsi", "emoji": "💎", "title": "S7",
-        "name": "RSI",
-    },
     "h8": {
-        "key": "last_sent_h8", "emoji": "🔷", "title": "H8",
+        "key": "last_sent_h8", "emoji": "🔷", "title": "Tarama 2",
         "name": "SMI/MACD Pozitif",
     },
     "i9": {
-        "key": "last_sent_i9", "emoji": "🔹", "title": "I9",
+        "key": "last_sent_i9", "emoji": "🔹", "title": "Tarama 3",
         "name": "SMI/MACD Pozitif Full",
+    },
+    "ema": {
+        "key": "last_sent_ema", "emoji": "🟠", "title": "Tarama 4",
+        "name": "EMA Dizilimi",
+    },
+    "rsi_macd": {
+        "key": "last_sent_rsi_macd", "emoji": "🟢", "title": "Tarama 5",
+        "name": "RSI + MACD + Hacim",
+    },
+    "new_scan": {
+        "key": "last_sent_new_scan", "emoji": "🟡", "title": "Tarama 6",
+        "name": "SMA + MACD + Hacim",
+    },
+    "smi_macd_full": {
+        "key": "last_sent_smi_macd", "emoji": "🚀", "title": "Tarama 7",
+        "name": "SMI/MACD Full",
+    },
+    "smi_macd": {
+        "key": "last_sent_smi_macd", "emoji": "⭐", "title": "Tarama 8",
+        "name": "SMI/MACD",
+    },
+    "rsi": {
+        "key": "last_sent_rsi", "emoji": "💎", "title": "Tarama 9",
+        "name": "RSI",
     },
 }
 
@@ -309,7 +309,7 @@ async def _build_strategy_messages(strategy_key: str, state: dict, scanner, pric
     if not any(grouped.values()) and not unknown_period: return [], []
 
     messages = []
-    display_title = f"{meta['title']} - {meta['name']}"
+    display_title = meta["title"]
     header = (f"{DIVIDER}\n<b>{meta['emoji']} HAFTALIK RAPOR — {display_title}</b>\n"
               f"<b>📅 {datetime.now().strftime('%d.%m.%Y %H:%M')}</b>\n{DIVIDER}")
     messages.append(header)

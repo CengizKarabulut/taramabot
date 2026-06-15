@@ -109,7 +109,7 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
             i9_signals=i9_signals,
             market_type=market_type,
             total_scanned=total_scanned,
-            enabled_strategy_codes=["S1", "H8", "I9", "S2", "S3", "S4", "S5", "S6", "S7"]
+            enabled_strategy_codes=["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"]
         )
         
         # Sonuçları bir sonraki aşama (toplu özet) için döndür
@@ -159,15 +159,15 @@ def send_final_summary(all_results: list):
     symbol_map = {} # symbol -> { period -> [strategies] }
     
     strategy_names = {
-        "full": "S5",
-        "smi": "S6",
-        "rsi": "S7",
-        "new": "S4",
-        "rsi_macd": "S3",
-        "ema": "S2",
-        "macd_cross": "S1",
-        "h8": "H8",
-        "i9": "I9"
+        "full": "Tarama 7",
+        "smi": "Tarama 8",
+        "rsi": "Tarama 9",
+        "new": "Tarama 6",
+        "rsi_macd": "Tarama 5",
+        "ema": "Tarama 4",
+        "macd_cross": "Tarama 1",
+        "h8": "Tarama 2",
+        "i9": "Tarama 3"
     }
     
     for res in all_results:
