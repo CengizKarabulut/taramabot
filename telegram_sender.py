@@ -389,16 +389,18 @@ class TelegramSender:
         rows: Optional[List[dict]] = None,
         page_number: int = 1,
         page_count: int = 1,
-        total_signal_count: Optional[int] = None
+        total_signal_count: Optional[int] = None,
+        strategy_label: Optional[str] = None
     ) -> Optional[str]:
         plt, Rectangle = self._load_matplotlib()
         os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
 
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         page_suffix = f"_{page_number:02d}_of_{page_count:02d}" if page_count > 1 else ""
+        strategy_part = f"_{self._safe_filename_part(strategy_label)}" if strategy_label else ""
         path = os.path.join(
             SCREENSHOTS_DIR,
-            f"scan_result_{self._safe_filename_part(market_type)}_{self._safe_filename_part(period)}_{stamp}{page_suffix}.png"
+            f"scan_result_{self._safe_filename_part(market_type)}_{self._safe_filename_part(period)}{strategy_part}_{stamp}{page_suffix}.png"
         )
 
         enabled = self._enabled_strategies(strategies)
@@ -413,7 +415,10 @@ class TelegramSender:
         ax.add_patch(Rectangle((0, 0.89), 1, 0.11, transform=ax.transAxes, color="#0f172a"))
         ax.text(0.055, 0.95, "TARAMA SONUCU", transform=ax.transAxes, color="white",
                 fontsize=23, fontweight="bold", va="center")
-        subtitle = f"{(market_type or 'BIST').upper()} | {self._period_name(period)} | {total_signal_count} sinyal"
+        subtitle = f"{(market_type or 'BIST').upper()} | {self._period_name(period)}"
+        if strategy_label:
+            subtitle += f" | {strategy_label}"
+        subtitle += f" | {total_signal_count} sinyal"
         if total_scanned is not None:
             subtitle += f" | {total_scanned} sembol tarandı"
         if page_count > 1:
@@ -621,21 +626,44 @@ class TelegramSender:
         """
         try:
             info_path = self._write_scan_info_image(period, strategies, market_type, total_scanned)
-            rows = self._scan_result_rows(strategies)
-            row_chunks = self._balanced_chunks(rows, SCAN_RESULT_IMAGE_MAX_ROWS)
-            result_paths = [
-                self._write_scan_result_image(
+            enabled_strategies = self._enabled_strategies(strategies)
+            result_groups = []
+
+            for strategy in enabled_strategies:
+                rows = self._scan_result_rows([strategy])
+                if not rows:
+                    continue
+
+                row_chunks = self._balanced_chunks(rows, SCAN_RESULT_IMAGE_MAX_ROWS)
+                strategy_label = f"{strategy['code']} - {strategy['name']}"
+                image_paths = [
+                    self._write_scan_result_image(
+                        period=period,
+                        strategies=[strategy],
+                        market_type=market_type,
+                        total_scanned=total_scanned,
+                        rows=chunk,
+                        page_number=idx,
+                        page_count=len(row_chunks),
+                        total_signal_count=len(rows),
+                        strategy_label=strategy_label,
+                    )
+                    for idx, chunk in enumerate(row_chunks, start=1)
+                ]
+                result_groups.append((strategy, image_paths))
+
+            if not result_groups:
+                image_path = self._write_scan_result_image(
                     period=period,
-                    strategies=strategies,
+                    strategies=enabled_strategies,
                     market_type=market_type,
                     total_scanned=total_scanned,
-                    rows=chunk,
-                    page_number=idx,
-                    page_count=len(row_chunks),
-                    total_signal_count=len(rows),
+                    rows=[],
+                    page_number=1,
+                    page_count=1,
+                    total_signal_count=0,
                 )
-                for idx, chunk in enumerate(row_chunks, start=1)
-            ]
+                result_groups.append((None, [image_path]))
         except Exception as e:
             logger.warning(f"Tarama görselleri oluşturulamadı: {e}")
             return False
@@ -644,12 +672,15 @@ class TelegramSender:
         ok_info = self.send_photo(info_path, caption=f"<b>Tarama Bilgisi</b> — {p_name}")
         time.sleep(1)
         ok_results = True
-        for idx, result_path in enumerate(result_paths, start=1):
-            caption = f"<b>Tarama Sonucu</b> — {p_name}"
-            if len(result_paths) > 1:
-                caption += f" — Sayfa {idx}/{len(result_paths)}"
-            ok_results = self.send_photo(result_path, caption=caption) and ok_results
-            time.sleep(1)
+        for strategy, result_paths in result_groups:
+            for idx, result_path in enumerate(result_paths, start=1):
+                caption = f"<b>Tarama Sonucu</b> — {p_name}"
+                if strategy:
+                    caption += f" — {strategy['code']}"
+                if len(result_paths) > 1:
+                    caption += f" — Sayfa {idx}/{len(result_paths)}"
+                ok_results = self.send_photo(result_path, caption=caption) and ok_results
+                time.sleep(1)
         return ok_info and ok_results
 
     def send_grouped_summary(

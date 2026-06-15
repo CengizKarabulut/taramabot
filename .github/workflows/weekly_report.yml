@@ -36,6 +36,7 @@ on:
         type: choice
         options:
           - all
+          - smi_macd_full
           - smi_macd
           - rsi
           - new_scan
@@ -85,7 +86,7 @@ jobs:
       # Aynı anda 2 paralel job: tvdatafeed rate-limit'ine takılmamak için tutuyoruz
       max-parallel: 2
       matrix:
-        strategy: [smi_macd, rsi, new_scan, rsi_macd, ema, macd_cross, h8, i9]
+        strategy: [smi_macd_full, smi_macd, rsi, new_scan, rsi_macd, ema, macd_cross, h8, i9]
 
     steps:
       - name: 📥 Checkout code
