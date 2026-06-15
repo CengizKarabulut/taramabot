@@ -16,7 +16,7 @@ Bu rehber, `taramabot` deposundaki taramaları nasıl ayrı ayrı çalıştırac
 ## Nasıl Kullanılır?
 
 ### 1. Telegram Grubu Bağlantısı
-Tüm taramaların aynı gruba gitmesi için GitHub deponuzun **Settings > Secrets and variables > Actions** kısmındaki `TG_CHAT_ID` değerinin hedef grubun ID'si olduğundan emin olun. Belirli bir Telegram konu başlığına göndermek için `TG_THREAD_ID` değerini de ekleyin. Bu değer konu linkindeki topic ID olabilir; örneğin `https://t.me/c/.../123` linkinde `123`.
+Tüm taramaların aynı gruba gitmesi için GitHub deponuzun **Settings > Secrets and variables > Actions** kısmındaki `TG_CHAT_ID` değerinin hedef grubun ID'si olduğundan emin olun. Belirli bir Telegram konu başlığına göndermek için `TG_THREAD_ID` değerini de ekleyin. Bu değer konu linkindeki topic ID olabilir; örneğin `https://t.me/c/.../123` linkinde veya `https://web.telegram.org/a/#-100..._123` linkinde `123`.
 
 ### 2. GitHub Actions Workflow Dosyasını Eklemek
 Güvenlik kısıtlamaları nedeniyle `.github/workflows/individual_scans.yml` dosyasını doğrudan push edemedim. Lütfen şu adımları izleyin:

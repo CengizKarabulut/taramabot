@@ -49,7 +49,12 @@ class TelegramSender:
         if match:
             return match.group(1)
 
-        match = re.search(r"\d+", value)
+        # Telegram Web links usually look like https://web.telegram.org/a/#-100..._<topic_id>
+        match = re.search(r"#-?\d+_(\d+)", value)
+        if match:
+            return match.group(1)
+
+        match = re.fullmatch(r"\d+", value)
         if match:
             return match.group(0)
 
