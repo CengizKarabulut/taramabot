@@ -8,6 +8,8 @@ import asyncio
 import time
 import sys
 from datetime import datetime
+from pathlib import Path
+from typing import Optional
 
 from telegram_sender import get_telegram_sender
 from scanner import MarketScanner
@@ -68,6 +70,8 @@ PERIOD_NAMES = {
 }
 
 DIVIDER = "<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
+REPORTS_DIR = Path("reports")
+WEEKLY_IMAGE_MAX_ROWS = int(os.getenv("WEEKLY_IMAGE_MAX_ROWS", "30"))
 
 
 # --------------------------------------------------------------------------
@@ -137,11 +141,144 @@ def _format_signal_lines(rows: list) -> str:
     return body
 
 
-async def _build_strategy_messages(strategy_key: str, state: dict, scanner, price_cache: dict) -> list:
+def _safe_filename(value: str) -> str:
+    import re
+    cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "-", str(value).strip())
+    return cleaned.strip("-").lower() or "weekly-report"
+
+
+def _balanced_chunks(items: list, max_size: int) -> list[list]:
+    if not items:
+        return [items]
+
+    max_size = max(1, max_size)
+    page_count = (len(items) + max_size - 1) // max_size
+    base_size, extra = divmod(len(items), page_count)
+    chunks = []
+    start = 0
+    for index in range(page_count):
+        size = base_size + (1 if index < extra else 0)
+        chunks.append(items[start:start + size])
+        start += size
+    return chunks
+
+
+def _format_price(value: Optional[float]) -> str:
+    if value is None:
+        return "-"
+    try:
+        return f"{float(value):.2f}"
+    except (TypeError, ValueError):
+        return "-"
+
+
+def _format_change(value: Optional[float]) -> str:
+    if value is None:
+        return "-"
+    try:
+        return f"{float(value):+.2f}%"
+    except (TypeError, ValueError):
+        return "-"
+
+
+def _load_matplotlib():
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+    return plt, Rectangle
+
+
+def _write_weekly_report_image(
+    display_title: str,
+    rows: list,
+    page: int,
+    total_pages: int,
+    total_rows: int
+) -> Path:
+    plt, Rectangle = _load_matplotlib()
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    path = REPORTS_DIR / f"weekly_{_safe_filename(display_title)}_{page:02d}_of_{total_pages:02d}.png"
+
+    fig_height = min(18, max(8, 4.4 + len(rows) * 0.30))
+    fig, ax = plt.subplots(figsize=(12, fig_height), dpi=150)
+    fig.patch.set_facecolor("#f8fafc")
+    ax.set_axis_off()
+
+    ax.add_patch(Rectangle((0, 0.89), 1, 0.11, transform=ax.transAxes, color="#0f172a"))
+    ax.text(0.055, 0.95, "HAFTALIK PERFORMANS RAPORU", transform=ax.transAxes,
+            color="white", fontsize=22, fontweight="bold", va="center")
+    subtitle = f"{display_title} | {total_rows} sinyal"
+    if total_pages > 1:
+        subtitle += f" | Sayfa {page}/{total_pages} ({len(rows)} sinyal)"
+    ax.text(0.055, 0.908, subtitle, transform=ax.transAxes, color="#cbd5e1",
+            fontsize=11.5, va="center")
+
+    header_y = 0.80
+    ax.add_patch(Rectangle((0.055, header_y), 0.89, 0.045, transform=ax.transAxes,
+                           color="#e5e7eb", ec="#d1d5db", lw=1))
+    for x, label in [
+        (0.075, "Sembol"),
+        (0.205, "Periyot"),
+        (0.325, "Tarih"),
+        (0.500, "Giris"),
+        (0.635, "Son"),
+        (0.770, "Getiri"),
+    ]:
+        ax.text(x, header_y + 0.023, label, transform=ax.transAxes,
+                color="#111827", fontsize=9.5, fontweight="bold", va="center")
+
+    if not rows:
+        ax.add_patch(Rectangle((0.055, 0.32), 0.89, 0.20, transform=ax.transAxes,
+                               color="white", ec="#d1d5db", lw=1.2))
+        ax.text(0.50, 0.42, "Bu hafta sinyal yok.", transform=ax.transAxes,
+                color="#334155", fontsize=17, fontweight="bold",
+                ha="center", va="center")
+    else:
+        row_step = min(0.035, 0.70 / max(len(rows), 1))
+        font_size = 9.2 if len(rows) <= 24 else 8.0
+        y = header_y - row_step
+        for index, row in enumerate(rows):
+            symbol, period, t_str, signal_price, current_price, change = row
+            bg = "#ffffff" if index % 2 == 0 else "#f1f5f9"
+            ax.add_patch(Rectangle((0.055, y - row_step * 0.44), 0.89, row_step * 0.88,
+                                   transform=ax.transAxes, color=bg, ec="#e5e7eb", lw=0.4))
+            ax.text(0.075, y, str(symbol), transform=ax.transAxes, color="#111827",
+                    fontsize=font_size, fontweight="bold", va="center")
+            ax.text(0.205, y, str(period), transform=ax.transAxes, color="#334155",
+                    fontsize=font_size, va="center")
+            ax.text(0.325, y, str(t_str), transform=ax.transAxes, color="#334155",
+                    fontsize=font_size, va="center")
+            ax.text(0.500, y, _format_price(signal_price), transform=ax.transAxes,
+                    color="#334155", fontsize=font_size, va="center")
+            ax.text(0.635, y, _format_price(current_price), transform=ax.transAxes,
+                    color="#334155", fontsize=font_size, va="center")
+            if change is None:
+                change_color = "#64748b"
+            else:
+                change_color = "#16a34a" if change >= 0 else "#dc2626"
+            ax.text(0.770, y, _format_change(change), transform=ax.transAxes,
+                    color=change_color, fontsize=font_size, fontweight="bold", va="center")
+            y -= row_step
+
+    fig.savefig(path, bbox_inches="tight", facecolor=fig.get_facecolor())
+    plt.close(fig)
+    return path
+
+
+def _write_weekly_report_images(display_title: str, rows: list) -> list[Path]:
+    chunks = _balanced_chunks(rows, WEEKLY_IMAGE_MAX_ROWS)
+    return [
+        _write_weekly_report_image(display_title, chunk, index, len(chunks), len(rows))
+        for index, chunk in enumerate(chunks, start=1)
+    ]
+
+
+async def _build_strategy_messages(strategy_key: str, state: dict, scanner, price_cache: dict) -> tuple[list, list]:
     meta = STRATEGY_META[strategy_key]
     state_key = meta["key"]
     signals = state.get(state_key, {})
-    if not signals: return []
+    if not signals: return [], []
 
     grouped = {p: [] for p in PERIOD_ORDER}
     unknown_period = []
@@ -169,7 +306,7 @@ async def _build_strategy_messages(strategy_key: str, state: dict, scanner, pric
         if period in grouped: grouped[period].append(row)
         else: unknown_period.append(row)
 
-    if not any(grouped.values()) and not unknown_period: return []
+    if not any(grouped.values()) and not unknown_period: return [], []
 
     messages = []
     display_title = f"{meta['title']} - {meta['name']}"
@@ -181,8 +318,8 @@ async def _build_strategy_messages(strategy_key: str, state: dict, scanner, pric
     for period in PERIOD_ORDER:
         rows = grouped[period]
         if not rows: continue
-        all_rows.extend(rows)
         rows.sort(key=lambda r: (1 if r[5] is None else 0, -(r[5] if r[5] is not None else 0)))
+        all_rows.extend(rows)
         msg = f"<b>⏱ {meta['emoji']} {display_title} — {PERIOD_NAMES[period]}</b>\n\n"
         msg += _format_signal_lines(rows) + "\n" + _stats_block(PERIOD_NAMES[period], rows)
         messages.append(msg)
@@ -202,21 +339,29 @@ async def _build_strategy_messages(strategy_key: str, state: dict, scanner, pric
         if cnt: summary += f"  • {PERIOD_NAMES[period]}: {cnt}\n"
     summary += DIVIDER
     messages.append(summary)
-    return messages
+    image_paths = _write_weekly_report_images(display_title, all_rows)
+    return messages, image_paths
 
 
 async def generate_weekly_report(strategy_name: str | None = None) -> list:
+    messages, _ = await generate_weekly_report_with_images(strategy_name)
+    return messages
+
+
+async def generate_weekly_report_with_images(strategy_name: str | None = None) -> tuple[list, list]:
     state_file = "state.json"
-    if not os.path.exists(state_file): return ["<b>ℹ️ state.json bulunamadı.</b>"]
+    if not os.path.exists(state_file): return ["<b>ℹ️ state.json bulunamadı.</b>"], []
     with open(state_file, "r", encoding="utf-8") as f: state = json.load(f)
     scanner = MarketScanner()
     price_cache = {}
     targets = [strategy_name] if strategy_name in STRATEGY_META else list(STRATEGY_META.keys())
     all_messages = []
+    all_image_paths = []
     for s in targets:
-        msgs = await _build_strategy_messages(s, state, scanner, price_cache)
+        msgs, image_paths = await _build_strategy_messages(s, state, scanner, price_cache)
         all_messages.extend(msgs)
-    return all_messages or ["<b>ℹ️ Bu hafta sinyal üretilmedi.</b>"]
+        all_image_paths.extend(image_paths)
+    return all_messages or ["<b>ℹ️ Bu hafta sinyal üretilmedi.</b>"], all_image_paths
 
 
 def _send_chunked(sender, text):
@@ -237,8 +382,14 @@ def _send_chunked(sender, text):
 if __name__ == "__main__":
     strategy = sys.argv[1] if len(sys.argv) > 1 else None
     async def main():
-        messages = await generate_weekly_report(strategy)
+        messages, image_paths = await generate_weekly_report_with_images(strategy)
         sender = get_telegram_sender()
+        for i, image_path in enumerate(image_paths):
+            caption = "<b>Haftalık Performans Raporu</b>"
+            if len(image_paths) > 1:
+                caption += f" — Görsel {i + 1}/{len(image_paths)}"
+            sender.send_photo(str(image_path), caption=caption)
+            time.sleep(1)
         for i, msg in enumerate(messages):
             _send_chunked(sender, msg)
             if i < len(messages) - 1: time.sleep(1.2)

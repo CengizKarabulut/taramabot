@@ -42,6 +42,8 @@ on:
           - rsi_macd
           - ema
           - macd_cross
+          - h8
+          - i9
 
 jobs:
   validate:
@@ -83,7 +85,7 @@ jobs:
       # Aynı anda 2 paralel job: tvdatafeed rate-limit'ine takılmamak için tutuyoruz
       max-parallel: 2
       matrix:
-        strategy: [smi_macd, rsi, new_scan, rsi_macd, ema, macd_cross]
+        strategy: [smi_macd, rsi, new_scan, rsi_macd, ema, macd_cross, h8, i9]
 
     steps:
       - name: 📥 Checkout code
@@ -98,7 +100,7 @@ jobs:
       - name: 📦 Install dependencies
         run: |
           pip install --upgrade pip
-          pip install requests python-dotenv pandas numpy
+          pip install requests python-dotenv pandas numpy matplotlib
           pip install git+https://github.com/saidsurucu/borsapy.git
           pip install git+https://github.com/rongardF/tvdatafeed.git
 
