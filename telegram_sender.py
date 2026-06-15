@@ -614,6 +614,37 @@ class TelegramSender:
             time.sleep(1)
         return ok
 
+    def _write_error_image(self, error_msg: str) -> Optional[str]:
+        plt, Rectangle = self._load_matplotlib()
+        os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
+
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        path = os.path.join(SCREENSHOTS_DIR, f"error_{stamp}.png")
+        lines = textwrap.wrap(str(error_msg), width=84) or ["Bilinmeyen hata"]
+        fig_height = min(14, max(6, 4.5 + len(lines) * 0.24))
+
+        fig, ax = plt.subplots(figsize=(12, fig_height), dpi=150)
+        fig.patch.set_facecolor("#fef2f2")
+        ax.set_axis_off()
+
+        ax.add_patch(Rectangle((0, 0.84), 1, 0.16, transform=ax.transAxes, color="#991b1b"))
+        ax.text(0.055, 0.93, "HATA BILDIRIMI", transform=ax.transAxes,
+                color="white", fontsize=23, fontweight="bold", va="center")
+        ax.text(0.055, 0.875, datetime.now().strftime("%d.%m.%Y %H:%M"),
+                transform=ax.transAxes, color="#fecaca", fontsize=12, va="center")
+
+        ax.add_patch(Rectangle((0.055, 0.10), 0.89, 0.66, transform=ax.transAxes,
+                               color="white", ec="#fecaca", lw=1.4))
+        y = 0.69
+        for line in lines[:26]:
+            ax.text(0.08, y, line, transform=ax.transAxes, color="#7f1d1d",
+                    fontsize=10.5, va="top")
+            y -= 0.035
+
+        fig.savefig(path, bbox_inches="tight", facecolor=fig.get_facecolor())
+        plt.close(fig)
+        return path
+
     def send_scan_visuals(
         self,
         period: str,
@@ -723,67 +754,23 @@ class TelegramSender:
             enabled_strategy_codes=enabled_strategy_codes,
         )
 
-        if send_images:
-            self.send_scan_visuals(
-                period=period,
-                strategies=strategies,
-                market_type=market_type,
-                total_scanned=total_scanned,
-            )
-            time.sleep(1)
-
-        p_name = self._period_name(period)
-        
-        header = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
-        header += f"<b>🔍 {p_name}</b>\n"
-        header += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
-        
-        # Tüm sinyalleri kontrol et
-        all_empty = not any(strategy["signals"] for strategy in strategies)
-        
-        if all_empty:
-            empty_msg = header + "\n" + self._format_strategy_legend(strategies)
-            empty_msg += f"\n\n<b>ℹ️</b>\n\n<i>Sinyal yok.</i>\n"
-            empty_msg += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
-            return self.send_message(empty_msg)
-
-        # Başlık ve tarama içeriklerini gönder
-        self.send_message(header + "\n" + self._format_strategy_legend(strategies))
-        time.sleep(1)
-
-        for strategy in strategies:
-            signals = strategy["signals"]
-            if not signals:
-                continue
-            
-            # Her strateji için mesaj oluştur
-            strat_header = (
-                f"<b>{strategy['emoji']} {strategy['code']} - {strategy['name']}</b>\n"
-                f"<i>{strategy['description']}</i>\n"
-            )
-            
-            # Sinyalleri 20'şerli gruplara böl (Daha küçük gruplar 429 riskini azaltır)
-            for i in range(0, len(signals), 20):
-                chunk = signals[i:i+20]
-                body = self._format_signal_list(chunk)
-                
-                msg = strat_header + body
-                if i + 20 < len(signals):
-                    msg += "\n\n<b>(Devamı...)</b>"
-                
-                self.send_message(msg)
-                time.sleep(2) # Mesajlar arası daha uzun bekleme
-
-        # Kapanış çizgisi
-        self.send_message(f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>")
-        return True
+        return self.send_scan_visuals(
+            period=period,
+            strategies=strategies,
+            market_type=market_type,
+            total_scanned=total_scanned,
+        )
     
     def send_error(self, error_msg: str) -> bool:
         """
         Hata mesajı gönder.
         """
-        message = f"<b>❌ HATA</b>\n\n{error_msg}"
-        return self.send_message(message)
+        try:
+            image_path = self._write_error_image(error_msg)
+            return self.send_photo(image_path, caption="<b>HATA</b>")
+        except Exception as exc:
+            logger.error(f"Hata görseli oluşturulamadı: {exc}")
+            return False
 
 
 # Global singleton instance

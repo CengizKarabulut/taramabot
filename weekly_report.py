@@ -364,25 +364,10 @@ async def generate_weekly_report_with_images(strategy_name: str | None = None) -
     return all_messages or ["<b>ℹ️ Bu hafta sinyal üretilmedi.</b>"], all_image_paths
 
 
-def _send_chunked(sender, text):
-    limit = 3500
-    if len(text) <= limit:
-        sender.send_message(text)
-        return
-    buf = ""
-    for ln in text.split("\n"):
-        if len(buf) + len(ln) + 1 > limit:
-            sender.send_message(buf)
-            time.sleep(0.5)
-            buf = ""
-        buf += ln + "\n"
-    if buf.strip(): sender.send_message(buf)
-
-
 if __name__ == "__main__":
     strategy = sys.argv[1] if len(sys.argv) > 1 else None
     async def main():
-        messages, image_paths = await generate_weekly_report_with_images(strategy)
+        _, image_paths = await generate_weekly_report_with_images(strategy)
         sender = get_telegram_sender()
         for i, image_path in enumerate(image_paths):
             caption = "<b>Haftalık Performans Raporu</b>"
@@ -390,7 +375,4 @@ if __name__ == "__main__":
                 caption += f" — Görsel {i + 1}/{len(image_paths)}"
             sender.send_photo(str(image_path), caption=caption)
             time.sleep(1)
-        for i, msg in enumerate(messages):
-            _send_chunked(sender, msg)
-            if i < len(messages) - 1: time.sleep(1.2)
     asyncio.run(main())

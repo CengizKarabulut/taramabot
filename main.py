@@ -112,12 +112,6 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
             enabled_strategy_codes=["S1", "H8", "I9", "S2", "S3", "S4", "S5", "S6", "S7"]
         )
         
-        # 2. İstatistik Mesajı (Her periyot sonunda mutlaka gönderilir)
-        finish_msg = f"{EMOJI_SUCCESS} <b>Tarama Tamamlandı! ({period})</b>\n"
-        finish_msg += f"⏱ {datetime.now(TZ_TURKEY).strftime('%Y-%m-%d %H:%M')}\n"
-        finish_msg += f"🔍 {total_scanned} sembol tarandı."
-        telegram_sender.send_message(finish_msg)
-
         # Sonuçları bir sonraki aşama (toplu özet) için döndür
         return {
             "period": period,
@@ -198,31 +192,6 @@ def send_final_summary(all_results: list):
         return
 
     telegram_sender.send_common_signal_visuals(filtered_map)
-
-    header = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n"
-    header += f"<b>💎 ÇOKLU SİNYAL VEREN HİSSELER</b>\n"
-    header += f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>\n\n"
-    
-    body = ""
-    # Alfabetik sırala
-    for sym in sorted(filtered_map.keys()):
-        body += f"<b>• {sym}:</b>\n"
-        # Periyotları belirli bir sırada göster
-        for p in ["15m", "1H", "4H", "1D", "1W", "1M"]:
-            if p in filtered_map[sym]:
-                strats = ", ".join(filtered_map[sym][p])
-                body += f"  └ {p}: {strats}\n"
-        body += "\n"
-        
-        # Telegram mesaj sınırı kontrolü
-        if len(header + body) > 3500:
-            telegram_sender.send_message(header + body + "<b>━━━━━━━━━━━━━━━━━━━━━━</b>")
-            body = ""
-    
-    if body:
-        footer = f"<b>━━━━━━━━━━━━━━━━━━━━━━</b>"
-        full_msg = header + body + footer
-        telegram_sender.send_message(full_msg)
 
 
 async def run_bot():
