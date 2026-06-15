@@ -88,7 +88,8 @@ jobs:
           TV_PASSWORD: ${{ secrets.TV_PASSWORD }}
           TV_CHART_ID: ${{ secrets.TV_CHART_ID }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          TG_CHAT_ID: ${{ vars.TG_CHAT_ID || secrets.TG_CHAT_ID }}
+          TG_THREAD_ID: ${{ vars.TG_THREAD_ID || secrets.TG_THREAD_ID }}
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             # Planli kosularda bot sadece zamani gelmis taramayi calistirir.

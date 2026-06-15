@@ -16,7 +16,7 @@ Bu rehber, `taramabot` deposundaki taramaları nasıl ayrı ayrı çalıştırac
 ## Nasıl Kullanılır?
 
 ### 1. Telegram Grubu Bağlantısı
-Tüm taramaların aynı gruba gitmesi için GitHub deponuzun **Settings > Secrets and variables > Actions** kısmındaki `TG_CHAT_ID` değerinin hedef grubun ID'si olduğundan emin olun.
+Tüm taramaların aynı gruba gitmesi için GitHub deponuzun **Settings > Secrets and variables > Actions** kısmındaki `TG_CHAT_ID` değerinin hedef grubun ID'si olduğundan emin olun. Belirli bir Telegram konu başlığına göndermek için `TG_THREAD_ID` değerini de ekleyin. Bu değer konu linkindeki topic ID olabilir; örneğin `https://t.me/c/.../123` linkinde `123`.
 
 ### 2. GitHub Actions Workflow Dosyasını Eklemek
 Güvenlik kısıtlamaları nedeniyle `.github/workflows/individual_scans.yml` dosyasını doğrudan push edemedim. Lütfen şu adımları izleyin:
@@ -79,6 +79,7 @@ jobs:
           TV_CHART_ID: ${{ secrets.TV_CHART_ID }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          TG_THREAD_ID: ${{ vars.TG_THREAD_ID || secrets.TG_THREAD_ID }}
         run: |
           echo "🚀 ${{ matrix.strategy }} TARAMASI BAŞLIYOR..."
           python individual_scanners/scan_${{ matrix.strategy }}.py bist
@@ -96,4 +97,4 @@ GitHub Actions sekmesinden "Individual Market Scanners" workflow'unu seçip "Run
 
 ## Önemli Notlar
 *   Her tarama kendi `state.json` dosyasını kullanır, böylece sinyaller birbirine karışmaz.
-*   Tüm sonuçlar `TG_CHAT_ID` ile belirttiğiniz gruba gönderilir.
+*   Tüm sonuçlar `TG_CHAT_ID` ile belirttiğiniz gruba gönderilir. `TG_THREAD_ID` doluysa sonuçlar ilgili Telegram konu başlığına gider.

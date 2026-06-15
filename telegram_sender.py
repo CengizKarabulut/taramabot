@@ -32,8 +32,29 @@ class TelegramSender:
     def __init__(self, bot_token: str, chat_id: str, thread_id: Optional[str] = None):
         self.bot_token = bot_token
         self.chat_id = chat_id
-        self.thread_id = thread_id
+        self.thread_id = self._normalize_thread_id(thread_id)
         self.base_url = f"https://api.telegram.org/bot{bot_token}"
+
+    @staticmethod
+    def _normalize_thread_id(thread_id: Optional[str]) -> Optional[str]:
+        if thread_id is None:
+            return None
+
+        value = str(thread_id).strip()
+        if not value:
+            return None
+
+        # Telegram topic links usually look like https://t.me/c/<chat>/<topic_id>
+        match = re.search(r"/c/\d+/(\d+)", value)
+        if match:
+            return match.group(1)
+
+        match = re.search(r"\d+", value)
+        if match:
+            return match.group(0)
+
+        logger.warning("TG_THREAD_ID sayisal degil veya Telegram konu linki degil: %s", value)
+        return None
     
     def send_message(self, text: str, parse_mode: str = "HTML", retry_count: int = 3) -> bool:
         """

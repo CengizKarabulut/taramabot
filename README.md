@@ -58,6 +58,9 @@ TG_BOT_TOKEN="YOUR_TELEGRAM_BOT_TOKEN"
 # Telegram Sohbet ID (Botunuzla konuşarak öğrenebilirsiniz)
 TG_CHAT_ID="YOUR_TELEGRAM_CHAT_ID"
 
+# Telegram konu başlığı ID (forum/topic grupları için opsiyonel)
+TG_THREAD_ID="YOUR_TOPIC_THREAD_ID"
+
 # TradingView Kullanıcı Adı (Opsiyonel, giriş yapmak için)
 TV_USERNAME="YOUR_TRADINGVIEW_USERNAME"
 
@@ -73,6 +76,7 @@ LOG_LEVEL="INFO"
 
 *   **`TG_BOT_TOKEN`**: Telegram BotFather üzerinden alacağınız bot token'ınız.
 *   **`TG_CHAT_ID`**: Botunuzun mesaj göndereceği sohbetin (kanal, grup veya kişisel sohbet) ID'si. Botunuza `/start` yazıp, ardından `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates` adresini ziyaret ederek `chat` objesi içindeki `id` değerini bulabilirsiniz.
+*   **`TG_THREAD_ID`**: Telegram forum gruplarında mesajın gideceği konu başlığının ID'si. Konu linkini `https://t.me/c/.../<topic_id>` biçiminde kopyalayıp bu değere verebilir veya direkt sayısal topic ID kullanabilirsiniz. Boş bırakılırsa mesajlar grubun genel alanına gider.
 *   **`TV_USERNAME`** ve **`TV_PASSWORD`**: TradingView hesabınızın kullanıcı adı ve şifresi. Bu bilgiler, botun TradingView'e giriş yaparak daha stabil ekran görüntüleri almasını sağlar. İsteğe bağlıdır, boş bırakılırsa anonim olarak denenir ancak bazı özellikler kısıtlanabilir.
 *   **`TV_CHART_ID`**: TradingView'de kaydettiğiniz bir grafik şablonunun ID'si. Bu ID'yi kullanarak bot, ekran görüntüsü alırken sizin özel grafik ayarlarınızı kullanabilir. Grafik URL'sinde `tradingview.com/chart/YOUR_CHART_ID/` şeklinde bulunur. İsteğe bağlıdır.
 *   **`LOG_LEVEL`**: Botun loglama seviyesini belirler. Geliştirme aşamasında `DEBUG` veya `INFO`, üretimde `WARNING` veya `ERROR` kullanılması önerilir.
@@ -127,6 +131,7 @@ Botu GitHub Actions kullanarak otomatik olarak çalıştırmak için `.github/wo
 2.  Aşağıdaki repository secret'ları ekleyin:
     *   `TG_BOT_TOKEN`
     *   `TG_CHAT_ID`
+    *   `TG_THREAD_ID` (Opsiyonel, Telegram konu başlığı için)
     *   `TV_USERNAME` (Opsiyonel)
     *   `TV_PASSWORD` (Opsiyonel)
     *   `TV_CHART_ID` (Opsiyonel)
