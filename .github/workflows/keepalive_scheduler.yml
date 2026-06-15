@@ -1,0 +1,98 @@
+name: Tarama Keepalive Scheduler
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/keepalive_scheduler.yml'
+      - '.github/workflows/auto_scan.yml'
+      - '.github/workflows/weekly_report.yml'
+  repository_dispatch:
+    types:
+      - taramabot-keepalive-tick
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: taramabot-keepalive
+  cancel-in-progress: false
+
+jobs:
+  scheduler:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Due workflowlari tetikle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          dispatch() {
+            local event_type="$1"
+            echo "${event_type} tetikleniyor."
+            curl -fsSL -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${REPOSITORY}/dispatches" \
+              --data "{\"event_type\":\"${event_type}\"}"
+          }
+
+          is_weekday_market_window() {
+            local dow hour
+            dow="$(date -u +%u)"
+            hour="$(date -u +%H)"
+            [ "${dow}" -ge 1 ] && [ "${dow}" -le 5 ] && [ "${hour}" -ge 6 ] && [ "${hour}" -le 16 ]
+          }
+
+          is_friday_weekly_window() {
+            local dow hour minute total target diff
+            dow="$(date -u +%u)"
+            hour="$(date -u +%H)"
+            minute="$(date -u +%M)"
+            [ "${dow}" = "5" ] || return 1
+            total=$((10#${hour} * 60 + 10#${minute}))
+            target=$((17 * 60))
+            diff=$((total - target))
+            [ "${diff}" -ge 0 ] && [ "${diff}" -lt 15 ]
+          }
+
+          if is_weekday_market_window; then
+            dispatch "taramabot-auto-scan"
+          else
+            echo "Market window disinda; auto scan tetiklenmedi."
+          fi
+
+          if is_friday_weekly_window; then
+            dispatch "taramabot-weekly-report"
+          else
+            echo "Weekly report zamani degil."
+          fi
+
+      - name: Sonraki keepalive tick
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          now="$(date -u +%s)"
+          next="$(( ((now / 900) + 1) * 900 + 60 ))"
+          sleep_seconds="$(( next - now ))"
+          if [ "${sleep_seconds}" -lt 60 ]; then
+            sleep_seconds="$(( sleep_seconds + 900 ))"
+          fi
+          echo "Sonraki keepalive ${sleep_seconds} saniye sonra tetiklenecek."
+          sleep "${sleep_seconds}"
+          curl -fsSL -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${REPOSITORY}/dispatches" \
+            --data '{"event_type":"taramabot-keepalive-tick"}'

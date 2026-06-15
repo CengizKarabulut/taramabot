@@ -6,6 +6,9 @@ on:
     # GitHub gecikse bile 45 dakikalık tolerans sayesinde taramayı kaçırmaz.
     # Türkiye saati ile 09:00 - 19:00 arasını kapsar.
     - cron: "*/15 6-16 * * 1-5"
+  repository_dispatch:
+    types:
+      - taramabot-auto-scan
   workflow_dispatch:
     inputs:
       mode:
@@ -91,7 +94,7 @@ jobs:
           TG_CHAT_ID: ${{ vars.TG_CHAT_ID || secrets.TG_CHAT_ID }}
           TG_THREAD_ID: ${{ vars.TG_THREAD_ID || secrets.TG_THREAD_ID }}
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "repository_dispatch" ]; then
             # Planli kosularda bot sadece zamani gelmis taramayi calistirir.
             python main.py auto bist
             exit 0
