@@ -1,5 +1,18 @@
 # Taramabot
 
+
+## Guncel Sinyal Kodlari
+
+- `M-1`: MACD Pozitif Kesisim. MACD sinyal cizgisini yukari keser ve MACD pozitif bolgede kalir.
+- `S-M-1`: SMI/MACD Momentum. SMI yukari kesisim ve MACD histogram pozitif momentum kosullarini arar.
+- `S-M-V-1`: SMI/MACD Guclu Onay. S-M-1 kosullarina MA200 ustu fiyat ve guclu hacim onayi ekler.
+- `E-V-1`: EMA Trend + Hacim. Kisa EMA yapisi uzun EMA yapisinin ustundedir ve hacim trendi destekler.
+- `R-M-V-1`: RSI + MACD + Hacim. RSI guclenirken MACD yukari kesisim ve hacim artisi birlikte olusur.
+- `A-M-V-1`: SMA + MACD + Hacim. SMA 5/8/21 dizilimi, MACD pozitifligi, RSI araligi ve hacim onayini birlestirir.
+- `S-M-V-2`: SMI/MACD Full. SMI/MACD al sinyaline MA200 ustu fiyat ve hacim filtresi ekler.
+- `S-M-2`: SMI/MACD Erken. SMI ve MACD momentum kesisimlerini temel alan erken sinyaldir.
+- `R-V-1`: RSI Momentum. RSI guc bolgesine gecisi ve yukselis momentumunu izler.
+
 Taramabot, TradingView verilerini kullanarak BIST hisseleri, emtialar ve kripto paralar için teknik analiz sinyalleri üreten ve bu sinyalleri Telegram üzerinden anlık olarak paylaşan bir Python botudur. Bot, SMI/MACD ve RSI tabanlı iki farklı strateji ile alım sinyalleri taraması yapar ve tespit edilen sinyallerin grafiklerini otomatik olarak oluşturup gönderir.
 
 ## Özellikler

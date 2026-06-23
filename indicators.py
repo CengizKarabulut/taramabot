@@ -438,7 +438,7 @@ def check_macd_positive_cross_signal(df: pd.DataFrame) -> dict:
 
 def check_h8_smi_macd_positive_signal(df: pd.DataFrame) -> dict:
     """
-    H8 Stratejisi: SMI/MACD Alım Sinyali (Pozitif Bölge)
+    S-M-1: SMI/MACD pozitif bolge sinyali
     """
     if df is None or df.empty or len(df) < 200:
         return {'signal': False, 'details': {}}
@@ -453,7 +453,7 @@ def check_h8_smi_macd_positive_signal(df: pd.DataFrame) -> dict:
     last_hist = hist.iloc[-1]
     prev_hist = hist.iloc[-2]
     
-    # H8 Şartları
+    # S-M-1 Şartları
     cross_up = (prev_smi <= prev_smi_ema and last_smi > last_smi_ema) or (last_smi > last_smi_ema and last_smi > prev_smi)
     smi_pos = last_smi > 0
     hist_pos = last_hist > 0
@@ -477,7 +477,7 @@ def check_h8_smi_macd_positive_signal(df: pd.DataFrame) -> dict:
 
 def check_i9_smi_macd_positive_full_signal(df: pd.DataFrame) -> dict:
     """
-    I9 Stratejisi: SMI/MACD Tam Alım (Güçlü) - Pozitif Bölge
+    S-M-V-1: SMI/MACD guclu pozitif bolge sinyali
     """
     if df is None or df.empty or len(df) < 200:
         return {'full_signal': False, 'h8_signal': False, 'details': {}}

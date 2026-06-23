@@ -1,4 +1,4 @@
-name: Tarama Keepalive Scheduler
+name: StockMarketLab Zamanlayici
 
 on:
   push:

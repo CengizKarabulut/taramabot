@@ -297,12 +297,12 @@ class MarketScanner:
                 macd_cross_signals.append(result)
                 if use_state: self.state.mark_signal_sent(sym, p, "macd_cross", bar_time, close)
         
-            # H8
+            # S-M-1
             if "h8" in result["signals"] and result["signals"]["h8"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "h8", bar_time)):
                 h8_signals.append(result)
                 if use_state: self.state.mark_signal_sent(sym, p, "h8", bar_time, close)
             
-            # I9
+            # S-M-V-1
             if "i9" in result["signals"]:
                 i9_res = result["signals"]["i9"]
                 if i9_res["full_signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "i9", bar_time)):

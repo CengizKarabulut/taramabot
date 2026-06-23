@@ -1,4 +1,4 @@
-name: Weekly Performance Report
+name: StockMarketLab Haftalik Performans
 
 on:
   push:

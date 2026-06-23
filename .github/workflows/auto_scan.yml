@@ -1,4 +1,4 @@
-name: Auto Market Scanner (Smart Scheduler)
+name: StockMarketLab Sinyal Botu
 
 on:
   schedule:

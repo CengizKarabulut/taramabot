@@ -22,49 +22,52 @@ from tvDatafeed import Interval
 
 STRATEGY_META = {
     "macd_cross": {
-        "key": "last_sent_macd_cross", "emoji": "🟣", "title": "Tarama 1",
+        "key": "last_sent_macd_cross", "emoji": "🟣", "title": "M-1",
         "name": "MACD Pozitif Kesişim",
     },
     "h8": {
-        "key": "last_sent_h8", "emoji": "🔷", "title": "Tarama 2",
+        "key": "last_sent_h8", "emoji": "🔷", "title": "S-M-1",
         "name": "SMI/MACD Pozitif",
     },
     "i9": {
-        "key": "last_sent_i9", "emoji": "🔹", "title": "Tarama 3",
+        "key": "last_sent_i9", "emoji": "🔹", "title": "S-M-V-1",
         "name": "SMI/MACD Pozitif Full",
     },
     "ema": {
-        "key": "last_sent_ema", "emoji": "🟠", "title": "Tarama 4",
+        "key": "last_sent_ema", "emoji": "🟠", "title": "E-V-1",
         "name": "EMA Dizilimi",
     },
     "rsi_macd": {
-        "key": "last_sent_rsi_macd", "emoji": "🟢", "title": "Tarama 5",
+        "key": "last_sent_rsi_macd", "emoji": "🟢", "title": "R-M-V-1",
         "name": "RSI + MACD + Hacim",
     },
     "new_scan": {
-        "key": "last_sent_new_scan", "emoji": "🟡", "title": "Tarama 6",
+        "key": "last_sent_new_scan", "emoji": "🟡", "title": "A-M-V-1",
         "name": "SMA + MACD + Hacim",
     },
     "smi_macd_full": {
-        "key": "last_sent_smi_macd", "emoji": "🚀", "title": "Tarama 7",
+        "key": "last_sent_smi_macd", "emoji": "🚀", "title": "S-M-V-2",
         "name": "SMI/MACD Full",
     },
     "smi_macd": {
-        "key": "last_sent_smi_macd", "emoji": "⭐", "title": "Tarama 8",
+        "key": "last_sent_smi_macd", "emoji": "⭐", "title": "S-M-2",
         "name": "SMI/MACD",
     },
     "rsi": {
-        "key": "last_sent_rsi", "emoji": "💎", "title": "Tarama 9",
+        "key": "last_sent_rsi", "emoji": "💎", "title": "R-V-1",
         "name": "RSI",
     },
 }
 
-PERIOD_ORDER = ["15m", "1H", "4H", "1D", "1W", "1M"]
+PERIOD_ORDER = ["15m", "30m", "45m", "1H", "2H", "4H", "1D", "1W", "1M"]
 PERIOD_NAMES = {
-    "15m": "15 DAKİKA",
+    "15m": "15 DAKIKA",
+    "30m": "30 DAKIKA",
+    "45m": "45 DAKIKA",
     "1H":  "1 SAAT",
+    "2H":  "2 SAAT",
     "4H":  "4 SAAT",
-    "1D":  "GÜNLÜK",
+    "1D":  "GUNLUK",
     "1W":  "HAFTALIK",
     "1M":  "AYLIK",
 }
@@ -292,7 +295,7 @@ async def _build_strategy_messages(strategy_key: str, state: dict, scanner, pric
             signal_price = 0
             timestamp = data
         
-        # S5 ve S6 ayrımı (SMI/MACD için)
+        # S-M-V-2 ve S-M-2 ayrimi (SMI/MACD icin)
         if strategy_key == "smi_macd_full" and not (isinstance(data, dict) and data.get("is_full")): continue
         if strategy_key == "smi_macd" and (isinstance(data, dict) and data.get("is_full")): continue
 
