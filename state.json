@@ -10,6 +10,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     "AGYO_15m": {
       "time": "2026-06-24T09:15:00",
       "price": 8.24,
@@ -59,11 +60,14 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     "AVGYO_15m": {
       "time": "2026-06-24T15:00:00",
       "price": 15.81,
       "is_full": false
     },
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
     "BAYRK_15m": {
@@ -631,6 +635,8 @@
     "UNLU_15m": {
       "time": "2026-06-24T14:00:00",
 =======
+=======
+>>>>>>> Stashed changes
     "AVTUR_15m": {
       "time": "2026-06-24T15:00:00",
       "price": 17.46,
@@ -653,9 +659,12 @@
     },
     "DERHL_15m": {
       "time": "2026-06-24T15:00:00",
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
       "time": "2026-06-24T15:00:00",
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       "price": 13.56,
       "is_full": false
@@ -996,6 +1005,7 @@
       "price": 125.3,
       "is_full": false
     },
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     "KRGYO_1H": {
       "time": "2026-06-24T14:00:00",
@@ -2189,6 +2199,10 @@
 =======
       "time": "2026-06-24T15:00:00",
 >>>>>>> Stashed changes
+=======
+    "LIDFA_1H": {
+      "time": "2026-06-24T15:00:00",
+>>>>>>> Stashed changes
       "price": 3.19,
       "is_full": false
     },
@@ -2378,6 +2392,7 @@
       "is_full": false
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2415,12 +2430,13 @@
       "price": 36.92,
       "is_full": false
 =======
+=======
+>>>>>>> Stashed changes
     },
     "ANELE_4H": {
       "time": "2026-06-24T14:00:00",
       "price": 112.0,
       "is_full": true
->>>>>>> Stashed changes
     },
     "ARASE_4H": {
       "time": "2026-06-24T14:00:00",
@@ -2440,6 +2456,7 @@
       "is_full": false
     },
     "AZTEK_4H": {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2589,12 +2606,13 @@
 >>>>>>> Stashed changes
 =======
 =======
+=======
+>>>>>>> Stashed changes
       "time": "2026-06-24T14:00:00",
       "price": 4.8,
       "is_full": false
     },
     "BARMA_4H": {
->>>>>>> Stashed changes
       "time": "2026-06-24T14:00:00",
       "price": 71.95,
       "is_full": false
@@ -2722,6 +2740,7 @@
     "TLMAN_4H": {
       "time": "2026-06-24T14:00:00",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "price": 97.45,
 >>>>>>> Stashed changes
 =======
@@ -2756,11 +2775,12 @@
 =======
 =======
 =======
+=======
+>>>>>>> Stashed changes
       "price": 98.45,
       "is_full": false
     },
     "TURGG_4H": {
->>>>>>> Stashed changes
       "time": "2026-06-24T14:00:00",
 =======
 >>>>>>> Stashed changes
@@ -2769,6 +2789,7 @@
     },
     "TURSG_4H": {
       "time": "2026-06-24T14:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
@@ -2803,6 +2824,8 @@
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
       "price": 6.36,
       "is_full": false
     },
@@ -2814,6 +2837,9 @@
     "AKSUE_1D": {
       "time": "2026-06-24T06:00:00",
       "price": 38.14,
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -2821,6 +2847,7 @@
     },
     "ARDYZ_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2869,10 +2896,14 @@
 =======
       "price": 56.05,
 >>>>>>> Stashed changes
+=======
+      "price": 56.05,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "AVPGY_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2896,10 +2927,14 @@
 =======
       "price": 58.25,
 >>>>>>> Stashed changes
+=======
+      "price": 58.25,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "BLCYT_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -2968,10 +3003,14 @@
 =======
       "price": 24.58,
 >>>>>>> Stashed changes
+=======
+      "price": 24.58,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "BRLSM_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3097,12 +3136,17 @@
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
       "price": 19.73,
       "is_full": true
     },
     "CUSAN_1D": {
       "time": "2026-06-24T06:00:00",
       "price": 24.04,
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -3110,6 +3154,7 @@
     },
     "DCTTR_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3139,10 +3184,14 @@
 =======
       "price": 12.17,
 >>>>>>> Stashed changes
+=======
+      "price": 12.17,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "DESPC_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3168,10 +3217,14 @@
 =======
       "price": 44.14,
 >>>>>>> Stashed changes
+=======
+      "price": 44.14,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "DOGUB_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3231,10 +3284,14 @@
 =======
       "price": 96.45,
 >>>>>>> Stashed changes
+=======
+      "price": 96.45,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "DUNYH_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3271,10 +3328,14 @@
 =======
       "price": 113.0,
 >>>>>>> Stashed changes
+=======
+      "price": 113.0,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "EKOS_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3336,10 +3397,14 @@
 =======
       "price": 7.31,
 >>>>>>> Stashed changes
+=======
+      "price": 7.31,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "FRIGO_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3380,6 +3445,9 @@
 =======
       "price": 2.0,
 >>>>>>> Stashed changes
+=======
+      "price": 2.0,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "GEDIK_1D": {
@@ -3389,6 +3457,7 @@
     },
     "HATEK_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3415,10 +3484,14 @@
 =======
       "price": 15.85,
 >>>>>>> Stashed changes
+=======
+      "price": 15.85,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "HUNER_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
       "price": 3.84,
@@ -3460,10 +3533,14 @@
 =======
       "price": 3.83,
 >>>>>>> Stashed changes
+=======
+      "price": 3.83,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "IDGYO_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3497,10 +3574,14 @@
 =======
       "price": 4.85,
 >>>>>>> Stashed changes
+=======
+      "price": 4.85,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "IHAAS_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3532,6 +3613,8 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
       "price": 60.0,
       "is_full": false
     },
@@ -3539,6 +3622,9 @@
       "time": "2026-06-24T06:00:00",
       "price": 1.23,
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -3546,6 +3632,7 @@
     },
     "INDES_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3566,10 +3653,14 @@
 =======
       "price": 11.34,
 >>>>>>> Stashed changes
+=======
+      "price": 11.34,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "INGRM_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3621,13 +3712,15 @@
 >>>>>>> Stashed changes
       "is_full": false
 =======
+=======
+>>>>>>> Stashed changes
       "price": 430.0,
       "is_full": true
->>>>>>> Stashed changes
     },
     "ISKPL_1D": {
       "time": "2026-06-24T06:00:00",
       "price": 7.4,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
       "price": 7.39,
@@ -3667,10 +3760,13 @@
 =======
       "price": 7.4,
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
       "is_full": false
     },
     "ISSEN_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3700,10 +3796,14 @@
 =======
       "price": 7.76,
 >>>>>>> Stashed changes
+=======
+      "price": 7.76,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "IZFAS_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3738,6 +3838,9 @@
 =======
       "price": 64.9,
 >>>>>>> Stashed changes
+=======
+      "price": 64.9,
+>>>>>>> Stashed changes
       "is_full": true
     },
     "KATMR_1D": {
@@ -3747,6 +3850,7 @@
     },
     "KRSTL_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3772,6 +3876,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
       "price": 10.98,
       "is_full": false
     },
@@ -3785,9 +3891,13 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "price": 182.5,
 =======
       "price": 181.6,
+>>>>>>> Stashed changes
+=======
+      "price": 181.2,
 >>>>>>> Stashed changes
 =======
       "price": 181.2,
@@ -3802,7 +3912,11 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "price": 1174.0,
+=======
+      "price": 1180.0,
+>>>>>>> Stashed changes
 =======
       "price": 1180.0,
 >>>>>>> Stashed changes
@@ -3816,6 +3930,7 @@
     },
     "MAGEN_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3847,11 +3962,15 @@
 =======
       "price": 35.74,
 >>>>>>> Stashed changes
+=======
+      "price": 35.74,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "MERKO_1D": {
       "time": "2026-06-24T06:00:00",
       "price": 1.69,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3865,10 +3984,13 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
       "is_full": false
     },
     "ONRYT_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3910,10 +4032,14 @@
 =======
       "price": 63.35,
 >>>>>>> Stashed changes
+=======
+      "price": 63.35,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "OZGYO_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3927,10 +4053,14 @@
 =======
       "price": 2.13,
 >>>>>>> Stashed changes
+=======
+      "price": 2.13,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "OZRDN_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3971,10 +4101,14 @@
 =======
       "price": 30.1,
 >>>>>>> Stashed changes
+=======
+      "price": 30.1,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "OZYSR_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4008,6 +4142,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
       "price": 12.09,
       "is_full": true
     },
@@ -4018,6 +4154,7 @@
     },
     "PNLSN_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
       "price": 44.68,
@@ -4055,10 +4192,14 @@
 =======
       "price": 44.36,
 >>>>>>> Stashed changes
+=======
+      "price": 44.36,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "PRDGS_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4101,10 +4242,14 @@
 =======
       "price": 7.37,
 >>>>>>> Stashed changes
+=======
+      "price": 7.37,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "RODRG_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4127,10 +4272,14 @@
 =======
       "price": 25.08,
 >>>>>>> Stashed changes
+=======
+      "price": 25.08,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "RUBNS_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4159,6 +4308,8 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
       "price": 24.74,
       "is_full": false
     },
@@ -4167,6 +4318,9 @@
       "price": 9.42,
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -4176,6 +4330,7 @@
     },
     "SARKY_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4218,10 +4373,14 @@
 =======
       "price": 28.08,
 >>>>>>> Stashed changes
+=======
+      "price": 28.08,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "SEGMN_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4263,10 +4422,14 @@
 =======
       "price": 53.95,
 >>>>>>> Stashed changes
+=======
+      "price": 53.95,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "SEYKM_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4317,10 +4480,14 @@
 =======
       "price": 4.79,
 >>>>>>> Stashed changes
+=======
+      "price": 4.79,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "TATGD_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4359,10 +4526,14 @@
 =======
       "price": 19.61,
 >>>>>>> Stashed changes
+=======
+      "price": 19.61,
+>>>>>>> Stashed changes
       "is_full": true
     },
     "TEZOL_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4381,10 +4552,14 @@
 =======
       "price": 17.78,
 >>>>>>> Stashed changes
+=======
+      "price": 17.78,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "TRCAS_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4434,10 +4609,14 @@
 =======
       "price": 42.16,
 >>>>>>> Stashed changes
+=======
+      "price": 42.16,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "AFYON_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4493,10 +4672,14 @@
 =======
       "price": 13.1,
 >>>>>>> Stashed changes
+=======
+      "price": 13.1,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "ALKIM_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4538,10 +4721,14 @@
 =======
       "price": 18.36,
 >>>>>>> Stashed changes
+=======
+      "price": 18.36,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "AVTUR_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4600,10 +4787,14 @@
 =======
       "price": 17.46,
 >>>>>>> Stashed changes
+=======
+      "price": 17.46,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "BOBET_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4645,10 +4836,14 @@
 =======
       "price": 19.01,
 >>>>>>> Stashed changes
+=======
+      "price": 19.01,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "DAPGM_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4678,90 +4873,21 @@
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
       "price": 10.05,
       "is_full": true
     },
 <<<<<<< Updated upstream
     "ECILC_1W": {
       "time": "2026-06-22T06:00:00",
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      "price": 80.95,
-=======
-      "price": 82.95,
->>>>>>> Stashed changes
-=======
-      "price": 81.9,
->>>>>>> Stashed changes
-=======
-      "price": 82.4,
->>>>>>> Stashed changes
-=======
-      "price": 81.8,
->>>>>>> Stashed changes
-=======
-      "price": 80.55,
->>>>>>> Stashed changes
-=======
-      "price": 80.2,
->>>>>>> Stashed changes
-=======
-      "price": 10.07,
-=======
-      "price": 10.05,
->>>>>>> Stashed changes
-      "is_full": true
-    },
-    "ECILC_1W": {
-      "time": "2026-06-22T06:00:00",
-<<<<<<< Updated upstream
-      "price": 80.6,
->>>>>>> Stashed changes
-=======
       "price": 79.95,
->>>>>>> Stashed changes
-=======
-      "price": 79.95,
->>>>>>> Stashed changes
       "is_full": false
     },
     "EDIP_1W": {
       "time": "2026-06-22T06:00:00",
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      "price": 37.62,
-=======
-      "price": 37.84,
->>>>>>> Stashed changes
-=======
-      "price": 38.34,
->>>>>>> Stashed changes
-=======
-      "price": 38.14,
->>>>>>> Stashed changes
-=======
-      "price": 38.16,
->>>>>>> Stashed changes
-=======
-      "price": 38.1,
->>>>>>> Stashed changes
-=======
-      "price": 38.24,
->>>>>>> Stashed changes
-=======
       "price": 38.0,
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
       "price": 38.0,
@@ -4770,11 +4896,14 @@
     "EDIP_1W": {
       "time": "2026-06-22T06:00:00",
       "price": 38.0,
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       "is_full": false
     },
     "FROTO_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4815,10 +4944,14 @@
 =======
       "price": 86.45,
 >>>>>>> Stashed changes
+=======
+      "price": 86.45,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "GLCVY_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4859,10 +4992,14 @@
 =======
       "price": 60.2,
 >>>>>>> Stashed changes
+=======
+      "price": 60.2,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "GRSEL_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4885,10 +5022,14 @@
 =======
       "price": 308.0,
 >>>>>>> Stashed changes
+=======
+      "price": 308.0,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "ISGSY_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4930,10 +5071,14 @@
 =======
       "price": 125.7,
 >>>>>>> Stashed changes
+=======
+      "price": 125.7,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "ISMEN_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4975,10 +5120,14 @@
 =======
       "price": 37.16,
 >>>>>>> Stashed changes
+=======
+      "price": 37.16,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "KLGYO_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5086,10 +5235,14 @@
 =======
       "price": 5.05,
 >>>>>>> Stashed changes
+=======
+      "price": 5.05,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "LIDFA_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5113,10 +5266,14 @@
 =======
       "price": 3.19,
 >>>>>>> Stashed changes
+=======
+      "price": 3.19,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "MSGYO_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5158,10 +5315,14 @@
 =======
       "price": 6.45,
 >>>>>>> Stashed changes
+=======
+      "price": 6.45,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "NUHCM_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5200,10 +5361,14 @@
 =======
       "price": 220.0,
 >>>>>>> Stashed changes
+=======
+      "price": 220.0,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "OYAKC_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5244,10 +5409,14 @@
 =======
       "price": 20.7,
 >>>>>>> Stashed changes
+=======
+      "price": 20.7,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "PRKME_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5289,10 +5458,14 @@
 =======
       "price": 18.5,
 >>>>>>> Stashed changes
+=======
+      "price": 18.5,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "SAFKR_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5347,10 +5520,14 @@
 =======
       "price": 24.68,
 >>>>>>> Stashed changes
+=======
+      "price": 24.68,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "TAVHL_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5392,10 +5569,14 @@
 =======
       "price": 286.5,
 >>>>>>> Stashed changes
+=======
+      "price": 286.5,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "TCELL_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5437,10 +5618,14 @@
 =======
       "price": 110.4,
 >>>>>>> Stashed changes
+=======
+      "price": 110.4,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "TDGYO_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5482,10 +5667,14 @@
 =======
       "price": 15.6,
 >>>>>>> Stashed changes
+=======
+      "price": 15.6,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "TMPOL_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5527,10 +5716,14 @@
 =======
       "price": 462.0,
 >>>>>>> Stashed changes
+=======
+      "price": 462.0,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "TRENJ_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5568,10 +5761,14 @@
 =======
       "price": 86.0,
 >>>>>>> Stashed changes
+=======
+      "price": 86.0,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "TRMET_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5609,10 +5806,14 @@
 =======
       "price": 109.2,
 >>>>>>> Stashed changes
+=======
+      "price": 109.2,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "ULAS_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5654,10 +5855,14 @@
 =======
       "price": 25.92,
 >>>>>>> Stashed changes
+=======
+      "price": 25.92,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "UNLU_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5699,10 +5904,14 @@
 =======
       "price": 13.49,
 >>>>>>> Stashed changes
+=======
+      "price": 13.49,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "ZRGYO_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5741,6 +5950,9 @@
 =======
       "price": 17.99,
 >>>>>>> Stashed changes
+=======
+      "price": 17.99,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "AKENR_1M": {
@@ -5750,6 +5962,7 @@
     },
     "AKSA_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5800,10 +6013,14 @@
 =======
       "price": 11.61,
 >>>>>>> Stashed changes
+=======
+      "price": 11.61,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "BANVT_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5845,10 +6062,14 @@
 =======
       "price": 165.6,
 >>>>>>> Stashed changes
+=======
+      "price": 165.6,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "BESLR_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5882,6 +6103,9 @@
 =======
       "price": 14.72,
 >>>>>>> Stashed changes
+=======
+      "price": 14.72,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "BJKAS_1M": {
@@ -5891,6 +6115,7 @@
     },
     "INGRM_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5932,10 +6157,14 @@
 =======
       "price": 430.0,
 >>>>>>> Stashed changes
+=======
+      "price": 430.0,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "KNFRT_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5976,10 +6205,14 @@
 =======
       "price": 14.0,
 >>>>>>> Stashed changes
+=======
+      "price": 14.0,
+>>>>>>> Stashed changes
       "is_full": true
     },
     "KRDMA_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -6010,10 +6243,14 @@
 =======
       "price": 38.98,
 >>>>>>> Stashed changes
+=======
+      "price": 38.98,
+>>>>>>> Stashed changes
       "is_full": true
     },
     "LINK_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -6055,10 +6292,14 @@
 =======
       "price": 7.03,
 >>>>>>> Stashed changes
+=======
+      "price": 7.03,
+>>>>>>> Stashed changes
       "is_full": true
     },
     "MARTI_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -6105,10 +6346,14 @@
 =======
       "price": 1.82,
 >>>>>>> Stashed changes
+=======
+      "price": 1.82,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "RAYSG_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -6150,10 +6395,14 @@
 =======
       "price": 189.0,
 >>>>>>> Stashed changes
+=======
+      "price": 189.0,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "SANKO_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -6192,10 +6441,14 @@
 =======
       "price": 22.32,
 >>>>>>> Stashed changes
+=======
+      "price": 22.32,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "SASA_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -6209,10 +6462,14 @@
 =======
       "price": 2.54,
 >>>>>>> Stashed changes
+=======
+      "price": 2.54,
+>>>>>>> Stashed changes
       "is_full": true
     }
   },
   "last_sent_rsi": {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -6274,6 +6531,8 @@
       "time": "2026-06-24T13:00:00",
       "price": 1361.0
 =======
+=======
+>>>>>>> Stashed changes
     "ANELE_15m": {
       "time": "2026-06-24T15:00:00",
       "price": 112.0
@@ -6296,6 +6555,9 @@
       "time": "2026-06-24T15:00:00",
       "price": 17.78
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     },
     "TRGYO_15m": {
@@ -7473,10 +7735,6 @@
     "ALCTL_15m": {
       "time": "2026-06-24T15:00:00",
       "price": 168.8
-    },
-    "ARASE_15m": {
-      "time": "2026-06-24T15:00:00",
-      "price": 115.2
     },
     "ARCLK_15m": {
       "time": "2026-06-24T15:00:00",
@@ -9349,6 +9607,7 @@
     "TRGYO_1M": {
       "time": "2026-06-01T06:00:00",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "price": 97.3
 =======
       "price": 48.6
@@ -10161,8 +10420,9 @@
       "time": "2026-06-01T06:00:00",
       "price": 97.6
 =======
-      "price": 98.0
+=======
 >>>>>>> Stashed changes
+      "price": 98.0
     },
     "TRHOL_1M": {
       "time": "2026-06-01T06:00:00",
@@ -10679,6 +10939,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "price": 27.5
 =======
     "PARSN_4H": {
@@ -10835,8 +11096,9 @@
       "price": 9.8
 >>>>>>> Stashed changes
 =======
-      "price": 168.8
+=======
 >>>>>>> Stashed changes
+      "price": 168.8
     },
     "ALKLC_1D": {
       "time": "2026-06-24T06:00:00",
@@ -10848,42 +11110,22 @@
     },
     "BAGFS_1D": {
       "time": "2026-06-24T06:00:00",
-<<<<<<< Updated upstream
-      "price": 27.36
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
-      "price": 27.3
->>>>>>> Stashed changes
-=======
-      "price": 27.34
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
-      "price": 30.32
-    },
-    "ASGYO_1D": {
-      "time": "2026-06-24T06:00:00",
-      "price": 13.24
->>>>>>> Stashed changes
-=======
       "price": 27.4
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
     "ASGYO_1D": {
       "time": "2026-06-24T06:00:00",
       "price": 13.23
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     },
     "BALSU_1D": {
       "time": "2026-06-24T06:00:00",
       "price": 18.67
     },
-    "BIGTK_1D": {
+    "BEGYO_1D": {
       "time": "2026-06-24T06:00:00",
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -10895,24 +11137,17 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       "price": 4.3
     },
     "CATES_1D": {
       "time": "2026-06-24T06:00:00",
-<<<<<<< Updated upstream
-      "price": 14.92
->>>>>>> Stashed changes
-=======
-      "price": 232.3
->>>>>>> Stashed changes
-    },
-    "BINHO_1D": {
-      "time": "2026-06-24T06:00:00",
-      "price": 10.06
-=======
       "price": 41.16
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
     },
     "ECOGR_1D": {
@@ -10966,19 +11201,11 @@
     "BORLS_1D": {
       "time": "2026-06-24T06:00:00",
       "price": 8.26
+=======
+>>>>>>> Stashed changes
     },
     "CELHA_1D": {
       "time": "2026-06-24T06:00:00",
-      "price": 19.22
-    },
-    "DERHL_1D": {
-      "time": "2026-06-24T06:00:00",
-      "price": 13.6
-    },
-    "DEVA_1D": {
-      "time": "2026-06-24T06:00:00",
-      "price": 72.7
-=======
       "price": 19.05
     },
     "DENGE_1D": {
@@ -10992,7 +11219,6 @@
     "DEVA_1D": {
       "time": "2026-06-24T06:00:00",
       "price": 73.1
->>>>>>> Stashed changes
     },
     "DGGYO_1D": {
       "time": "2026-06-24T06:00:00",
@@ -11022,6 +11248,7 @@
       "time": "2026-06-24T06:00:00",
       "price": 43.58
     },
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -11031,10 +11258,13 @@
       "time": "2026-06-24T06:00:00",
       "price": 9.62
     },
+=======
+>>>>>>> Stashed changes
     "GOODY_1D": {
       "time": "2026-06-24T06:00:00",
       "price": 22.1
     },
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -11057,6 +11287,8 @@
     },
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     "IMASM_1D": {
       "time": "2026-06-24T06:00:00",
       "price": 3.11
@@ -11067,6 +11299,7 @@
     },
     "ISGYO_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -11102,12 +11335,13 @@
 <<<<<<< Updated upstream
       "price": 143.9
 =======
+=======
+>>>>>>> Stashed changes
       "price": 24.46
     },
     "KARTN_1D": {
       "time": "2026-06-24T06:00:00",
       "price": 142.5
->>>>>>> Stashed changes
     },
     "KBORU_1D": {
       "time": "2026-06-24T06:00:00",
@@ -11139,6 +11373,7 @@
     },
     "ORGE_1D": {
       "time": "2026-06-24T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
       "price": 129.9
 >>>>>>> Stashed changes
@@ -16249,6 +16484,8 @@
     },
     "ORGE_1D": {
       "time": "2026-06-24T06:00:00",
+=======
+>>>>>>> Stashed changes
       "price": 129.5
     },
     "OSMEN_1D": {
@@ -16578,13 +16815,10 @@
     "ERSU_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 24.98
-=======
->>>>>>> Stashed changes
     },
     "ESCOM_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 6.15
-<<<<<<< Updated upstream
     },
     "GEREL_1M": {
       "time": "2026-06-01T06:00:00",
@@ -16861,6 +17095,9 @@
       "price": 6.15
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -16883,11 +17120,14 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "price": 135.0
 =======
       "price": 140.1
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -16906,6 +17146,7 @@
     },
     "MARKA_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -16949,6 +17190,9 @@
 =======
       "price": 93.2
 >>>>>>> Stashed changes
+=======
+      "price": 93.2
+>>>>>>> Stashed changes
     },
     "SELEC_1M": {
       "time": "2026-06-01T06:00:00",
@@ -16956,6 +17200,7 @@
     }
   },
   "last_successful_scans": {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -17027,6 +17272,9 @@
 >>>>>>> Stashed changes
 =======
     "2026-06-24_18:30": "2026-06-24 19:52:51"
+>>>>>>> Stashed changes
+=======
+    "2026-06-24_18:30": "2026-06-24 20:29:45"
 >>>>>>> Stashed changes
   }
 }
