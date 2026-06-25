@@ -1,5 +1,6 @@
 {
   "last_sent_smi_macd": {
+<<<<<<< Updated upstream
     "A1YEN_15m": {
       "time": "2026-06-25T11:00:00",
       "price": 3.11,
@@ -59,79 +60,204 @@
     "ANGEN_15m": {
       "time": "2026-06-25T10:15:00",
       "price": 11.06,
+=======
+    "A1CAP_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 11.45,
+      "is_full": false
+    },
+    "ACSEL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 143.3,
+      "is_full": false
+    },
+    "AGHOL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 32.7,
+      "is_full": false
+    },
+    "AHSGY_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 18.83,
+      "is_full": false
+    },
+    "AKBNK_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 78.65,
+      "is_full": false
+    },
+    "AKCNS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 193.6,
+      "is_full": false
+    },
+    "AKENR_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 13.46,
+      "is_full": false
+    },
+    "AKFGY_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 2.79,
+      "is_full": false
+    },
+    "AKHAN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 33.5,
+      "is_full": false
+    },
+    "ALBRK_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 8.51,
+      "is_full": false
+    },
+    "ALFAS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 49.54,
+      "is_full": false
+    },
+    "ARASE_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 113.4,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "ARDYZ_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 56.3,
+      "time": "2026-06-25T11:30:00",
+      "price": 54.65,
+      "is_full": false
+    },
+    "ARENA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 27.28,
+      "is_full": false
+    },
+    "ARSAN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 3.26,
+      "is_full": false
+    },
+    "ARTMS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 41.5,
+      "is_full": false
+    },
+    "ATAGY_15m": {
+      "time": "2026-06-25T11:15:00",
+      "price": 12.22,
+      "is_full": false
+    },
+    "ATATR_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 16.67,
+      "is_full": false
+    },
+    "AVPGY_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 57.05,
+      "is_full": false
+    },
+    "BAGFS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 27.12,
       "is_full": false
     },
     "BAKAB_15m": {
-      "time": "2026-06-25T10:15:00",
-      "price": 52.05,
+      "time": "2026-06-25T11:30:00",
+      "price": 51.9,
       "is_full": false
     },
-    "BIGEN_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 75.25,
+    "BEYAZ_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 26.22,
       "is_full": false
     },
-<<<<<<< Updated upstream
-    "BINHO_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 10.21,
+    "BOBET_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 19.06,
       "is_full": false
     },
-    "BRLSM_15m": {
-      "time": "2026-06-25T10:15:00",
-      "price": 19.9,
+    "BTCIM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 6.06,
       "is_full": false
     },
-    "BYDNR_15m": {
-      "time": "2026-06-25T10:15:00",
-      "price": 37.84,
+    "BUCIM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 5.82,
+      "is_full": false
+    },
+    "CIMSA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 49.26,
+      "is_full": false
+    },
+    "CUSAN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 24.02,
       "is_full": false
     },
     "DGGYO_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 46.52,
+      "time": "2026-06-25T11:30:00",
+      "price": 45.98,
       "is_full": false
     },
-    "DMRGD_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 10.43,
+    "DOKTA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 25.56,
       "is_full": false
     },
-    "ERCB_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 51.2,
+    "ECZYT_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 324.25,
       "is_full": false
     },
-    "ESCAR_15m": {
-      "time": "2026-06-25T10:15:00",
-      "price": 48.82,
+    "EGEEN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 5422.5,
       "is_full": false
     },
-    "GMTAS_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 46.6,
+    "EKGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 21.04,
       "is_full": false
     },
-    "HRKET_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 116.9,
+    "EKOS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 7.32,
       "is_full": false
     },
-    "IEYHO_15m": {
-      "time": "2026-06-25T09:15:00",
+    "EMKEL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 19.0,
+      "is_full": false
+    },
+    "ESCOM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 6.04,
+      "is_full": false
+    },
+    "FMIZP_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 290.0,
+      "is_full": false
+    },
+    "FROTO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 86.95,
+      "is_full": false
+    },
+    "GARAN_15m": {
+      "time": "2026-06-25T11:30:00",
       "price": 139.4,
       "is_full": false
     },
-    "IZENR_15m": {
-      "time": "2026-06-25T10:15:00",
-      "price": 10.1,
+    "GARFA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 30.18,
       "is_full": false
     },
+<<<<<<< Updated upstream
     "KFEIN_15m": {
       "time": "2026-06-25T10:15:00",
       "price": 9.93,
@@ -345,454 +471,325 @@
     },
     "SAMAT_15m": {
       "time": "2026-06-25T09:45:00",
+=======
+    "GEDIK_15m": {
+      "time": "2026-06-25T11:30:00",
+>>>>>>> Stashed changes
       "price": 7.55,
       "is_full": false
     },
-    "SRVGY_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 2.88,
+    "GENKM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 14.74,
       "is_full": false
     },
-    "TABGD_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 227.3,
+    "GOODY_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 20.5,
       "is_full": false
     },
-    "TRHOL_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 1573.0,
->>>>>>> Stashed changes
+    "HALKB_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 43.48,
       "is_full": false
     },
-    "AFYON_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 13.16,
+    "HDFGS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 2.64,
       "is_full": false
     },
-    "AGESA_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 250.75,
-=======
-      "price": 13.15,
->>>>>>> Stashed changes
+    "ISDMR_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 59.65,
       "is_full": false
     },
-    "AHSGY_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 19.05,
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 18.91,
->>>>>>> Stashed changes
+    "ISMEN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 37.14,
       "is_full": false
     },
-    "AKFYE_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 22.76,
+    "JANTS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 16.19,
+      "is_full": false
+    },
+    "MAALT_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1165.0,
+      "is_full": false
+    },
+    "MAGEN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 35.26,
+      "is_full": false
+    },
+    "MSGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 6.38,
+      "is_full": false
+    },
+    "OBASE_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 38.02,
+      "is_full": false
+    },
+    "ONRYT_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 63.05,
+      "is_full": false
+    },
+    "OSMEN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 8.62,
+      "is_full": false
+    },
+    "OZATD_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1614.0,
+      "is_full": false
+    },
+    "PAMEL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 92.35,
+      "is_full": false
+    },
+    "PCILT_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 33.62,
+      "is_full": false
+    },
+    "PENTA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 14.01,
+      "is_full": false
+    },
+    "PKART_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 132.3,
+      "is_full": false
+    },
+    "PNLSN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 43.98,
+      "is_full": false
+    },
+    "POLHO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 20.52,
+      "is_full": false
+    },
+    "RAYSG_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 190.7,
+      "is_full": false
+    },
+    "RUZYE_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 9.97,
+      "is_full": false
+    },
+    "RYGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 30.3,
+      "is_full": false
+    },
+    "SAHOL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 98.3,
+      "is_full": false
+    },
+    "SANFM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 9.24,
+      "is_full": false
+    },
+    "SISE_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 44.54,
+      "is_full": false
+    },
+    "SNGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 3.83,
+      "is_full": false
+    },
+    "SURGY_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 71.0,
+      "is_full": false
+    },
+    "TATGD_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 19.43,
+      "is_full": false
+    },
+    "TBORG_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 131.7,
+      "is_full": false
+    },
+    "TCKRC_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 145.0,
+      "is_full": false
+    },
+    "TEZOL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 17.6,
+      "is_full": false
+    },
+    "TRGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 96.9,
+      "is_full": false
+    },
+    "TUKAS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 2.33,
+      "is_full": false
+    },
+    "ULAS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 25.86,
+      "is_full": false
+    },
+    "VKGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 2.68,
+      "is_full": false
+    },
+    "YATAS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 40.06,
+      "is_full": false
+    },
+    "YAYLA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 23.74,
+      "is_full": false
+    },
+    "YKBNK_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 41.32,
+      "is_full": false
+    },
+    "YUNSA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 10.17,
+      "is_full": false
+    },
+    "YYLGD_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 11.12,
+      "is_full": false
+    },
+    "AKMGY_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 246.1,
       "is_full": false
     },
     "AKYHO_1H": {
-      "time": "2026-06-25T09:00:00",
+      "time": "2026-06-25T11:00:00",
       "price": 2.52,
       "is_full": false
     },
     "ALFAS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 50.55,
+      "time": "2026-06-25T11:00:00",
+      "price": 49.56,
       "is_full": false
     },
-    "ALVES_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-      "price": 2.75,
-=======
-      "price": 18.88,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "ARMGD_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 170.9,
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 2.74,
-      "is_full": false
-    },
-    "ARMGD_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 171.8,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "ARTMS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 41.8,
-=======
-      "price": 171.2,
->>>>>>> Stashed changes
+    "ALKIM_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 18.41,
       "is_full": false
     },
     "ARZUM_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-=======
-      "time": "2026-06-25T10:00:00",
->>>>>>> Stashed changes
-      "price": 2.07,
-      "is_full": false
-    },
-    "ATATR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 16.92,
-=======
+      "time": "2026-06-25T11:00:00",
       "price": 2.06,
->>>>>>> Stashed changes
       "is_full": false
     },
     "AVGYO_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 15.93,
-=======
+      "time": "2026-06-25T11:00:00",
       "price": 15.76,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "AYDEM_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 25.9,
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 15.82,
-      "is_full": false
-    },
-    "AYDEM_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 25.74,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "BANVT_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 168.3,
-      "is_full": true
-    },
-    "BEYAZ_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 26.62,
-      "is_full": false
-    },
-    "BIGEN_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 75.25,
-      "is_full": false
-    },
-    "BINBN_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 175.4,
-=======
-      "price": 25.8,
-      "is_full": false
-    },
-    "BIGEN_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 75.25,
       "is_full": false
     },
     "BMSTL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 95.95,
->>>>>>> Stashed changes
+      "time": "2026-06-25T11:00:00",
+      "price": 95.85,
       "is_full": false
     },
     "BOBET_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 19.14,
-=======
-      "time": "2026-06-25T10:00:00",
+      "time": "2026-06-25T11:00:00",
       "price": 19.07,
->>>>>>> Stashed changes
       "is_full": false
     },
-    "BORLS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 7.82,
-=======
-      "price": 19.07,
->>>>>>> Stashed changes
+    "CGCAM_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 44.6,
       "is_full": false
     },
-    "BORSK_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 6.18,
+    "COSMO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 139.7,
       "is_full": false
     },
-    "BRISA_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 88.35,
-      "is_full": false
-    },
-    "BRKVY_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 91.25,
-      "is_full": false
-    },
-    "BYDNR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 37.96,
-      "is_full": false
-    },
-    "CANTE_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-      "price": 1.42,
-=======
-      "price": 6.15,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "CEMAS_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 4.81,
-=======
-      "price": 4.77,
->>>>>>> Stashed changes
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 1.41,
-      "is_full": false
-    },
-    "CEMAS_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 4.8,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "CRFSA_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 153.5,
-      "is_full": false
-    },
-    "CWENE_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 39.02,
-=======
-      "price": 38.86,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "DARDL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 2.04,
-      "is_full": false
-    },
-    "DESPC_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 44.58,
-=======
-      "price": 44.52,
->>>>>>> Stashed changes
+    "DERIM_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 37.72,
       "is_full": false
     },
     "DMRGD_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 10.43,
-=======
-      "price": 10.42,
->>>>>>> Stashed changes
+      "time": "2026-06-25T11:00:00",
+      "price": 10.52,
       "is_full": false
     },
     "DOFER_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 32.84,
-=======
+      "time": "2026-06-25T11:00:00",
       "price": 32.7,
->>>>>>> Stashed changes
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 44.66,
-      "is_full": false
-    },
-    "DMRGD_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 10.41,
-      "is_full": false
-    },
-    "DOFER_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 32.76,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "DOGUB_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 95.4,
-      "is_full": false
-    },
-    "DOKTA_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 25.8,
-=======
-      "price": 95.0,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "DYOBY_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 14.87,
-=======
-      "price": 14.89,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "ECILC_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 80.4,
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 14.89,
-      "is_full": false
-    },
-    "ECILC_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 80.2,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "ECZYT_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 327.75,
-=======
-      "price": 80.45,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "EGEPO_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 18.94,
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 18.93,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "EGSER_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 3.34,
-=======
-      "price": 18.88,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "ENDAE_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 17.91,
-=======
-      "price": 17.85,
->>>>>>> Stashed changes
       "is_full": false
     },
     "ENSRI_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 6.42,
-=======
-      "price": 6.4,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "ENTRA_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 4.88,
-=======
-      "price": 4.84,
->>>>>>> Stashed changes
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 4.9,
->>>>>>> Stashed changes
+      "time": "2026-06-25T11:00:00",
+      "price": 6.33,
       "is_full": false
     },
     "ERSU_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 24.68,
+      "time": "2026-06-25T11:00:00",
+      "price": 24.66,
       "is_full": false
     },
     "ESEN_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 3.79,
-=======
-      "price": 3.77,
->>>>>>> Stashed changes
+      "time": "2026-06-25T11:00:00",
+      "price": 3.76,
+      "is_full": false
+    },
+    "ETILR_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 5.53,
       "is_full": false
     },
     "EUPWR_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 84.75,
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 83.9,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "FADE_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 16.23,
-=======
-      "price": 83.6,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "FLAP_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 11.76,
+      "time": "2026-06-25T11:00:00",
+      "price": 85.8,
       "is_full": false
     },
     "FONET_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 5.62,
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 5.46,
->>>>>>> Stashed changes
+      "time": "2026-06-25T11:00:00",
+      "price": 5.45,
+      "is_full": false
+    },
+    "GARFA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 30.18,
       "is_full": false
     },
     "GENTS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 6.64,
+      "time": "2026-06-25T11:00:00",
+      "price": 6.61,
       "is_full": false
     },
     "GESAN_1H": {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
       "time": "2026-06-25T09:00:00",
       "price": 70.5,
@@ -1120,15 +1117,45 @@
     "PENGD_15m": {
       "time": "2026-06-25T11:00:00",
       "price": 11.11,
+=======
+      "time": "2026-06-25T11:00:00",
+      "price": 71.2,
+      "is_full": false
+    },
+    "KMPUR_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 18.74,
+      "is_full": false
+    },
+    "KUVVA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 130.7,
+      "is_full": false
+    },
+    "MARTI_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 1.81,
+      "is_full": false
+    },
+    "METRO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 8.9,
+      "is_full": false
+    },
+    "PSGYO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 3.51,
+>>>>>>> Stashed changes
       "is_full": false
     },
 <<<<<<< Updated upstream
     "SANEL_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 71.5,
+      "time": "2026-06-25T11:00:00",
+      "price": 71.3,
       "is_full": false
     },
     "SANKO_1H": {
+<<<<<<< Updated upstream
       "time": "2026-06-25T10:00:00",
       "price": 22.6,
 =======
@@ -1508,15 +1535,24 @@
       "time": "2026-06-25T11:00:00",
       "price": 49.68,
 >>>>>>> Stashed changes
+=======
+      "time": "2026-06-25T11:00:00",
+      "price": 22.56,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "SEYKM_1H": {
       "time": "2026-06-25T11:00:00",
+<<<<<<< Updated upstream
       "price": 4.79,
+=======
+      "price": 4.77,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "TABGD_1H": {
       "time": "2026-06-25T11:00:00",
+<<<<<<< Updated upstream
       "price": 227.6,
       "is_full": false
     },
@@ -1549,60 +1585,34 @@
     "ULAS_1H": {
       "time": "2026-06-25T09:00:00",
       "price": 25.94,
+=======
+      "price": 228.3,
+      "is_full": false
+    },
+    "TARKM_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 516.0,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "ULUSE_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 328.5,
+      "time": "2026-06-25T11:00:00",
+      "price": 326.5,
       "is_full": false
     },
-    "VESTL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 24.04,
-      "is_full": false
-    },
-    "VKGYO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 2.71,
-      "is_full": false
-    },
-    "VSNMD_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 92.2,
-      "is_full": false
-    },
-    "YAPRK_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 12.43,
-      "is_full": false
-    },
-    "YIGIT_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 24.88,
-      "is_full": false
-    },
-    "ZEDUR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 9.62,
-      "is_full": false
-    },
-    "ZERGY_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 13.23,
+    "VKING_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 24.72,
       "is_full": false
     },
     "ACSEL_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 142.9,
-      "is_full": false
-    },
-    "AEFES_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 20.96,
+      "time": "2026-06-25T10:00:00",
+      "price": 142.6,
       "is_full": false
     },
     "AGHOL_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 32.76,
       "is_full": false
     },
@@ -1666,10 +1676,14 @@
 =======
       "time": "2026-06-25T10:00:00",
       "price": 2.79,
+=======
+      "price": 32.66,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "AKCNS_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 194.0,
 >>>>>>> Stashed changes
       "is_full": false
@@ -1708,6 +1722,9 @@
 >>>>>>> Stashed changes
       "time": "2026-06-25T10:00:00",
       "price": 193.9,
+=======
+      "price": 193.0,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "AKYHO_4H": {
@@ -1715,6 +1732,7 @@
       "price": 2.52,
       "is_full": false
     },
+<<<<<<< Updated upstream
     "ALTNY_4H": {
       "time": "2026-06-25T10:00:00",
       "price": 15.58,
@@ -1817,24 +1835,23 @@
       "is_full": false
     },
     "ATAKP_4H": {
+=======
+    "ASELS_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 52.05,
+      "price": 375.75,
       "is_full": false
     },
-    "AVOD_4H": {
+    "AZTEK_4H": {
+>>>>>>> Stashed changes
       "time": "2026-06-25T10:00:00",
-      "price": 4.2,
-      "is_full": false
-    },
-    "AYEN_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 36.78,
+      "price": 4.83,
       "is_full": false
     },
 =======
 >>>>>>> Stashed changes
     "BERA_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 16.35,
       "is_full": false
     },
@@ -1852,6 +1869,9 @@
       "time": "2026-06-25T10:00:00",
       "price": 23.16,
 >>>>>>> Stashed changes
+=======
+      "price": 16.3,
+>>>>>>> Stashed changes
       "is_full": false
     },
 =======
@@ -1865,6 +1885,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "time": "2026-06-25T06:00:00",
       "price": 380.5,
 =======
@@ -1875,41 +1896,40 @@
       "time": "2026-06-25T10:00:00",
       "price": 378.0,
 >>>>>>> Stashed changes
+=======
+      "time": "2026-06-25T10:00:00",
+      "price": 375.75,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "BJKAS_4H": {
       "time": "2026-06-25T10:00:00",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "price": 1.62,
+=======
+      "price": 1.6,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "BLUME_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 31.46,
+      "price": 31.38,
       "is_full": false
     },
     "BMSCH_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 16.14,
-      "is_full": false
-    },
-    "BNTAS_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 6.61,
-      "is_full": false
-    },
-    "CCOLA_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 79.05,
+      "price": 16.04,
       "is_full": false
     },
     "CEMZY_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 14.11,
+      "price": 14.39,
       "is_full": false
     },
     "CEOEM_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 25.56,
       "is_full": false
     },
@@ -1976,10 +1996,14 @@
       "time": "2026-06-25T10:00:00",
       "price": 187.1,
 >>>>>>> Stashed changes
+=======
+      "price": 25.64,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "DOHOL_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 20.82,
       "is_full": false
     },
@@ -2005,9 +2029,14 @@
 <<<<<<< Updated upstream
       "price": 8.58,
 =======
-      "time": "2026-06-25T10:00:00",
-      "price": 8.57,
+=======
+      "price": 20.78,
+      "is_full": false
+    },
+    "DZGYO_4H": {
 >>>>>>> Stashed changes
+      "time": "2026-06-25T10:00:00",
+      "price": 8.5,
       "is_full": false
     },
     "EBEBK_4H": {
@@ -2017,31 +2046,17 @@
     },
     "EDATA_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 18.81,
-      "is_full": false
-    },
-    "EKGYO_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 20.94,
-      "is_full": false
-    },
-    "EMPAE_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 78.6,
-      "is_full": true
-    },
-    "ENKAI_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 90.1,
+      "price": 18.85,
       "is_full": false
     },
     "EREGL_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 40.48,
+      "price": 40.44,
       "is_full": false
     },
     "FENER_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 3.09,
       "is_full": false
     },
@@ -2099,21 +2114,36 @@
     "FENER_4H": {
       "time": "2026-06-25T10:00:00",
       "price": 3.08,
+=======
+      "price": 3.07,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "FORTE_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 88.95,
+=======
+      "price": 88.75,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "GENKM_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 14.71,
+=======
+      "price": 14.73,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "GLYHO_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 18.3,
+=======
+      "price": 18.38,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "GOLTS_4H": {
@@ -2129,23 +2159,21 @@
     "GUBRF_4H": {
       "time": "2026-06-25T10:00:00",
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "price": 482.25,
+=======
+      "price": 479.5,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "HALKB_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 43.78,
+      "price": 43.38,
       "is_full": false
     },
-    "HLGYO_4H": {
+    "INDES_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 6.52,
-      "is_full": false
-    },
-    "HURGZ_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 6.73,
->>>>>>> Stashed changes
+      "price": 11.22,
       "is_full": false
     },
     "ISBTR_4H": {
@@ -2155,223 +2183,112 @@
     },
     "ISFIN_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 20.36,
+      "price": 20.3,
       "is_full": false
     },
     "ISMEN_4H": {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      "time": "2026-06-25T06:00:00",
-      "price": 37.32,
-=======
       "time": "2026-06-25T10:00:00",
-      "price": 37.16,
->>>>>>> Stashed changes
+      "price": 37.06,
       "is_full": false
     },
     "IZENR_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 10.13,
-      "is_full": false
-    },
-    "KAYSE_4H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T06:00:00",
-      "price": 4.37,
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 37.16,
-      "is_full": false
-    },
-    "IZENR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 10.03,
-      "is_full": false
-    },
-    "KAYSE_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 4.38,
-      "is_full": false
-    },
-    "KCAER_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 15.39,
->>>>>>> Stashed changes
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 4.4,
->>>>>>> Stashed changes
-      "is_full": false
-    },
-    "KCAER_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 15.41,
+      "price": 9.98,
       "is_full": false
     },
     "KCHOL_4H": {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      "time": "2026-06-25T06:00:00",
-      "price": 196.8,
-=======
       "time": "2026-06-25T10:00:00",
-      "price": 196.9,
->>>>>>> Stashed changes
+      "price": 195.9,
       "is_full": false
     },
     "KLMSN_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 31.26,
+      "price": 31.28,
       "is_full": false
     },
     "KLSER_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 28.66,
+      "price": 28.14,
       "is_full": true
     },
-    "KRDMD_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 40.82,
-      "is_full": false
-    },
-    "KRTEK_4H": {
+    "KUVVA_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 23.4,
+      "price": 130.9,
       "is_full": false
     },
-    "LILAK_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 36.96,
-      "is_full": false
-    },
-    "LKMNH_4H": {
+    "LRSHO_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 15.14,
+      "price": 3.46,
       "is_full": false
     },
-    "NUGYO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 10.01,
-      "is_full": false
-    },
-    "OBAMS_4H": {
+    "MEKAG_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 6.67,
+      "price": 3.58,
       "is_full": false
     },
-    "OYAKC_4H": {
+    "MEPET_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 20.84,
+      "price": 23.18,
+      "is_full": false
+    },
+    "MZHLD_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 5.9,
       "is_full": false
     },
     "OYLUM_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 8.14,
-      "is_full": false
-    },
-    "PAHOL_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 1.52,
-      "is_full": false
-    },
-    "PAPIL_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 15.28,
+      "price": 8.09,
       "is_full": false
     },
     "PGSUS_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 180.6,
+      "price": 179.7,
       "is_full": false
     },
     "PKART_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 132.3,
-      "is_full": false
-    },
-    "PLTUR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 22.9,
-      "is_full": false
-    },
-    "POLHO_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 20.52,
+      "price": 131.5,
       "is_full": false
     },
     "PRKME_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 18.75,
+      "price": 18.61,
       "is_full": false
     },
-    "PRZMA_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 46.14,
-      "is_full": true
-    },
-    "RAYSG_4H": {
+    "QUAGR_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 191.3,
+      "price": 3.89,
       "is_full": false
-    },
-    "SAHOL_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 99.7,
-      "is_full": true
     },
     "SKTAS_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 3.66,
-      "is_full": false
-    },
-    "SNICA_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 4.22,
-      "is_full": false
-    },
-    "SOKM_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 47.74,
-      "is_full": false
-    },
-    "SONME_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 130.6,
+      "price": 3.65,
       "is_full": false
     },
     "TAVHL_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 287.75,
-      "is_full": false
-    },
-    "TCELL_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 110.5,
+      "price": 286.0,
       "is_full": false
     },
     "TGSAS_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 175.7,
+      "price": 173.9,
       "is_full": false
-    },
-    "THYAO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 330.75,
-      "is_full": true
     },
     "TKFEN_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 131.7,
-      "is_full": false
+      "price": 134.4,
+      "is_full": true
     },
-    "TUPRS_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 219.4,
+    "TTRAK_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 438.0,
       "is_full": false
     },
     "TURSG_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 6.43,
+      "price": 6.39,
       "is_full": false
     },
     "ULUFA_4H": {
@@ -2381,6 +2298,7 @@
     },
     "VAKFA_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 12.28,
       "is_full": false
     },
@@ -2628,36 +2546,83 @@
     "AKENR_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 13.47,
+=======
+      "price": 12.16,
+      "is_full": false
+    },
+    "ATAGY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 12.17,
+      "is_full": false
+    },
+    "AVPGY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 57.0,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "BRLSM_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 19.79,
+=======
+      "price": 19.89,
+      "is_full": false
+    },
+    "CEOEM_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 25.62,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "DESPC_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 44.42,
+=======
+      "price": 44.28,
       "is_full": false
     },
     "DGATE_1D": {
       "time": "2026-06-25T06:00:00",
+      "price": 116.9,
+>>>>>>> Stashed changes
+      "is_full": false
+    },
+    "DGATE_1D": {
+      "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 117.4,
+=======
+      "price": 94.4,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "DUNYH_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 110.9,
+=======
+      "price": 110.4,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "DURKN_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 20.24,
+=======
+      "price": 20.18,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "FENER_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 3.08,
+=======
+      "price": 3.07,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "FRIGO_1D": {
@@ -2672,7 +2637,16 @@
     },
     "IHAAS_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 60.4,
+=======
+      "price": 60.65,
+      "is_full": false
+    },
+    "INDES_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 11.22,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "INGRM_1D": {
@@ -2682,11 +2656,16 @@
     },
     "KRSTL_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 11.04,
+=======
+      "price": 10.96,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "LIDER_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 96.1,
       "is_full": true
     },
@@ -2703,16 +2682,37 @@
     "MAGEN_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 35.24,
+=======
+      "price": 95.2,
+      "is_full": true
+    },
+    "MAGEN_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 35.22,
       "is_full": false
     },
     "MAKTK_1D": {
       "time": "2026-06-25T06:00:00",
+      "price": 12.81,
+>>>>>>> Stashed changes
+      "is_full": false
+    },
+    "MAKTK_1D": {
+      "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 12.87,
+=======
+      "price": 1.66,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "ONRYT_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 63.0,
+=======
+      "price": 62.8,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "OZGYO_1D": {
@@ -2722,21 +2722,34 @@
     },
     "OZRDN_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 30.08,
+=======
+      "price": 29.86,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "OZYSR_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 12.12,
+=======
+      "price": 12.03,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "PRDGS_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 7.36,
+=======
+      "price": 7.33,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "RODRG_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 24.86,
       "is_full": false
     },
@@ -3473,32 +3486,171 @@
     "YKSLN_4H": {
       "time": "2026-06-25T10:00:00",
       "price": 3.19,
+=======
+      "price": 25.06,
+>>>>>>> Stashed changes
       "is_full": false
     },
     "SEYKM_1D": {
       "time": "2026-06-25T06:00:00",
-      "price": 4.77,
+      "price": 4.75,
+      "is_full": false
+    },
+    "TATGD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 19.39,
+      "is_full": false
+    },
+    "TKFEN_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 134.3,
+      "is_full": false
+    },
+    "AFYON_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 13.14,
+      "is_full": false
+    },
+    "ALKIM_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 18.4,
+      "is_full": false
+    },
+    "ANHYT_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 103.1,
+      "is_full": false
+    },
+    "AVTUR_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 17.29,
+      "is_full": false
+    },
+    "BOBET_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 19.07,
+      "is_full": false
+    },
+    "DAPGM_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 10.11,
+      "is_full": true
+    },
+    "ISGSY_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 134.1,
+      "is_full": false
+    },
+    "ISMEN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 36.94,
+      "is_full": false
+    },
+    "KCHOL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 195.4,
+      "is_full": false
+    },
+    "KLGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 5.02,
+      "is_full": false
+    },
+    "MSGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 6.37,
+      "is_full": false
+    },
+    "NUHCM_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 220.4,
+      "is_full": false
+    },
+    "TAVHL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 286.0,
+      "is_full": false
+    },
+    "TCELL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 109.8,
+      "is_full": false
+    },
+    "TDGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 15.72,
+      "is_full": false
+    },
+    "TMPOL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 451.0,
+      "is_full": false
+    },
+    "TRENJ_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 85.55,
+      "is_full": false
+    },
+    "UNLU_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 13.77,
+      "is_full": false
+    },
+    "ZRGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 17.73,
+      "is_full": false
+    },
+    "AKENR_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 13.46,
+      "is_full": true
+    },
+    "AKSA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 11.51,
       "is_full": false
     },
     "BANVT_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 179.7,
+      "price": 178.0,
       "is_full": false
     },
     "BESLR_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 14.5,
+      "price": 14.34,
       "is_full": false
     },
     "BJKAS_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 1.62,
+      "price": 1.6,
+      "is_full": false
+    },
+    "KNFRT_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 13.74,
+      "is_full": true
+    },
+    "KRDMA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 38.98,
+      "is_full": true
+    },
+    "LINK_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 7.14,
+      "is_full": true
+    },
+    "MARTI_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 1.8,
       "is_full": false
 =======
 >>>>>>> Stashed changes
     }
   },
   "last_sent_rsi": {
+<<<<<<< Updated upstream
     "CGCAM_15m": {
       "time": "2026-06-25T11:00:00",
       "price": 45.04
@@ -3779,887 +3931,131 @@
     "VAKFA_1H": {
       "time": "2026-06-25T10:00:00",
       "price": 12.3
+=======
+    "PAPIL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 15.78
+    },
+    "ZGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 40.94
+    },
+    "ANGEN_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 12.1
+    },
+    "DGATE_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 117.6
+    },
+    "GLBMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.33
+    },
+    "GLYHO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 18.37
+    },
+    "KRONT_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 21.14
+    },
+    "LRSHO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 3.46
+    },
+    "MAKTK_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 12.8
+    },
+    "PRZMA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 46.98
+    },
+    "SKYMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.61
+    },
+    "TKFEN_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 134.4
+>>>>>>> Stashed changes
     },
     "BANVT_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 180.3
-    },
-    "KLSER_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 28.66
-    },
-    "SNICA_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 4.51
-    },
-    "ANGEN_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 11.9
-    },
-    "ISGYO_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 25.72
-    },
-    "SNICA_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 4.54
-    },
-    "BANVT_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 180.5
-    },
-    "SNICA_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 4.53
-    },
-    "AYEN_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 36.72
-    },
-    "BAKAB_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 51.9
-    },
-    "BRLSM_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 19.86
-    },
-    "CELHA_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 18.94
-    }
-  },
-  "last_sent_new_scan": {
-    "DOCO_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 12140.0
-    },
-    "GLBMD_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 13.7
-    },
-    "DOCO_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 12152.5
-    },
-    "GOZDE_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 24.62
-    },
-    "LILAK_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 36.98
-    },
-    "AHGAZ_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 37.44
-    },
-    "AKSGY_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 9.75
-    },
-    "BALSU_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 19.59
-    },
-    "DENGE_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.63
-    },
-    "EGPRO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 43.98
-    },
-    "GEDIK_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 7.55
+      "price": 176.9
     },
     "GLBMD_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 13.63
+      "time": "2026-06-25T10:00:00",
+      "price": 14.33
     },
-    "HEDEF_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 142.7
+    "HATSN_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 63.6
     },
-    "HUNER_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 3.96
-    },
-    "ICUGS_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 5.7
-    },
-    "IDGYO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 5.18
-    },
-    "INVEO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 8.66
-    },
-    "ISGYO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 25.12
-    },
-    "KBORU_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 27.76
-    },
-    "KTSKR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 108.8
-    },
-    "OSMEN_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 8.88
-    },
-    "OSTIM_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.18
-    },
-    "OZYSR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 12.31
-    },
-    "SEKUR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 12.5
-    },
-    "SILVR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.89
-    },
-    "SKBNK_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 17.05
-    },
-    "UNLU_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 13.74
-    },
-    "USAK_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 1.72
-    },
-    "BALSU_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 19.45
-    },
-    "EGPRO_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 43.74
-    },
-    "GEDIK_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 7.57
-    },
-    "GLBMD_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 13.67
-    },
-    "GOODY_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 21.14
-    },
-    "ISGSY_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 134.5
-    },
-    "ISGYO_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 25.1
-    },
-    "KBORU_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 27.7
-    },
-    "OSMEN_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 8.84
-    },
-    "BAKAB_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 52.0
-    },
-    "CELHA_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 19.13
-    },
-    "DGGYO_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 46.02
-    },
-    "GEDIK_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 7.51
-    },
-    "GOODY_1W": {
-      "time": "2026-06-22T06:00:00",
+    "KRONT_4H": {
+      "time": "2026-06-25T10:00:00",
       "price": 21.28
     },
-    "INFO_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 7.35
-    },
-    "ISGYO_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 25.02
-    },
-    "ODAS_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 8.63
-    },
-    "PSGYO_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 3.51
-    },
-    "SANEL_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 71.5
-    },
-    "SEKUR_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 12.6
-    },
-    "DGGYO_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 46.02
-    },
-    "ESCOM_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 6.1
-    },
-    "GSDDE_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 12.31
-    },
-    "GSDHO_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 5.65
-    },
-    "ICBCT_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 20.12
-    },
-    "KARTN_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 142.3
-    },
-    "KRDMB_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 122.5
-    },
-    "MAALT_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 1163.0
-    },
-    "MARKA_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 92.2
-    },
-    "PKART_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 133.1
-    },
-    "RYSAS_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 22.26
-    },
-    "SELEC_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 216.1
-    },
-    "BANVT_15m": {
-      "time": "2026-06-25T10:15:00",
-      "price": 178.5
-    },
-    "KLSER_15m": {
-      "time": "2026-06-25T10:15:00",
-      "price": 28.98
-    },
-    "MRSHL_15m": {
-      "time": "2026-06-25T10:15:00",
-      "price": 1685.0
-    },
-    "BANVT_1H": {
+    "MAKTK_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 180.9
-    },
-    "DURKN_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 20.5
-    },
-    "RTALB_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 3.88
-    },
-    "SNICA_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 4.48
-    },
-    "ANGEN_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 11.64
-    },
-    "RTALB_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 3.93
-    },
-    "SNICA_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 4.51
-    },
-    "SNICA_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 4.54
-    },
-    "EGPRO_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 43.5
-    },
-    "MAKIM_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 19.64
-    },
-    "AYEN_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 36.72
-    },
-    "BRSAN_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 558.5
-    },
-    "CELHA_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 18.94
-    }
-  },
-  "last_sent_rsi_macd": {
-    "ARCLK_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 101.8
-    },
-    "BANVT_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 169.6
-    },
-    "BUCIM_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 5.88
-    },
-    "ELITE_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 37.24
-    },
-    "ISFIN_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 20.58
-    },
-    "LILAK_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 36.98
-    },
-    "PRZMA_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 45.98
-    },
-    "SMRVA_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 16.34
-    },
-    "SNICA_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 4.23
-    },
-    "TKFEN_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 130.7
-    },
-    "AHGAZ_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 37.44
-    },
-    "AKENR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 13.47
-    },
-    "DENGE_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.63
-    },
-    "DERHL_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 13.72
-    },
-    "EGPRO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 43.98
-    },
-    "ELITE_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 37.14
-    },
-    "GEDIK_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 7.55
-    },
-    "GLBMD_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 13.63
-    },
-    "GRSEL_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 309.5
-    },
-    "HATEK_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 16.02
-    },
-    "HDFGS_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.67
-    },
-    "HUNER_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 3.96
-    },
-    "ICUGS_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 5.7
-    },
-    "IDGYO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 5.18
-    },
-    "KATMR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.76
-    },
-    "KRSTL_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 11.2
-    },
-    "KTSKR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 108.8
-    },
-    "OTKAR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 360.25
-    },
-    "OZYSR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 12.31
-    },
-    "TURGG_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 29.48
-    },
-    "UNLU_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 13.74
-    },
-    "A1CAP_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 11.77
-    },
-    "EGPRO_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 43.74
-    },
-    "GEDIK_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 7.57
-    },
-    "GLBMD_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 13.67
-    },
-    "INVEO_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 8.69
-    },
-    "ISGSY_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 134.5
-    },
-    "KBORU_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 27.7
-    },
-    "ASGYO_1W": {
-      "time": "2026-06-22T06:00:00",
       "price": 12.95
     },
-    "BALSU_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 19.02
-    },
-    "BORLS_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 7.79
-    },
-    "GEDIK_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 7.51
-    },
-    "KOCMT_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 3.1
-    },
-    "MAKIM_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 19.57
-    },
-    "OSMEN_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 8.78
-    },
-    "OSTIM_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 2.16
-    },
-    "PAMEL_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 93.3
-    },
-    "PARSN_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 92.45
-    },
-    "SAMAT_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 7.55
-    },
-    "SERNT_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 11.45
-    },
-    "CRFSA_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 153.3
-    },
-    "DGGYO_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 46.02
-    },
-    "ESCOM_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 6.1
-    },
-    "GOODY_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 21.16
-    },
-    "GSDDE_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 12.31
-    },
-    "GSDHO_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 5.65
-    },
-    "HUNER_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 3.93
-    },
-    "KARTN_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 142.3
-    },
-    "MARKA_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 92.2
-    },
-    "ODAS_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 8.62
-    },
-    "PSGYO_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 3.51
-    },
-    "RYSAS_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 22.26
-    },
-    "SMRTG_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 12.49
-    },
-    "TMPOL_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 457.25
-    },
-    "VBTYZ_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 27.82
-    },
-    "DGATE_1H": {
+    "PAPIL_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 116.2
+      "price": 15.81
     },
-    "KLSER_1H": {
+    "PRZMA_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 28.8
+      "price": 46.98
     },
-    "PRDGS_1H": {
+    "SKYMD_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 7.41
-    },
-    "QUAGR_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 3.95
-    },
-    "RTALB_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 3.88
-    },
-    "VAKFA_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 12.3
-    },
-    "ANGEN_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 11.64
+      "price": 14.55
     },
     "SNICA_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 4.51
+      "price": 4.5
+    },
+    "TKFEN_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 134.4
     },
     "ANGEN_1D": {
       "time": "2026-06-25T06:00:00",
-      "price": 11.9
-    },
-    "KTSKR_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 111.3
-    },
-    "SNICA_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 4.54
-    },
-    "USAK_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 1.74
-    },
-    "BANVT_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 180.5
-    },
-    "EGPRO_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 43.5
-    },
-    "ENERY_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 9.88
-    },
-    "HRKET_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 115.2
-    },
-    "SNICA_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 4.53
-    },
-    "AYEN_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 36.72
-    },
-    "BRLSM_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 19.86
-    },
-    "BRSAN_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 558.5
-    }
-  },
-  "last_sent_ema": {
-    "DOCO_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 12140.0
-    },
-    "GLBMD_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 13.7
-    },
-    "DOCO_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 12152.5
-    },
-    "GOZDE_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 24.62
-    },
-    "ISFIN_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 20.58
-    },
-    "LILAK_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 36.98
-    },
-    "PRZMA_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 45.98
-    },
-    "SNICA_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 4.48
-    },
-    "AHGAZ_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 37.44
-    },
-    "AKENR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 13.47
-    },
-    "AKSGY_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 9.75
-    },
-    "BALSU_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 19.59
-    },
-    "DENGE_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.63
-    },
-    "DOCO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 12082.5
-    },
-    "EGPRO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 43.98
-    },
-    "GEDIK_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 7.55
-    },
-    "GLBMD_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 13.63
-    },
-    "HEDEF_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 142.7
-    },
-    "HUNER_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 3.96
-    },
-    "ICUGS_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 5.7
-    },
-    "IDGYO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 5.18
-    },
-    "INVEO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 8.66
-    },
-    "ISGSY_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 134.5
-    },
-    "ISGYO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 25.12
-    },
-    "KBORU_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 27.76
-    },
-    "KCAER_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 15.4
-    },
-    "KRSTL_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 11.2
-    },
-    "KTSKR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 108.8
-    },
-    "OSMEN_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 8.88
-    },
-    "OSTIM_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.18
-    },
-    "OZYSR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 12.31
-    },
-    "SEKUR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 12.5
-    },
-    "SILVR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.89
-    },
-    "SKBNK_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 17.05
-    },
-    "THYAO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 330.75
-    },
-    "UNLU_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 13.74
-    },
-    "USAK_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 1.72
+      "price": 11.81
     },
     "BALSU_1D": {
       "time": "2026-06-25T06:00:00",
-      "price": 19.45
+      "price": 19.7
     },
     "EGPRO_1D": {
       "time": "2026-06-25T06:00:00",
-      "price": 43.74
+      "price": 43.48
     },
     "GEDIK_1D": {
       "time": "2026-06-25T06:00:00",
-      "price": 7.57
+      "price": 7.53
     },
     "GLBMD_1D": {
       "time": "2026-06-25T06:00:00",
-      "price": 13.67
+      "price": 14.33
     },
-    "GOODY_1D": {
+    "IDGYO_1D": {
       "time": "2026-06-25T06:00:00",
-      "price": 21.14
+      "price": 5.18
     },
     "INVEO_1D": {
       "time": "2026-06-25T06:00:00",
-      "price": 8.69
-    },
-    "ISGSY_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 134.5
+      "price": 8.66
     },
     "ISGYO_1D": {
       "time": "2026-06-25T06:00:00",
-      "price": 25.1
+      "price": 25.3
     },
     "KBORU_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 27.7
     },
     "OSMEN_1D": {
@@ -5938,34 +5334,283 @@
     "OSMEN_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 8.64
+=======
+      "price": 27.5
+>>>>>>> Stashed changes
     },
     "RTALB_1D": {
       "time": "2026-06-25T06:00:00",
-      "price": 3.69
+      "price": 3.88
+    },
+    "SKYMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.52
+    },
+    "SNICA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 4.48
+    },
+    "ASGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 13.01
+    },
+    "BALSU_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 19.87
+    },
+    "BANVT_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 177.6
+    },
+    "BORLS_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 7.63
+    },
+    "ISGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 25.24
+    },
+    "KOCMT_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 3.1
+    },
+    "MAKIM_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 19.37
+    },
+    "MOGAN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 14.78
+    },
+    "OSMEN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.68
+    },
+    "PAMEL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 92.05
+    },
+    "SNICA_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 4.51
+    },
+    "AKENR_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 13.46
+    },
+    "AYEN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 36.54
+    },
+    "BAKAB_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 51.65
+    },
+    "BRLSM_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 19.89
+    },
+    "CELHA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 18.61
+    },
+    "DGGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 45.94
+    },
+    "ENERY_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 9.87
+    },
+    "EUPWR_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 87.5
+    },
+    "FZLGY_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 14.38
+    },
+    "GEDIK_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 7.53
+    },
+    "GOKNR_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 25.14
+    },
+    "GOODY_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 20.48
+    },
+    "GSDHO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.63
+    },
+    "HATSN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 63.5
+    },
+    "HUNER_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 3.94
+    },
+    "KARTN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 144.0
+    },
+    "KRDMA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 38.98
+    },
+    "ODAS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 8.63
+    },
+    "ORGE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 122.8
+    },
+    "VBTYZ_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 27.94
+    }
+  },
+  "last_sent_new_scan": {
+    "IHLGM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1.95
+    },
+    "PAPIL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 15.78
+    },
+    "PRZMA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 47.3
+    },
+    "SKYMD_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 14.79
+    },
+    "ZGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 40.94
+    },
+    "ANGEN_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 12.1
+    },
+    "GLBMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.33
+    },
+    "GLYHO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 18.37
+    },
+    "KRONT_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 21.14
+    },
+    "RTALB_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 3.94
+    },
+    "SKYMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.61
+    },
+    "SNICA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 4.52
+    },
+    "ASGYO_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 13.07
+    },
+    "BANVT_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 176.9
+    },
+    "GLBMD_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 14.33
+    },
+    "HATSN_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 63.6
+    },
+    "ISGYO_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 25.36
+    },
+    "IZFAS_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 65.75
+    },
+    "SKYMD_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 14.55
+    },
+    "SNICA_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 4.5
+    },
+    "ASGYO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 13.04
+    },
+    "BALSU_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 19.7
+    },
+    "BANVT_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 176.8
+    },
+    "EGPRO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 43.48
+    },
+    "GEDIK_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 7.53
+    },
+    "GLBMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.33
+    },
+    "GOODY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 20.5
+    },
+    "ISGSY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 134.5
+    },
+    "ISGYO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 25.3
+    },
+    "KBORU_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 27.5
+    },
+    "OSMEN_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 8.59
+    },
+    "SKYMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.52
+    },
+    "SNICA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 4.48
     },
     "BAKAB_1W": {
       "time": "2026-06-22T06:00:00",
       "price": 51.8
-    },
-    "CELHA_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 18.98
-    },
-    "DGGYO_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 45.78
-    },
-    "EGPRO_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 43.32
-    },
-    "GEDIK_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 7.47
-    },
-    "GOODY_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 20.9
     },
     "INFO_1W": {
       "time": "2026-06-22T06:00:00",
@@ -5973,759 +5618,113 @@
     },
     "ISGYO_1W": {
       "time": "2026-06-22T06:00:00",
-      "price": 25.54
-    },
-    "MAKIM_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 19.68
+      "price": 25.24
     },
     "ODAS_1W": {
       "time": "2026-06-22T06:00:00",
-      "price": 8.8
-    },
-    "OSMEN_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 8.8
-    },
-    "PARSN_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 92.7
-    },
-    "PSGYO_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 3.53
-    },
-    "SAMAT_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 7.5
-    },
-    "SANEL_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 72.5
-    },
-    "SEKUR_1W": {
-      "time": "2026-06-22T06:00:00",
-      "price": 12.7
-    },
-    "AKENR_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 13.4
+      "price": 8.65
     },
     "AKSUE_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 38.58
+      "price": 38.2
     },
     "AYEN_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 37.08
+      "price": 36.54
     },
     "BRSAN_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 564.0
+      "price": 553.5
     },
     "CELHA_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 19.04
+      "price": 18.61
     },
     "DGGYO_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 45.78
-    },
-    "DGNMO_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 8.72
-    },
-    "DUNYH_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 112.5
+      "price": 45.94
     },
     "ESCOM_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 6.11
-    },
-    "GOODY_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 20.94
+      "price": 5.95
     },
     "GSDDE_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 12.3
+      "price": 12.24
     },
     "GSDHO_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 5.67
+      "price": 5.63
     },
     "ICBCT_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 20.1
+      "price": 20.0
     },
     "KARTN_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 143.3
-    },
-    "KORDS_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 72.6
-    },
-    "KRDMA_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 39.04
+      "price": 144.0
     },
     "KRDMB_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 122.4
+      "price": 122.7
     },
     "MAALT_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 1163.0
+      "price": 1161.0
     },
     "MARKA_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 92.15
+      "price": 91.55
     },
     "PKART_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 133.3
-    },
-    "RYSAS_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 22.22
-    },
-    "SELEC_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 213.2
+      "price": 132.0
     }
   },
-  "last_sent_macd_cross": {
-    "AVOD_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 4.23
+  "last_sent_rsi_macd": {
+    "NUHCM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 220.9
     },
-    "BANVT_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 177.1
+    "ZGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 40.94
     },
-    "BARMA_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 72.7
+    "DGATE_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 117.6
     },
-    "BJKAS_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 1.63
-    },
-    "CCOLA_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 79.15
-    },
-    "CEOEM_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 25.68
-    },
-    "DOCO_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 12112.5
-    },
-    "DURKN_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 20.42
-    },
-    "FRIGO_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 2.02
-    },
-    "GEREL_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 44.12
-    },
-    "GOKNR_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 25.14
-    },
-    "GOZDE_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 24.48
-    },
-    "GRSEL_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 313.5
-    },
-    "GUNDG_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 1439.0
-    },
-    "KLSER_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 28.54
-    },
-    "KTSKR_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 109.7
-    },
-    "LILAK_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 36.94
-    },
-    "MACKO_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 36.2
-    },
-    "MANAS_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 29.38
-    },
-    "OBAMS_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 6.72
-    },
-    "OZSUB_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 32.76
-    },
-    "PAHOL_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 1.53
-    },
-    "PRKME_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 18.77
-    },
-    "PRZMA_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 45.32
-    },
-    "QUAGR_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 3.94
-    },
-    "SEKUR_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 12.77
-    },
-    "SELVA_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 2.07
-    },
-    "SERNT_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 11.36
-    },
-    "SILVR_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 2.85
-    },
-    "SMRVA_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 16.09
-    },
-    "SNICA_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 4.27
-    },
-    "SONME_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 130.6
-    },
-    "TATEN_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 14.73
-    },
-    "TKFEN_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 130.4
-    },
-    "TSPOR_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 0.92
-    },
-    "ADGYO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 56.1
-    },
-    "AEFES_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 21.02
-    },
-    "ANHYT_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 104.5
-    },
-    "ASTOR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 303.5
-    },
-    "BARMA_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 72.6
-    },
-    "BIGCH_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 7.75
-    },
-    "CCOLA_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 79.35
-    },
-    "DCTTR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 12.41
-    },
-    "DENGE_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 2.61
-    },
-    "DOCO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 12130.0
-    },
-    "DUNYH_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 112.7
-    },
-    "DURKN_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 20.56
-    },
-    "DZGYO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 8.56
-    },
-    "ECOGR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 43.34
-    },
-    "EGPRO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 43.66
-    },
-    "ELITE_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 36.92
-    },
-    "ENERY_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 9.89
-    },
-    "EREGL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 40.14
->>>>>>> Stashed changes
-    },
-    "FORMT_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 2.21
-<<<<<<< Updated upstream
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 40.38
-    },
-    "FORMT_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 2.23
->>>>>>> Stashed changes
-    },
-    "GARAN_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 142.5
-    },
-    "GEDIK_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 7.57
-    },
-    "GLBMD_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 13.77
-    },
-    "GLRMK_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 179.5
-    },
-=======
-    },
-    "FRIGO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 2.02
-    },
-    "GEREL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 44.18
-    },
-    "GLBMD_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 13.75
-    },
->>>>>>> Stashed changes
     "GLYHO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 18.31
-    },
-    "GOZDE_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 24.62
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 24.42
->>>>>>> Stashed changes
-    },
-    "GRSEL_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 311.75
-    },
-    "GUNDG_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 1400.0
-    },
-    "HATEK_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 16.02
-    },
-    "HDFGS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 2.68
-    },
-    "HEDEF_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 143.0
-    },
-    "HLGYO_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 6.53
-    },
-    "HUNER_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 3.94
-    },
-    "ICUGS_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 5.76
-    },
-    "IDGYO_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 5.18
-=======
-      "price": 24.48
-    },
-    "GRSEL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 313.25
-    },
-    "GUNDG_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 1433.0
-    },
-    "HATEK_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 16.05
-    },
-    "HEDEF_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 143.5
-    },
-    "HLGYO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 6.52
-    },
-    "HUNER_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 3.93
-    },
-    "ICUGS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 5.85
-    },
-    "IDGYO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 5.19
->>>>>>> Stashed changes
-    },
-    "INFO_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 7.35
-    },
-<<<<<<< Updated upstream
-    "INVEO_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 8.68
-    },
-    "ISGSY_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 134.7
-    },
-    "ISGYO_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 25.68
-    },
-    "ISMEN_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 37.2
-    },
-    "IZFAS_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 65.7
-    },
-    "IZMDC_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 8.86
-    },
-    "KARTN_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-      "price": 144.1
-=======
-    "INVES_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 714.5
-    },
-    "ISGSY_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 134.4
-    },
-    "ISGYO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 25.28
-    },
-    "ISMEN_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 37.2
-    },
-    "IZFAS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 65.85
->>>>>>> Stashed changes
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 145.2
->>>>>>> Stashed changes
-    },
-    "KATMR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 2.78
-    },
-    "KBORU_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 27.76
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 27.52
->>>>>>> Stashed changes
-    },
-    "KCAER_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 15.43
-    },
-    "KCHOL_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 197.0
-    },
-    "KLSYN_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 13.96
-    },
-    "KOPOL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 7.0
-    },
-    "KRDMD_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 40.98
+      "time": "2026-06-25T11:00:00",
+      "price": 18.37
     },
     "KRONT_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 21.1
+      "time": "2026-06-25T11:00:00",
+      "price": 21.14
     },
-    "KRSTL_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 11.14
+    "LRSHO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 3.46
     },
-    "KTSKR_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 111.7
+    "MAKTK_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 12.8
     },
-    "KUYAS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 72.25
+    "PRZMA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 46.98
     },
-    "LILAK_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 36.96
+    "SKYMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.61
     },
-    "LINK_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 7.32
-    },
-    "MANAS_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 29.28
-    },
-    "MARBL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 13.66
-    },
-    "MGROS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 710.5
-=======
-      "price": 27.84
-    },
-    "KCAER_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 15.41
-    },
-    "KCHOL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 196.9
-    },
-    "KOPOL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 6.93
-    },
-    "KRSTL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 11.19
-    },
-    "KTSKR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 111.0
-    },
-    "KUYAS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 72.65
-    },
-    "LILAK_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 36.94
-    },
-    "MANAS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 29.46
-    },
-    "MGROS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 707.0
->>>>>>> Stashed changes
-    },
-    "MRSHL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 1675.0
-    },
-    "OTKAR_1H": {
-      "time": "2026-06-25T09:00:00",
-<<<<<<< Updated upstream
-      "price": 360.5
-    },
-    "OZATD_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 1621.0
-    },
-    "OZGYO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 2.15
-    },
-    "OZRDN_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 30.56
-    },
-    "OZYSR_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 12.27
-    },
-    "PAPIL_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 15.1
-    },
-    "PRDGS_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 7.41
-    },
-    "PRKME_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 18.74
-    },
-    "SANFM_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 9.45
-    },
-    "SEKUR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 12.5
-    },
-    "SKBNK_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 17.1
-    },
-    "SNGYO_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 3.87
-    },
-    "TAVHL_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 292.0
-    },
-    "TDGYO_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 15.74
-    },
-    "THYAO_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 329.75
-    },
-    "TRCAS_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 42.56
-    },
-    "TURGG_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 29.68
-    },
-    "ULUFA_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 1.94
-    },
-    "USAK_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 1.73
-    },
-    "VERUS_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 620.5
-    },
-    "A1CAP_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 11.34
-    },
-    "AHGAZ_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 37.34
-    },
-    "AKENR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 13.38
-    },
-    "AKSGY_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 9.71
-    },
-    "AKSUE_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 38.44
-    },
-    "ALKLC_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 345.75
-    },
-    "ANGEN_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 11.64
-    },
-    "ARFYE_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 30.24
+    "TKFEN_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 134.4
     },
     "ASGYO_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 12.97
     },
     "ASTOR_4H": {
@@ -6911,156 +5910,805 @@
     "BALSU_4H": {
       "time": "2026-06-25T10:00:00",
       "price": 20.04
+=======
+      "price": 13.07
+>>>>>>> Stashed changes
     },
     "BANVT_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 175.3
+      "price": 176.9
     },
-    "BEGYO_4H": {
+    "HATSN_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 4.33
+      "price": 63.6
     },
-    "BIGTK_4H": {
+    "IHLAS_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 234.0
+      "price": 1.3
     },
-    "CELHA_4H": {
+    "MAKTK_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 19.0
+      "price": 12.95
     },
-    "DCTTR_4H": {
+    "PAPIL_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 12.4
+      "price": 15.81
     },
-    "DENGE_4H": {
+    "PRZMA_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 2.6
+      "price": 46.98
     },
-    "DESPC_4H": {
+    "SKYMD_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 44.64
+      "price": 14.55
     },
-    "DOCO_4H": {
+    "SNICA_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 12100.0
+      "price": 4.5
     },
-    "DURKN_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 20.62
+    "ANGEN_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 11.81
     },
-    "ECOGR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 43.36
+    "BANVT_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 176.8
     },
-    "EDIP_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 37.5
+    "BIGCH_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 7.58
     },
-    "EGEGY_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 28.94
+    "EGPRO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 43.48
     },
-    "EGPRO_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 43.66
+    "GEDIK_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 7.53
     },
-    "GEDIK_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 7.5
+    "GLBMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.33
     },
-    "GEREL_4H": {
+    "INVEO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 8.66
+    },
+    "ISGSY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 134.5
+    },
+    "KBORU_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 27.5
+    },
+    "KTSKR_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 110.2
+    },
+    "PAPIL_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 15.72
+    },
+    "RTALB_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 3.88
+    },
+    "SKYMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.52
+    },
+    "SNICA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 4.48
+    },
+    "ANGEN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 11.8
+    },
+    "ASGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 13.01
+    },
+    "BALSU_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 19.87
+    },
+    "BANVT_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 177.6
+    },
+    "BORLS_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 7.63
+    },
+    "HRKET_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 113.5
+    },
+    "KOCMT_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 3.1
+    },
+    "MAKIM_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 19.37
+    },
+    "OSMEN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.68
+    },
+    "PAMEL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 92.05
+    },
+    "SNICA_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 4.51
+    },
+    "AYEN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 36.54
+    },
+    "BRLSM_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 19.89
+    },
+    "BRSAN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 553.5
+    },
+    "CRFSA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 152.6
+    },
+    "DGGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 45.94
+    },
+    "ESCOM_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.95
+    },
+    "GOODY_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 20.48
+    },
+    "GSDHO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.63
+    },
+    "HUNER_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 3.94
+    },
+    "KARTN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 144.0
+    },
+    "MARKA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 91.55
+    },
+    "ODAS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 8.63
+    },
+    "VBTYZ_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 27.94
+    }
+  },
+  "last_sent_ema": {
+    "GLYHO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 18.36
+    },
+    "IHLGM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1.95
+    },
+    "IZFAS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 65.8
+    },
+    "PAPIL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 15.78
+    },
+    "PRZMA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 47.3
+    },
+    "SKYMD_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 14.79
+    },
+    "ZGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 40.94
+    },
+    "ANGEN_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 12.1
+    },
+    "DGATE_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 117.6
+    },
+    "GLBMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.33
+    },
+    "GLYHO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 18.37
+    },
+    "KRONT_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 21.14
+    },
+    "PRZMA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 46.98
+    },
+    "RTALB_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 3.94
+    },
+    "SKYMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.61
+    },
+    "SNICA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 4.52
+    },
+    "ASGYO_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 44.14
+      "price": 13.07
+    },
+    "BANVT_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 176.9
     },
     "GLBMD_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 13.75
+      "price": 14.33
+    },
+    "HATSN_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 63.6
+    },
+    "ISGYO_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 25.36
+    },
+    "IZFAS_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 65.75
+    },
+    "OSMEN_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 8.58
+    },
+    "SKYMD_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 14.55
+    },
+    "SNICA_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 4.5
+    },
+    "ANGEN_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 11.81
+    },
+    "ASGYO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 13.04
+    },
+    "BALSU_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 19.7
+    },
+    "BANVT_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 176.8
+    },
+    "EGPRO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 43.48
+    },
+    "GEDIK_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 7.53
+    },
+    "GLBMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.33
+    },
+    "GOODY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 20.5
+    },
+    "INVEO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 8.66
+    },
+    "ISGSY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 134.5
+    },
+    "ISGYO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 25.3
+    },
+    "KBORU_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 27.5
+    },
+    "KTSKR_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 110.2
+    },
+    "OSMEN_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 8.59
+    },
+    "RTALB_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 3.88
+    },
+    "SKYMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.52
+    },
+    "SNICA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 4.48
+    },
+    "BAKAB_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 51.8
+    },
+    "INFO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 7.35
+    },
+    "ISGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 25.24
+    },
+    "MAKIM_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 19.37
+    },
+    "ODAS_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.65
+    },
+    "OSMEN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.68
+    },
+    "PARSN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 91.25
+    },
+    "AKENR_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 13.46
+    },
+    "AKSUE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 38.2
+    },
+    "AYEN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 36.54
+    },
+    "BRSAN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 553.5
+    },
+    "CELHA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 18.61
+    },
+    "DGGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 45.94
+    },
+    "DGNMO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 8.64
+    },
+    "ESCOM_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.95
+    },
+    "GOODY_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 20.48
+    },
+    "GSDDE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 12.24
+    },
+    "GSDHO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.63
+    },
+    "ICBCT_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 20.0
+    },
+    "KARTN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 144.0
+    },
+    "KORDS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 73.1
+    },
+    "KRDMA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 38.98
+    },
+    "KRDMB_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 122.7
+    },
+    "MAALT_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 1161.0
+    },
+    "MARKA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 91.55
+    },
+    "PKART_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 132.0
+    }
+  },
+  "last_sent_macd_cross": {
+    "AFYON_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 13.15
+    },
+    "ANELE_15m": {
+      "time": "2026-06-25T10:45:00",
+      "price": 115.0
+    },
+    "ANGEN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 12.24
+    },
+    "BSOKE_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 36.38
+    },
+    "DGATE_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 118.3
+    },
+    "DSTKF_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 3420.0
+    },
+    "EDATA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 18.76
+    },
+    "EREGL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 40.46
+    },
+    "GEREL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 44.32
+    },
+    "GLBMD_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 14.33
+    },
+    "GOKNR_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 25.2
+    },
+    "GSRAY_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1.04
+    },
+    "HATSN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 64.4
+    },
+    "IHLAS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1.3
+    },
+    "IHLGM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1.95
+    },
+    "LRSHO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 3.45
+    },
+    "MTRKS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 30.98
+    },
+    "OYLUM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 8.14
+    },
+    "PAPIL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 15.78
+    },
+    "PATEK_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 22.44
+    },
+    "PRZMA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 47.3
+    },
+    "RTALB_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 4.0
+    },
+    "SILVR_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 2.84
+    },
+    "SKYMD_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 14.79
+    },
+    "SMRTG_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 12.59
+    },
+    "SNICA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 4.53
+    },
+    "TDGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 15.96
+    },
+    "TKFEN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 135.1
+    },
+    "ZGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 40.94
+    },
+    "AEFES_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 20.88
+    },
+    "AKENR_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 13.61
+    },
+    "ANELE_1H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 115.0
+    },
+    "ANGEN_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 12.1
+    },
+    "ANHYT_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 103.7
+    },
+    "BANVT_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 177.6
+    },
+    "BARMA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 72.6
+    },
+    "CCOLA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 79.1
+    },
+    "DGATE_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 117.6
+    },
+    "DOCO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 12000.0
+    },
+    "DSTKF_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 3420.0
+    },
+    "DURKN_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 20.26
+    },
+    "ELITE_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 36.76
+    },
+    "EREGL_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 40.46
+    },
+    "GLBMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.33
+    },
+    "GLYHO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 18.37
+    },
+    "GOZDE_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 24.26
+    },
+    "GRSEL_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 310.5
+    },
+    "HATEK_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 15.97
+    },
+    "KRONT_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 21.14
+    },
+    "KTSKR_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 110.1
+    },
+    "LILAK_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 36.82
+    },
+    "MANAS_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 29.0
+    },
+    "PRZMA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 46.98
+    },
+    "RTALB_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 3.94
+    },
+    "SKYMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.61
+    },
+    "SNICA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 4.52
+    },
+    "TURSG_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 6.41
+    },
+    "ULUFA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 1.94
+    },
+    "VERUS_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 620.5
+    },
+    "A1CAP_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 11.43
+    },
+    "AKENR_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 13.57
+    },
+    "AKSGY_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 9.65
+    },
+    "ASGYO_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 13.07
+    },
+    "BALSU_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 19.9
+    },
+    "BANVT_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 176.9
+    },
+    "BEGYO_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 4.31
+    },
+    "DOCO_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 11990.0
+    },
+    "ECOGR_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 43.0
+    },
+    "EGPRO_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 43.54
+    },
+    "GEDIK_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 7.51
+    },
+    "GEREL_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 44.2
+    },
+    "GLBMD_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 14.33
     },
     "GOZDE_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 24.4
+      "price": 24.26
     },
     "GUNDG_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 1428.0
+      "price": 1388.0
+    },
+    "HATSN_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 63.6
     },
     "HEDEF_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 143.2
+      "price": 142.2
     },
     "HUNER_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 3.93
+      "price": 3.92
     },
     "ICUGS_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 5.82
+      "price": 5.72
     },
     "IDGYO_4H": {
       "time": "2026-06-25T10:00:00",
->>>>>>> Stashed changes
-      "price": 5.18
-=======
-      "time": "2026-06-25T10:00:00",
       "price": 5.19
->>>>>>> Stashed changes
     },
     "INFO_4H": {
       "time": "2026-06-25T10:00:00",
       "price": 7.35
     },
     "INVEO_4H": {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-      "time": "2026-06-25T06:00:00",
-      "price": 8.66
-=======
       "time": "2026-06-25T10:00:00",
-      "price": 8.69
->>>>>>> Stashed changes
-    },
-    "ISGYO_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 25.64
-    },
-    "IZFAS_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 65.65
-    },
-    "KARTN_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 144.7
-    },
-    "KBORU_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 27.66
-    },
-    "KOPOL_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 6.98
-    },
-    "KTSKR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 111.2
-    },
-    "KUYAS_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 72.25
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 8.53
+      "price": 8.67
     },
     "INVES_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 713.5
+      "price": 713.0
     },
     "ISGSY_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 134.4
+      "price": 133.6
     },
     "ISGYO_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 25.6
+      "price": 25.36
     },
     "IZFAS_4H": {
       "time": "2026-06-25T10:00:00",
@@ -7068,226 +6716,39 @@
     },
     "KARTN_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 143.7
+      "price": 143.8
     },
     "KATMR_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 2.77
+      "price": 2.74
     },
     "KBORU_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 27.84
-    },
-    "KOPOL_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 6.96
+      "price": 27.44
     },
     "KTSKR_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 111.0
-    },
-    "KUYAS_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 72.45
-    },
-    "LILAK_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 36.96
-    },
-    "MAKIM_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 19.65
-    },
-    "MGROS_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 706.0
-    },
-    "MOGAN_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 14.97
->>>>>>> Stashed changes
+      "price": 110.0
     },
     "MRSHL_4H": {
       "time": "2026-06-25T10:00:00",
-<<<<<<< Updated upstream
-      "price": 1681.0
-    },
-    "OSMEN_4H": {
-      "time": "2026-06-25T06:00:00",
-<<<<<<< Updated upstream
-      "price": 8.88
-=======
-      "price": 1679.0
+      "price": 1678.0
     },
     "OSMEN_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 8.85
->>>>>>> Stashed changes
-    },
-    "OSTIM_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 2.14
-    },
-    "OZYSR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 12.22
-    },
-    "PINSU_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 11.46
-    },
-    "RTALB_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 3.93
-    },
-    "SANFM_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 9.41
-    },
-    "SEKUR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 12.76
-    },
-    "SERNT_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 11.41
-    },
-    "SILVR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 2.83
-    },
-    "SKBNK_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 17.04
-    },
-    "TATGD_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 19.43
-    },
-    "ULUUN_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 9.5
-    },
-    "UNLU_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 13.7
-    },
-    "USAK_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 1.72
-    },
-    "ZRGYO_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 17.75
-    },
-    "AHGAZ_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 37.42
-    },
-    "AKBNK_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 80.55
-    },
-    "AKSGY_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 9.74
-    },
-    "AKSUE_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 38.48
-    },
-    "ANSGR_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 28.58
-    },
-    "ARMGD_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 170.9
-    },
-    "ASGYO_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 12.97
-    },
-    "BALSU_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 19.45
-    },
-    "BANVT_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 171.5
-    },
-    "BESLR_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 14.6
-    },
-    "BIGCH_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 7.87
-    },
-    "BIGTK_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 233.5
-    },
-    "BINHO_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 10.25
-    },
-    "BMSTL_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 95.7
-    },
-    "BORLS_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 7.8
-    },
-    "CATES_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 40.92
-    },
-    "CELHA_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 19.13
-    },
-    "DENGE_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.62
-    },
-    "DEVA_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 72.05
-    },
-    "DGGYO_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 46.4
-    },
-    "DMSAS_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 9.83
-    },
-    "DNISI_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 22.78
-    },
-    "DOCO_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 12042.5
-=======
-      "price": 8.65
-    },
-    "OSTIM_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 2.16
+      "price": 8.58
     },
     "OTKAR_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 359.75
+      "price": 357.75
     },
     "OZYSR_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 12.24
+      "price": 12.01
     },
     "PAPIL_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 15.24
 =======
       "price": 11.84
@@ -7324,21 +6785,181 @@
     "GOODY_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 20.26
+=======
+      "price": 15.81
+    },
+    "SEKUR_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 12.64
+    },
+    "SKYMD_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 14.55
+    },
+    "SNICA_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 4.5
+    },
+    "TATGD_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 19.39
+    },
+    "TDGYO_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 15.72
+    },
+    "ULUUN_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 9.51
+    },
+    "ZGYO_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 40.72
+    },
+    "ZRGYO_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 17.75
+    },
+    "ARMGD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 170.3
+    },
+    "ASGYO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 13.04
+    },
+    "BALSU_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 19.7
+    },
+    "BANVT_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 176.8
+    },
+    "BIGCH_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 7.58
+    },
+    "BIGTK_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 226.2
+    },
+    "BINHO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 9.64
+    },
+    "BMSTL_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 95.6
+    },
+    "BORLS_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 7.66
+    },
+    "CATES_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 40.56
+    },
+    "CELHA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 18.78
+    },
+    "DENGE_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 2.52
+    },
+    "DEVA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 71.6
+    },
+    "DGGYO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 44.9
+    },
+    "DMSAS_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 9.86
+    },
+    "DOCO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 11980.0
+    },
+    "DSTKF_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 3420.0
+    },
+    "ECOGR_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 42.9
+    },
+    "EDATA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 18.81
+    },
+    "EFOR_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 16.6
+    },
+    "EGPRO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 43.48
+    },
+    "ENERY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 9.85
+    },
+    "GEDIK_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 7.53
+    },
+    "GENIL_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 9.47
+    },
+    "GEREL_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 44.14
+    },
+    "GLBMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.33
+    },
+    "GLYHO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 18.3
+    },
+    "GOODY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 20.5
+>>>>>>> Stashed changes
     },
     "ISGSY_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 134.2
     },
     "ISGYO_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 25.5
+=======
+      "price": 24.18
+    },
+    "HATSN_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 63.7
+>>>>>>> Stashed changes
     },
     "KBORU_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 27.44
+=======
+      "price": 142.0
+>>>>>>> Stashed changes
     },
     "OSMEN_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 8.47
     },
     "SNICA_1D": {
@@ -8506,6 +8127,9 @@
     "IEYHO_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 139.4
+=======
+      "price": 140.5
+>>>>>>> Stashed changes
     },
     "INFO_1D": {
       "time": "2026-06-25T06:00:00",
@@ -8513,6 +8137,7 @@
     },
     "INVEO_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 8.71
     },
     "ISFIN_1D": {
@@ -8582,6 +8207,73 @@
     "MRSHL_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 1680.0
+=======
+      "price": 8.66
+    },
+    "ISGSY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 134.5
+    },
+    "ISGYO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 25.3
+    },
+    "IZFAS_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 65.85
+    },
+    "IZMDC_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 8.69
+    },
+    "KARTN_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 143.9
+    },
+    "KBORU_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 27.5
+    },
+    "KOCMT_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 3.12
+    },
+    "KOPOL_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 6.82
+    },
+    "KRONT_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 21.24
+    },
+    "LILAK_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 36.78
+    },
+    "MAKIM_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 19.42
+    },
+    "MANAS_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 29.0
+    },
+    "MARKA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 91.8
+    },
+    "MGROS_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 697.5
+    },
+    "MOGAN_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.78
+    },
+    "MRSHL_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 1676.0
+>>>>>>> Stashed changes
     },
     "MTRKS_1D": {
       "time": "2026-06-25T06:00:00",
@@ -8593,11 +8285,15 @@
     },
     "OSMEN_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 8.47
     },
     "OSTIM_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 2.12
+=======
+      "price": 8.59
+>>>>>>> Stashed changes
     },
     "OZSUB_1D": {
       "time": "2026-06-25T06:00:00",
@@ -8605,6 +8301,7 @@
     },
     "PAMEL_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 93.05
     },
     "PASEU_1D": {
@@ -8642,6 +8339,45 @@
     "SERNT_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 11.2
+=======
+      "price": 92.4
+    },
+    "PASEU_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 124.5
+    },
+    "PGSUS_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 179.6
+    },
+    "PSDTC_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 128.3
+    },
+    "SAMAT_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 7.57
+    },
+    "SANEL_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 73.1
+    },
+    "SANKO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 22.46
+    },
+    "SEKUR_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 12.64
+    },
+    "SELEC_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 220.0
+    },
+    "SERNT_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 11.15
+>>>>>>> Stashed changes
     },
     "SILVR_1D": {
       "time": "2026-06-25T06:00:00",
@@ -8649,6 +8385,7 @@
     },
     "SKBNK_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 16.61
     },
     "SKYMD_1D": {
@@ -8674,6 +8411,29 @@
     "TOASO_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 337.0
+=======
+      "price": 16.82
+    },
+    "SKYMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.52
+    },
+    "SNICA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 4.48
+    },
+    "TEHOL_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 36.18
+    },
+    "THYAO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 329.0
+    },
+    "UFUK_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 1700.0
+>>>>>>> Stashed changes
     },
     "ULUUN_1D": {
       "time": "2026-06-25T06:00:00",
@@ -8685,6 +8445,7 @@
     },
     "AHGAZ_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
       "price": 37.0
     },
     "AKENR_1W": {
@@ -8702,10 +8463,34 @@
     "ALCTL_1W": {
       "time": "2026-06-22T06:00:00",
       "price": 164.0
+=======
+      "price": 36.94
+    },
+    "AKENR_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 13.5
+    },
+    "AKSA_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 11.52
+    },
+    "AKSGY_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 9.81
+    },
+    "ALARK_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 100.4
+    },
+    "ALCTL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 163.9
+>>>>>>> Stashed changes
     },
     "ANELE_1W": {
       "time": "2026-06-22T06:00:00",
       "price": 115.0
+<<<<<<< Updated upstream
     },
     "ANGEN_1W": {
       "time": "2026-06-22T06:00:00",
@@ -8726,6 +8511,24 @@
     "BAKAB_1W": {
       "time": "2026-06-22T06:00:00",
       "price": 51.85
+=======
+    },
+    "ARMGD_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 170.7
+    },
+    "ASGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 13.01
+    },
+    "AVGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 15.66
+    },
+    "BAKAB_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 51.8
+>>>>>>> Stashed changes
     },
     "BARMA_1W": {
       "time": "2026-06-22T06:00:00",
@@ -8737,6 +8540,7 @@
     },
     "BMSTL_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
       "price": 95.55
     },
     "BRLSM_1W": {
@@ -8866,6 +8670,29 @@
     "IEYHO_1W": {
       "time": "2026-06-22T06:00:00",
       "price": 139.4
+=======
+      "price": 95.6
+    },
+    "CRFSA_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 152.1
+    },
+    "DAGI_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.18
+    },
+    "EUPWR_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 85.9
+    },
+    "HRKET_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 113.5
+    },
+    "HUNER_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 3.92
+>>>>>>> Stashed changes
     },
     "INFO_1W": {
       "time": "2026-06-22T06:00:00",
@@ -8873,12 +8700,17 @@
     },
     "INVES_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
       "price": 706.5
+=======
+      "price": 712.5
+>>>>>>> Stashed changes
     },
     "ISATR_1W": {
       "time": "2025-09-22T06:00:00",
       "price": 4950000.0
     },
+<<<<<<< Updated upstream
     "ISCTR_1W": {
       "time": "2026-06-22T06:00:00",
       "price": 14.89
@@ -9026,9 +8858,75 @@
     "VERUS_1W": {
       "time": "2026-06-22T06:00:00",
       "price": 619.5
-    },
-    "YKBNK_1W": {
+=======
+    "ISGYO_1W": {
       "time": "2026-06-22T06:00:00",
+      "price": 25.24
+    },
+    "IZFAS_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 65.85
+    },
+    "IZMDC_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.69
+    },
+    "KARSN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 12.98
+    },
+    "KARTN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 143.9
+    },
+    "KBORU_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 27.42
+    },
+    "KCAER_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 15.34
+    },
+    "KLSYN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 13.86
+    },
+    "KNFRT_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 13.78
+    },
+    "KOCMT_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 3.1
+    },
+    "KOPOL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 6.82
+    },
+    "KRDMB_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 122.6
+    },
+    "KRSTL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 10.98
+    },
+    "KTLEV_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 171.4
+    },
+    "LUKSK_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 106.2
+    },
+    "MAKIM_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 19.37
+>>>>>>> Stashed changes
+    },
+    "MARBL_1W": {
+      "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
       "price": 41.32
     },
     "ACSEL_1M": {
@@ -9759,18 +9657,181 @@
     "BIMAS_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 379.25
+=======
+      "price": 13.46
+    },
+    "MARKA_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 91.65
+    },
+    "MERCN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 25.62
+    },
+    "METRO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.83
+    },
+    "MRSHL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 1678.0
+    },
+    "MTRKS_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 30.96
+    },
+    "ODAS_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.65
+    },
+    "ODINE_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 1761.0
+    },
+    "ORGE_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 122.4
+    },
+    "OZATD_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 1608.0
+    },
+    "OZKGY_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 14.9
+    },
+    "OZSUB_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 32.74
+    },
+    "SMRTG_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 12.45
+    },
+    "TATEN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 14.57
+    },
+    "TEHOL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 36.2
+    },
+    "THYAO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 328.75
+    },
+    "TNZTP_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 26.16
+    },
+    "TOASO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 331.5
+    },
+    "VERUS_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 620.5
+    },
+    "YKBNK_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 41.08
+    },
+    "ACSEL_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 142.5
+    },
+    "AEFES_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 20.84
+    },
+    "AGESA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 248.5
+    },
+    "AHGAZ_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 36.94
+    },
+    "AKFYE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 22.58
+    },
+    "AKSEN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 81.5
+    },
+    "AKSGY_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 9.95
+    },
+    "AKSUE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 38.2
+    },
+    "ALARK_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 100.6
+    },
+    "ALCTL_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 163.8
+    },
+    "ANELE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 115.0
+    },
+    "ARASE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 113.1
+    },
+    "ARDYZ_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 54.65
+    },
+    "ASELS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 374.25
+    },
+    "ASTOR_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 298.5
+    },
+    "ATATP_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 208.0
+    },
+    "AVGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 15.66
+    },
+    "AYEN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 36.54
+    },
+    "BAKAB_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 51.65
+    },
+    "BARMA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 72.7
+    },
+    "BIMAS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 374.5
+>>>>>>> Stashed changes
     },
     "BMSTL_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 95.85
+      "price": 95.55
     },
     "BRLSM_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 19.86
+      "price": 19.89
     },
     "BRSAN_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 558.5
+      "price": 553.5
     },
     "BSOKE_1M": {
       "time": "2026-06-01T06:00:00",
@@ -9778,26 +9839,27 @@
     },
     "BTCIM_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 6.07
+      "price": 6.04
     },
     "BURVA_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 963.5
+      "price": 924.5
     },
     "BVSAN_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 119.9
+      "price": 119.0
     },
     "BYDNR_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 37.72
+      "price": 37.56
     },
     "CCOLA_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 79.5
+      "price": 79.05
     },
     "CELHA_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
       "price": 18.94
 =======
       "price": 9.46
@@ -9853,35 +9915,99 @@
     "FLAP_15m": {
       "time": "2026-06-25T09:15:00",
       "price": 11.96
+=======
+      "price": 18.61
     },
-    "FONET_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 5.56
+    "CRDFA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 39.4
     },
-    "GEREL_15m": {
-      "time": "2026-06-25T10:15:00",
-      "price": 44.16
+    "CRFSA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 152.6
     },
-    "GLBMD_15m": {
-      "time": "2026-06-25T09:00:00",
-      "price": 13.7
+    "CVKMD_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 40.06
     },
-    "GOZDE_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 24.6
+    "CWENE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 38.32
     },
-    "GUNDG_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 1410.0
+    "DEVA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 71.65
     },
-    "HUBVC_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 2.95
+    "DGATE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 116.4
     },
-    "IHEVA_15m": {
-      "time": "2026-06-25T10:15:00",
-      "price": 2.13
+    "DGGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 45.94
     },
+    "DOGUB_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 94.0
+    },
+    "DURDO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.2
+    },
+    "EDATA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 18.77
+    },
+    "EGEPO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 18.58
+    },
+    "EGPRO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 43.7
+    },
+    "EREGL_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 40.3
+    },
+    "ERSU_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 24.4
+    },
+    "ESCAR_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 48.14
+>>>>>>> Stashed changes
+    },
+    "ESCOM_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.95
+    },
+    "ETILR_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.48
+    },
+    "EUPWR_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 87.5
+    },
+    "FADE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 15.81
+    },
+    "FONET_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.44
+    },
+    "GEDZA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 31.24
+    },
+    "GEREL_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 44.2
+    },
+<<<<<<< Updated upstream
     "IHGZT_15m": {
       "time": "2026-06-25T10:15:00",
       "price": 1.37
@@ -9911,27 +10037,69 @@
     "LUKSK_15m": {
       "time": "2026-06-25T09:00:00",
       "price": 109.0
+=======
+    "GESAN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 72.05
     },
-    "MACKO_15m": {
-      "time": "2026-06-25T10:15:00",
-      "price": 36.28
+    "GLYHO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 18.26
     },
-    "MEYSU_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 14.46
+    "GMTAS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 46.38
     },
-    "MGROS_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 711.5
+    "GSDDE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 12.24
     },
-    "MHRGY_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 3.9
+    "GSDHO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.63
     },
-    "NETCD_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 147.6
+    "HALKB_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 43.34
     },
+    "HEDEF_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 141.7
+    },
+    "HLGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 6.48
+    },
+    "ICBCT_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 20.0
+    },
+    "ICUGS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.71
+>>>>>>> Stashed changes
+    },
+    "IDGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.16
+    },
+    "IEYHO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 141.0
+    },
+    "INDES_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 11.22
+    },
+    "INFO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 7.35
+    },
+    "INVES_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 712.5
+    },
+<<<<<<< Updated upstream
     "ODINE_15m": {
       "time": "2026-06-25T10:30:00",
       "price": 1737.0
@@ -9969,177 +10137,203 @@
     "RODRG_15m": {
       "time": "2026-06-25T10:15:00",
       "price": 25.2
+=======
+    "ISATR_1M": {
+      "time": "2025-09-01T06:00:00",
+      "price": 4950000.0
     },
-    "RYSAS_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 22.46
+    "ISDMR_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 59.4
     },
-    "SANEL_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 70.8
+    "ISGSY_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 133.7
     },
-    "SANFM_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 9.45
+    "ISGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 25.28
     },
-    "SANKO_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 22.62
+    "IZFAS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 65.75
     },
-    "SEGYO_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 4.82
+    "IZMDC_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 8.69
     },
-    "SILVR_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 2.83
+    "KAPLM_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 540.5
+>>>>>>> Stashed changes
     },
-    "SMRVA_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 16.01
+    "KAREL_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 10.4
     },
-    "TATEN_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 14.85
+    "KARSN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 12.97
     },
-    "TDGYO_15m": {
-      "time": "2026-06-25T10:30:00",
-      "price": 15.73
+    "KARTN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 144.0
     },
-    "TOASO_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 344.25
+    "KGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 12.04
     },
-    "VAKFN_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 1.69
+    "KLSYN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 13.86
     },
-    "VSNMD_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 92.25
+    "KRDMB_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 122.7
     },
-    "YESIL_15m": {
-      "time": "2026-06-25T09:15:00",
-      "price": 1.41
+    "KRDMD_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 39.86
     },
-    "ZERGY_15m": {
-      "time": "2026-06-25T09:15:00",
+    "KRONT_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 21.38
+    },
+    "KRPLS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 9.28
+    },
+    "KRSTL_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 11.01
+    },
+    "KTLEV_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 171.3
+    },
+    "KTSKR_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 109.2
+    },
+    "MAALT_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 1161.0
+    },
+    "MANAS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 28.94
+    },
+    "MARKA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 91.55
+    },
+    "MEPET_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 23.0
+    },
+    "METRO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 8.82
+    },
+    "MGROS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 696.0
+    },
+    "MOBTL_1M": {
+      "time": "2026-06-01T06:00:00",
       "price": 13.51
     },
-    "AEFES_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 21.04
+    "MTRKS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 31.1
     },
-    "AGROT_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 2.78
+    "OBASE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 38.04
     },
-    "AKENR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 13.5
+    "ODAS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 8.63
     },
-    "AKFGY_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 2.82
+    "ORCAY_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 3.94
     },
-    "ALTNY_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 15.72
+    "ORGE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 122.8
     },
-    "ANHYT_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 105.1
+    "OZRDN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 30.12
     },
-    "ARASE_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 115.8
+    "OZSUB_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 32.8
     },
-    "ASELS_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 379.5
+    "PAGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 137.8
     },
-    "ASTOR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 306.0
+    "PCILT_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 33.48
     },
-    "ASUZU_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 59.05
+    "PKART_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 132.0
     },
-    "ATATP_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 213.0
+    "SOKE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 16.27
     },
-    "AVOD_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 4.22
+    "TATEN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 14.61
     },
-    "AVTUR_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 17.5
-    },
-    "BASGZ_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 49.68
-    },
-    "BIENY_1H": {
-      "time": "2026-06-25T09:00:00",
-      "price": 23.24
-    },
-    "BIGCH_1H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 7.74
-    },
-    "BIMAS_1H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T09:00:00",
-      "price": 381.5
-=======
-      "price": 17.57
+    "TEHOL_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 36.18
     },
     "TKFEN_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 129.8
-    },
-    "TMPOL_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 456.25
-    },
-    "TOASO_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 340.25
-    },
-    "TRALT_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 49.08
-    },
-    "TRGYO_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 97.0
+      "price": 134.4
     },
     "UFUK_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 1685.0
+      "price": 1703.0
+    },
+    "ULUSE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 328.0
     },
     "ULUUN_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 9.56
+      "price": 9.51
     },
     "VAKKO_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 75.95
+      "price": 75.4
+    },
+    "VANGD_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 95.25
+    },
+    "VBTYZ_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 27.94
     },
     "VERUS_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 622.0
+      "price": 619.0
     },
     "YEOTK_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 105.7
+      "price": 105.1
     },
     "YGGYO_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 244.7
+      "price": 240.7
     },
     "YUNSA_1M": {
       "time": "2026-06-01T06:00:00",
@@ -10147,26 +10341,27 @@
     },
     "ZEDUR_1M": {
       "time": "2026-06-01T06:00:00",
-      "price": 9.48
+      "price": 9.4
     }
   },
   "last_sent_h8": {
-    "BANVT_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 177.1
+    "AKFIS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 65.9
     },
-    "CEMZY_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 14.19
+    "AKYHO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 2.52
     },
-    "ERSU_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 24.78
+    "ALKIM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 18.38
     },
-    "GEREL_15m": {
-      "time": "2026-06-25T09:45:00",
-      "price": 44.12
+    "ANELE_15m": {
+      "time": "2026-06-25T10:45:00",
+      "price": 115.0
     },
+<<<<<<< Updated upstream
     "KLSER_15m": {
       "time": "2026-06-25T09:45:00",
       "price": 28.54
@@ -10235,6 +10430,127 @@
     "AGYO_1H": {
       "time": "2026-06-25T11:00:00",
       "price": 8.18
+=======
+    "ANGEN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 12.24
+    },
+    "AZTEK_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 4.83
+    },
+    "BRLSM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 19.99
+    },
+    "DERIM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 37.78
+    },
+    "DGATE_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 118.3
+    },
+    "DMRGD_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 10.52
+    },
+    "EDATA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 18.76
+    },
+    "EUPWR_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 85.55
+    },
+    "GESAN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 71.3
+    },
+    "GSRAY_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1.04
+    },
+    "IHEVA_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 2.13
+    },
+    "IHGZT_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1.37
+    },
+    "IHLAS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1.3
+    },
+    "IHLGM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1.95
+    },
+    "INDES_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 11.25
+    },
+    "MERCN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 25.44
+    },
+    "MTRKS_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 30.98
+    },
+    "PAPIL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 15.78
+    },
+    "RNPOL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 2.4
+    },
+    "RTALB_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 4.0
+    },
+    "SEGMN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 53.6
+    },
+    "SEYKM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 4.77
+    },
+    "SKYMD_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 14.79
+    },
+    "TABGD_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 228.0
+    },
+    "TDGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 15.96
+    },
+    "TKFEN_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 135.1
+    },
+    "TRHOL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1579.0
+    },
+    "ZGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 40.94
+    },
+    "AGYO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 8.15
+    },
+    "AKENR_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 13.61
+>>>>>>> Stashed changes
     },
     "ANELE_1H": {
       "time": "2026-06-25T10:00:00",
@@ -10242,6 +10558,7 @@
     },
     "ANGEN_1H": {
       "time": "2026-06-25T11:00:00",
+<<<<<<< Updated upstream
       "price": 11.87
     },
     "BANVT_1H": {
@@ -11038,146 +11355,117 @@
     "GUNDG_4H": {
       "time": "2026-06-25T10:00:00",
       "price": 1428.0
+=======
+      "price": 12.1
+    },
+    "BANVT_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 177.6
+    },
+    "CEMZY_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.14
+    },
+    "CEOEM_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 25.6
+    },
+    "CRFSA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 153.7
+    },
+    "DGATE_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 117.6
+    },
+    "EREGL_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 40.46
+    },
+    "GLBMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.33
+    },
+    "GUBRF_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 481.0
+    },
+    "LRSHO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 3.46
+    },
+    "PRZMA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 46.98
+    },
+    "SELVA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 2.07
+    },
+    "SKYMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.61
+    },
+    "SNICA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 4.52
+    },
+    "TKFEN_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 134.4
+    },
+    "BANVT_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 176.9
+    },
+    "DURKN_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 20.18
+    },
+    "GLBMD_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 14.33
+    },
+    "GOZDE_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 24.26
+>>>>>>> Stashed changes
     },
     "HATEK_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 16.03
-    },
-    "HEDEF_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 143.2
-    },
-    "HUNER_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 3.93
+      "price": 15.97
     },
     "IDGYO_4H": {
       "time": "2026-06-25T10:00:00",
->>>>>>> Stashed changes
-      "price": 5.18
-=======
-      "time": "2026-06-25T10:00:00",
       "price": 5.19
->>>>>>> Stashed changes
+    },
+    "INVEO_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 8.67
     },
     "INVES_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 713.5
+      "price": 713.0
     },
-<<<<<<< Updated upstream
-    "INVEO_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 8.69
-    },
-    "KARTN_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 144.7
-    },
-    "KATMR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.76
-    },
-    "KBORU_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 27.66
-    },
-    "KLSYN_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 13.89
-    },
-    "KRSTL_4H": {
-<<<<<<< Updated upstream
-      "time": "2026-06-25T06:00:00",
-      "price": 11.2
-=======
     "ISGSY_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 134.4
-    },
-    "KATMR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 2.77
+      "price": 133.6
     },
     "KBORU_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 27.84
+      "price": 27.44
     },
     "KLSYN_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 13.92
-    },
-    "KRSTL_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 11.19
->>>>>>> Stashed changes
+      "price": 13.88
     },
     "KTSKR_4H": {
       "time": "2026-06-25T10:00:00",
-      "price": 111.0
-=======
-      "time": "2026-06-25T10:00:00",
-      "price": 11.1
+      "price": 110.0
     },
-    "KTSKR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 111.2
->>>>>>> Stashed changes
-    },
-<<<<<<< Updated upstream
-    "OTKAR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 360.0
-    },
-    "OZRDN_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 30.5
-    },
-    "PRDGS_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 7.41
-    },
-    "SANFM_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 9.41
-    },
-    "SEKUR_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 12.76
-    },
-    "SILVR_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 2.89
-    },
-    "TRCAS_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 42.44
-    },
-    "USAK_4H": {
-      "time": "2026-06-25T10:00:00",
-      "price": 1.72
-    },
-    "ZRGYO_4H": {
-      "time": "2026-06-25T06:00:00",
-      "price": 17.82
-    },
-    "A1CAP_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 11.77
-    },
-    "AHGAZ_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 37.42
-    },
-    "AKSGY_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 9.74
-    },
-    "AKSUE_1D": {
-      "time": "2026-06-25T06:00:00",
-      "price": 38.48
-=======
     "LIDER_4H": {
       "time": "2026-06-25T10:00:00",
+<<<<<<< Updated upstream
       "price": 96.6
     },
     "LILAK_4H": {
@@ -11206,19 +11494,51 @@
     "AKSGY_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 9.67
+=======
+      "price": 95.25
+    },
+    "OZATD_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 1617.0
+    },
+    "PAPIL_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 15.81
+    },
+    "SNICA_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 4.5
+>>>>>>> Stashed changes
     },
     "AKSUE_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 38.16
     },
     "CELHA_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 18.88
+=======
+      "price": 13.04
+    },
+    "BANVT_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 176.8
+    },
+    "BEGYO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 4.31
+    },
+    "CELHA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 18.78
+>>>>>>> Stashed changes
     },
     "DMSAS_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 9.86
     },
+<<<<<<< Updated upstream
     "EDIP_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 37.44
@@ -11246,6 +11566,35 @@
     "ICUGS_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 5.71
+=======
+    "EGEGY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 28.74
+    },
+    "EGPRO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 43.48
+    },
+    "GEREL_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 44.14
+    },
+    "GLBMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.33
+    },
+    "HATSN_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 63.7
+    },
+    "ICUGS_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 5.7
+    },
+    "IEYHO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 140.5
+>>>>>>> Stashed changes
     },
     "INFO_1D": {
       "time": "2026-06-25T06:00:00",
@@ -11253,7 +11602,11 @@
     },
     "INVEO_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 8.71
+=======
+      "price": 8.66
+>>>>>>> Stashed changes
     },
     "ISGSY_1D": {
       "time": "2026-06-25T06:00:00",
@@ -11261,6 +11614,7 @@
     },
     "ISGYO_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 25.5
     },
     "IZFAS_1D": {
@@ -11298,9 +11652,45 @@
     "OTKAR_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 359.25
+=======
+      "price": 25.3
     },
-    "OZSUB_1D": {
+    "IZFAS_1D": {
       "time": "2026-06-25T06:00:00",
+      "price": 65.85
+    },
+    "KARTN_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 143.9
+    },
+    "KBORU_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 27.5
+    },
+    "KTSKR_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 110.2
+    },
+    "KUYAS_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 71.25
+    },
+    "MAKIM_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 19.42
+    },
+    "MRSHL_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 1676.0
+    },
+    "OTKAR_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 356.5
+>>>>>>> Stashed changes
+    },
+    "PAPIL_1D": {
+      "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 32.74
     },
     "SEKUR_1D": {
@@ -11310,6 +11700,17 @@
     "SERNT_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 11.2
+=======
+      "price": 15.72
+    },
+    "SEKUR_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 12.64
+    },
+    "SERNT_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 11.15
+>>>>>>> Stashed changes
     },
     "SILVR_1D": {
       "time": "2026-06-25T06:00:00",
@@ -11317,11 +11718,19 @@
     },
     "SKYMD_1D": {
       "time": "2026-06-25T06:00:00",
+<<<<<<< Updated upstream
       "price": 14.55
     },
     "SNICA_1D": {
       "time": "2026-06-25T06:00:00",
       "price": 4.54
+=======
+      "price": 14.52
+    },
+    "SNICA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 4.48
+>>>>>>> Stashed changes
     },
     "AEFES_1W": {
       "time": "2026-06-22T06:00:00",
@@ -11329,6 +11738,7 @@
     },
     "AKSA_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
       "price": 11.54
     },
     "ALCTL_1W": {
@@ -11418,6 +11828,33 @@
     "IEYHO_1W": {
       "time": "2026-06-22T06:00:00",
       "price": 139.4
+=======
+      "price": 11.52
+    },
+    "AKSGY_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 9.81
+    },
+    "ALCTL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 163.9
+    },
+    "AVGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 15.66
+    },
+    "BANVT_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 177.6
+    },
+    "BMSTL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 95.6
+    },
+    "DAGI_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.18
+>>>>>>> Stashed changes
     },
     "INFO_1W": {
       "time": "2026-06-22T06:00:00",
@@ -11425,6 +11862,7 @@
     },
     "ISCTR_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
       "price": 14.89
     },
     "ISGYO_1W": {
@@ -11474,13 +11912,77 @@
     "SNGYO_1W": {
       "time": "2026-06-22T06:00:00",
       "price": 3.83
+=======
+      "price": 14.77
+    },
+    "ISGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 25.24
+    },
+    "IZMDC_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.69
+    },
+    "KARTN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 143.9
+    },
+    "KCAER_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 15.34
+    },
+    "KLSYN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 13.86
+    },
+    "MAKIM_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 19.37
+    },
+    "MARKA_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 91.65
+    },
+    "MERIT_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 17.68
+    },
+    "MRSHL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 1678.0
+    },
+    "MTRKS_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 30.96
+    },
+    "NTHOL_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 45.48
+    },
+    "ODAS_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.65
+    },
+    "OZKGY_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 14.9
+    },
+    "PARSN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 91.25
+    },
+    "SNGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 3.8
+>>>>>>> Stashed changes
     },
     "TEHOL_1W": {
       "time": "2026-06-22T06:00:00",
-      "price": 36.22
+      "price": 36.2
     },
     "THYAO_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
       "price": 329.25
     },
     "TOASO_1W": {
@@ -11514,6 +12016,41 @@
     "BAKAB_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 51.8
+=======
+      "price": 328.75
+    },
+    "TOASO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 331.5
+    },
+    "TSGYO_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 6.85
+    },
+    "TSKB_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 11.88
+    },
+    "YKBNK_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 41.08
+    },
+    "AEFES_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 20.84
+    },
+    "AKSUE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 38.2
+    },
+    "ALCTL_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 163.8
+    },
+    "BAKAB_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 51.65
+>>>>>>> Stashed changes
     },
     "BTCIM_1M": {
       "time": "2026-06-01T06:00:00",
@@ -11521,6 +12058,7 @@
     },
     "CCOLA_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
       "price": 79.1
     },
     "CELHA_1M": {
@@ -11538,6 +12076,25 @@
     "DGNMO_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 8.67
+=======
+      "price": 79.05
+    },
+    "CELHA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 18.61
+    },
+    "DGATE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 116.4
+    },
+    "DGGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 45.94
+    },
+    "DGNMO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 8.64
+>>>>>>> Stashed changes
     },
     "DURDO_1M": {
       "time": "2026-06-01T06:00:00",
@@ -11549,11 +12106,19 @@
     },
     "EREGL_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
       "price": 40.48
     },
     "ESCOM_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 6.04
+=======
+      "price": 40.3
+    },
+    "ESCOM_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.95
+>>>>>>> Stashed changes
     },
     "GEREL_1M": {
       "time": "2026-06-01T06:00:00",
@@ -11561,6 +12126,7 @@
     },
     "GLYHO_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
       "price": 18.2
     },
     "ICUGS_1M": {
@@ -11598,6 +12164,45 @@
     "KRDMB_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 122.5
+=======
+      "price": 18.26
+    },
+    "ICUGS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.71
+    },
+    "IEYHO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 141.0
+    },
+    "ISGSY_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 133.7
+    },
+    "ISGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 25.28
+    },
+    "IZMDC_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 8.69
+    },
+    "KARSN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 12.97
+    },
+    "KARTN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 144.0
+    },
+    "KORDS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 73.1
+    },
+    "KRDMB_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 122.7
+>>>>>>> Stashed changes
     },
     "KRSTL_1M": {
       "time": "2026-06-01T06:00:00",
@@ -11609,6 +12214,7 @@
     },
     "METRO_1M": {
       "time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
       "price": 8.81
     },
     "MGROS_1M": {
@@ -11937,6 +12543,115 @@
     "GLBMD_1W": {
       "time": "2026-06-22T06:00:00",
       "price": 14.33
+=======
+      "price": 8.82
+    },
+    "MGROS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 696.0
+    },
+    "TEHOL_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 36.18
+    },
+    "TKFEN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 134.4
+    },
+    "YUNSA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 10.14
+    }
+  },
+  "last_sent_i9": {
+    "IHLGM_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 1.95
+    },
+    "PAPIL_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 15.78
+    },
+    "SKYMD_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 14.79
+    },
+    "ZGYO_15m": {
+      "time": "2026-06-25T11:30:00",
+      "price": 40.94
+    },
+    "ANGEN_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 12.1
+    },
+    "GLBMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.33
+    },
+    "LRSHO_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 3.46
+    },
+    "SKYMD_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 14.61
+    },
+    "SNICA_1H": {
+      "time": "2026-06-25T11:00:00",
+      "price": 4.52
+    },
+    "BANVT_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 176.9
+    },
+    "GLBMD_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 14.33
+    },
+    "SNICA_4H": {
+      "time": "2026-06-25T10:00:00",
+      "price": 4.5
+    },
+    "ASGYO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 13.04
+    },
+    "BANVT_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 176.8
+    },
+    "EGPRO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 43.48
+    },
+    "GLBMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.33
+    },
+    "ISGSY_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 134.5
+    },
+    "ISGYO_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 25.3
+    },
+    "KBORU_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 27.5
+    },
+    "KTSKR_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 110.2
+    },
+    "SKYMD_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 14.52
+    },
+    "SNICA_1D": {
+      "time": "2026-06-25T06:00:00",
+      "price": 4.48
+>>>>>>> Stashed changes
     },
     "INFO_1W": {
       "time": "2026-06-22T06:00:00",
@@ -11944,6 +12659,7 @@
     },
     "ISGYO_1W": {
       "time": "2026-06-22T06:00:00",
+<<<<<<< Updated upstream
       "price": 25.5
     },
     "ODAS_1W": {
@@ -11981,10 +12697,54 @@
     "KRDMB_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 122.5
+=======
+      "price": 25.24
+    },
+    "ODAS_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 8.65
+    },
+    "PARSN_1W": {
+      "time": "2026-06-22T06:00:00",
+      "price": 91.25
+    },
+    "AKSUE_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 38.2
+    },
+    "CELHA_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 18.61
+    },
+    "DGGYO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 45.94
+    },
+    "DGNMO_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 8.64
+    },
+    "ESCOM_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 5.95
+    },
+    "KARTN_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 144.0
+    },
+    "KORDS_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 73.1
+    },
+    "KRDMB_1M": {
+      "time": "2026-06-01T06:00:00",
+      "price": 122.7
+>>>>>>> Stashed changes
     },
     "MARKA_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 91.55
+<<<<<<< Updated upstream
     },
     "SELEC_1M": {
       "time": "2026-06-01T06:00:00",
@@ -12076,6 +12836,12 @@
   },
   "last_successful_scans": {
     "2026-06-25_14:00": "2026-06-25 14:50:30"
+>>>>>>> Stashed changes
+=======
+    }
+  },
+  "last_successful_scans": {
+    "2026-06-25_14:00": "2026-06-25 15:27:34"
 >>>>>>> Stashed changes
   }
 }
