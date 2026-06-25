@@ -122,6 +122,31 @@ class MarketScanner:
         logger.info("TradingView'a anonim (nologin) olarak bağlanılıyor.")
         return TvDatafeed()
     
+    @staticmethod
+    def _percent_change(current, previous) -> float:
+        try:
+            current_value = float(current)
+            previous_value = float(previous)
+        except (TypeError, ValueError):
+            return 0.0
+        if previous_value == 0:
+            return 0.0
+        return ((current_value - previous_value) / previous_value) * 100
+
+    def _daily_change_percent(self, df, fallback: float) -> float:
+        try:
+            last_index = df.index[-1]
+            last_date = last_index.date() if hasattr(last_index, "date") else None
+            if last_date is not None:
+                for pos in range(len(df) - 2, -1, -1):
+                    item_index = df.index[pos]
+                    item_date = item_index.date() if hasattr(item_index, "date") else None
+                    if item_date is not None and item_date < last_date:
+                        return self._percent_change(df.iloc[-1]["close"], df.iloc[pos]["close"])
+        except Exception:
+            pass
+        return fallback
+
     async def scan_symbol(
         self,
         symbol: str,
@@ -172,6 +197,8 @@ class MarketScanner:
                 "period": period_str,
                 "close": last_bar['close'],
                 "change": change_percent,
+                "daily_change": daily_change_percent,
+                "current_price": last_bar['close'],
                 "bar_time": df.index[-1].isoformat(),
                 "stale_bar": stale_bar,
                 "signals": {}

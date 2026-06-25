@@ -156,7 +156,7 @@ def send_final_summary(all_results: list):
     Tüm taramalar bittikten sonra BİRDEN FAZLA taramada çıkan hisseleri özetler.
     """
     telegram_sender = get_telegram_sender()
-    symbol_map = {} # symbol -> { period -> [strategies] }
+    symbol_map = {} # symbol -> { period -> [signal entries] }
     
     strategy_names = {
         "full": "S-M-V-2",
@@ -179,7 +179,12 @@ def send_final_summary(all_results: list):
                     symbol_map[sym] = {}
                 if p not in symbol_map[sym]:
                     symbol_map[sym][p] = []
-                symbol_map[sym][p].append(strategy_names[strat])
+                symbol_map[sym][p].append({
+                    "code": strategy_names[strat],
+                    "change": item.get("change"),
+                    "daily_change": item.get("daily_change", item.get("change")),
+                    "current_price": item.get("current_price", item.get("close")),
+                })
     
     # Birden fazla sinyal varsa (farklı periyot veya aynı periyot farklı strateji)
     filtered_map = {}

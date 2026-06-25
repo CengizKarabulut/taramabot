@@ -397,6 +397,29 @@ class TelegramSender:
             start += size
         return chunks
 
+    def _format_price_value(self, value) -> str:
+        try:
+            return f"{float(value):.2f}"
+        except (TypeError, ValueError):
+            return "-"
+
+    def _format_change_value(self, value) -> tuple[str, str]:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return "-", "#64748b"
+        color = "#16a34a" if number >= 0 else "#dc2626"
+        return f"{number:+.2f}%", color
+
+    def _signal_change_value(self, item: dict):
+        return item.get("change", 0)
+
+    def _signal_daily_change_value(self, item: dict):
+        return item.get("daily_change", item.get("daily_change_percent", item.get("change", 0)))
+
+    def _signal_price_value(self, item: dict):
+        return item.get("current_price", item.get("close", 0))
+
     def _scan_result_rows(self, strategies: List[dict]) -> List[dict]:
         rows = []
         for strategy_index, strategy in enumerate(self._enabled_strategies(strategies)):
@@ -408,7 +431,8 @@ class TelegramSender:
                     "color": strategy["color"],
                     "symbol": signal.get("symbol", "-"),
                     "change": float(signal.get("change", 0) or 0),
-                    "close": float(signal.get("close", 0) or 0),
+                    "daily_change": float(signal.get("daily_change", signal.get("change", 0)) or 0),
+                    "current_price": float(signal.get("current_price", signal.get("close", 0)) or 0),
                 })
         rows.sort(key=lambda row: (row["order"], row["symbol"]))
         return rows
@@ -436,11 +460,10 @@ class TelegramSender:
             f"scan_result_{self._safe_filename_part(market_type)}_{self._safe_filename_part(period)}{strategy_part}_{stamp}{page_suffix}.png"
         )
 
-        enabled = self._enabled_strategies(strategies)
         visible_rows = rows if rows is not None else self._scan_result_rows(strategies)
         total_signal_count = total_signal_count if total_signal_count is not None else len(visible_rows)
 
-        fig_height = min(18, max(8, 4.8 + len(visible_rows) * 0.22))
+        fig_height = min(18, max(8, 4.7 + len(visible_rows) * 0.24))
         fig, ax = plt.subplots(figsize=(12, fig_height), dpi=150)
         fig.patch.set_facecolor("#f8fafc")
         ax.set_axis_off()
@@ -452,67 +475,46 @@ class TelegramSender:
         if strategy_label:
             subtitle += f" | {strategy_label}"
         subtitle += f" | {total_signal_count} sinyal"
-        if total_scanned is not None:
-            subtitle += f" | {total_scanned} sembol tarandı"
         if page_count > 1:
-            subtitle += f" | Sayfa {page_number}/{page_count} ({len(visible_rows)} sinyal)"
+            subtitle += f" | Sayfa {page_number}/{page_count}"
         ax.text(0.055, 0.908, subtitle, transform=ax.transAxes, color="#cbd5e1",
                 fontsize=12, va="center")
 
-        summary_x = 0.055
-        summary_y = 0.81
-        for idx, strategy in enumerate(enabled):
-            if idx and idx % 5 == 0:
-                summary_x = 0.055
-                summary_y -= 0.07
-            count = len(strategy["signals"])
-            ax.add_patch(Rectangle((summary_x, summary_y), 0.16, 0.045, transform=ax.transAxes,
-                                   color="white", ec="#d1d5db", lw=1))
-            ax.add_patch(Rectangle((summary_x, summary_y), 0.035, 0.045, transform=ax.transAxes,
-                                   color=strategy["color"]))
-            ax.text(summary_x + 0.0175, summary_y + 0.023, strategy["code"],
-                    transform=ax.transAxes, color="white", fontsize=8.5,
-                    fontweight="bold", ha="center", va="center")
-            ax.text(summary_x + 0.047, summary_y + 0.023, f"{count} sinyal",
-                    transform=ax.transAxes, color="#111827", fontsize=9.5,
-                    fontweight="bold", va="center")
-            summary_x += 0.18
-
-        table_top = summary_y - 0.07
+        table_top = 0.79
         if not visible_rows:
-            ax.add_patch(Rectangle((0.055, 0.24), 0.89, 0.22, transform=ax.transAxes,
+            ax.add_patch(Rectangle((0.055, 0.30), 0.89, 0.20, transform=ax.transAxes,
                                    color="white", ec="#d1d5db", lw=1.2))
-            ax.text(0.50, 0.35, "Bu periyotta yeni sinyal yok.",
+            ax.text(0.50, 0.40, "Bu periyotta yeni sinyal yok.",
                     transform=ax.transAxes, color="#334155", fontsize=18,
                     fontweight="bold", ha="center", va="center")
         else:
-            ax.add_patch(Rectangle((0.055, table_top), 0.89, 0.04, transform=ax.transAxes,
+            ax.add_patch(Rectangle((0.055, table_top), 0.89, 0.045, transform=ax.transAxes,
                                    color="#e5e7eb", ec="#d1d5db", lw=1))
-            ax.text(0.075, table_top + 0.022, "Kod", transform=ax.transAxes,
+            ax.text(0.075, table_top + 0.024, "Kod", transform=ax.transAxes,
                     color="#111827", fontsize=10, fontweight="bold", va="center")
-            ax.text(0.16, table_top + 0.022, "Sembol", transform=ax.transAxes,
+            ax.text(0.33, table_top + 0.024, "Degisim", transform=ax.transAxes,
                     color="#111827", fontsize=10, fontweight="bold", va="center")
-            ax.text(0.34, table_top + 0.022, "Değişim", transform=ax.transAxes,
+            ax.text(0.52, table_top + 0.024, "Gunluk Deg.", transform=ax.transAxes,
                     color="#111827", fontsize=10, fontweight="bold", va="center")
-            ax.text(0.49, table_top + 0.022, "Kapanış", transform=ax.transAxes,
+            ax.text(0.73, table_top + 0.024, "Anlik Fiyat", transform=ax.transAxes,
                     color="#111827", fontsize=10, fontweight="bold", va="center")
-            row_step = min(0.034, 0.64 / max(len(visible_rows), 1))
-            font_size = 9.5 if len(visible_rows) <= 40 else 8
+            row_step = min(0.038, 0.70 / max(len(visible_rows), 1))
+            font_size = 9.8 if len(visible_rows) <= 36 else 8.5
             y = table_top - row_step
             for idx, row in enumerate(visible_rows):
                 bg = "#ffffff" if idx % 2 == 0 else "#f1f5f9"
                 ax.add_patch(Rectangle((0.055, y - row_step * 0.44), 0.89, row_step * 0.88,
                                        transform=ax.transAxes, color=bg, ec="#e5e7eb", lw=0.4))
-                ax.add_patch(Rectangle((0.065, y - row_step * 0.30), 0.045, row_step * 0.60,
-                                       transform=ax.transAxes, color=row["color"]))
-                ax.text(0.0875, y, row["code"], transform=ax.transAxes, color="white",
-                        fontsize=font_size, fontweight="bold", ha="center", va="center")
-                ax.text(0.16, y, row["symbol"], transform=ax.transAxes, color="#111827",
+                change_text, change_color = self._format_change_value(row.get("change"))
+                daily_text, daily_color = self._format_change_value(row.get("daily_change"))
+                price_text = self._format_price_value(row.get("current_price"))
+                ax.text(0.075, y, row["symbol"], transform=ax.transAxes, color="#111827",
                         fontsize=font_size, fontweight="bold", va="center")
-                change_color = "#16a34a" if row["change"] >= 0 else "#dc2626"
-                ax.text(0.34, y, f"{row['change']:+.2f}%", transform=ax.transAxes,
+                ax.text(0.33, y, change_text, transform=ax.transAxes,
                         color=change_color, fontsize=font_size, fontweight="bold", va="center")
-                ax.text(0.49, y, f"{row['close']:.2f}", transform=ax.transAxes,
+                ax.text(0.52, y, daily_text, transform=ax.transAxes,
+                        color=daily_color, fontsize=font_size, fontweight="bold", va="center")
+                ax.text(0.73, y, price_text, transform=ax.transAxes,
                         color="#334155", fontsize=font_size, va="center")
                 y -= row_step
 
@@ -526,17 +528,33 @@ class TelegramSender:
             periods = signal_map[symbol]
             details = []
             total_signals = 0
+            metric_source = None
             ordered_periods = PERIOD_ORDER + sorted(p for p in periods if p not in PERIOD_ORDER)
             for period in ordered_periods:
                 if period not in periods:
                     continue
-                strategies = list(dict.fromkeys(periods[period]))
-                total_signals += len(strategies)
-                details.append(f"{period}: {', '.join(strategies)}")
+                raw_entries = periods[period]
+                codes = []
+                for entry in raw_entries:
+                    if isinstance(entry, dict):
+                        code = str(entry.get("code", "")).strip()
+                        if metric_source is None:
+                            metric_source = entry
+                    else:
+                        code = str(entry).strip()
+                    if code and code not in codes:
+                        codes.append(code)
+                total_signals += len(codes)
+                if codes:
+                    details.append(f"{period}: {', '.join(codes)}")
+            metric_source = metric_source or {}
             rows.append({
                 "symbol": symbol,
                 "count": total_signals,
                 "details": " | ".join(details),
+                "change": metric_source.get("change"),
+                "daily_change": metric_source.get("daily_change", metric_source.get("change")),
+                "current_price": metric_source.get("current_price", metric_source.get("close")),
             })
         rows.sort(key=lambda row: (-row["count"], row["symbol"]))
         return rows
@@ -558,31 +576,35 @@ class TelegramSender:
         wrapped_rows = []
         total_line_count = 0
         for row in signal_rows:
-            detail_lines = textwrap.wrap(row["details"], width=92) or [""]
+            detail_lines = textwrap.wrap(row["details"], width=42) or [""]
             wrapped_rows.append((row, detail_lines))
             total_line_count += max(1, len(detail_lines))
 
-        fig_height = min(18, max(8, 4.4 + total_line_count * 0.31))
+        fig_height = min(18, max(8, 4.4 + total_line_count * 0.34))
         fig, ax = plt.subplots(figsize=(12, fig_height), dpi=150)
         fig.patch.set_facecolor("#f8fafc")
         ax.set_axis_off()
 
         ax.add_patch(Rectangle((0, 0.89), 1, 0.11, transform=ax.transAxes, color="#312e81"))
-        ax.text(0.055, 0.95, "ÇOKLU SİNYAL VEREN HİSSELER", transform=ax.transAxes,
+        ax.text(0.055, 0.95, "COKLU SINYAL OZETI", transform=ax.transAxes,
                 color="white", fontsize=22, fontweight="bold", va="center")
         subtitle = f"{total_symbol_count} hisse"
         if page_count > 1:
-            subtitle += f" | Sayfa {page_number}/{page_count} ({len(signal_rows)} hisse)"
+            subtitle += f" | Sayfa {page_number}/{page_count}"
         ax.text(0.055, 0.908, subtitle, transform=ax.transAxes, color="#ddd6fe",
                 fontsize=12, va="center")
 
         ax.add_patch(Rectangle((0.055, 0.80), 0.89, 0.045, transform=ax.transAxes,
                                color="#e5e7eb", ec="#d1d5db", lw=1))
-        ax.text(0.075, 0.823, "Sembol", transform=ax.transAxes, color="#111827",
+        ax.text(0.075, 0.823, "Kod", transform=ax.transAxes, color="#111827",
                 fontsize=10, fontweight="bold", va="center")
-        ax.text(0.22, 0.823, "Sinyal", transform=ax.transAxes, color="#111827",
+        ax.text(0.245, 0.823, "Degisim", transform=ax.transAxes, color="#111827",
                 fontsize=10, fontweight="bold", va="center")
-        ax.text(0.34, 0.823, "Periyot / Sinyal Kodu", transform=ax.transAxes, color="#111827",
+        ax.text(0.385, 0.823, "Gunluk Deg.", transform=ax.transAxes, color="#111827",
+                fontsize=10, fontweight="bold", va="center")
+        ax.text(0.545, 0.823, "Anlik Fiyat", transform=ax.transAxes, color="#111827",
+                fontsize=10, fontweight="bold", va="center")
+        ax.text(0.705, 0.823, "Tarama Kodlari", transform=ax.transAxes, color="#111827",
                 fontsize=10, fontweight="bold", va="center")
 
         if not wrapped_rows:
@@ -592,8 +614,8 @@ class TelegramSender:
                     transform=ax.transAxes, color="#334155", fontsize=17,
                     fontweight="bold", ha="center", va="center")
         else:
-            row_units = max(total_line_count + len(wrapped_rows) * 0.2, 1)
-            unit_step = min(0.035, 0.70 / row_units)
+            row_units = max(total_line_count + len(wrapped_rows) * 0.25, 1)
+            unit_step = min(0.037, 0.70 / row_units)
             y = 0.765
             for idx, (row, detail_lines) in enumerate(wrapped_rows):
                 row_height = unit_step * max(1, len(detail_lines))
@@ -601,15 +623,22 @@ class TelegramSender:
                 ax.add_patch(Rectangle((0.055, y - row_height + unit_step * 0.15), 0.89,
                                        row_height + unit_step * 0.25, transform=ax.transAxes,
                                        color=bg, ec="#e5e7eb", lw=0.4))
+                change_text, change_color = self._format_change_value(row.get("change"))
+                daily_text, daily_color = self._format_change_value(row.get("daily_change"))
+                price_text = self._format_price_value(row.get("current_price"))
                 ax.text(0.075, y, row["symbol"], transform=ax.transAxes, color="#111827",
                         fontsize=9.5, fontweight="bold", va="top")
-                ax.text(0.23, y, str(row["count"]), transform=ax.transAxes, color="#312e81",
+                ax.text(0.245, y, change_text, transform=ax.transAxes, color=change_color,
                         fontsize=9.5, fontweight="bold", va="top")
+                ax.text(0.385, y, daily_text, transform=ax.transAxes, color=daily_color,
+                        fontsize=9.5, fontweight="bold", va="top")
+                ax.text(0.545, y, price_text, transform=ax.transAxes, color="#334155",
+                        fontsize=9.5, va="top")
                 for line in detail_lines:
-                    ax.text(0.34, y, line, transform=ax.transAxes, color="#334155",
+                    ax.text(0.705, y, line, transform=ax.transAxes, color="#334155",
                             fontsize=8.8, va="top")
                     y -= unit_step
-                y -= unit_step * 0.2
+                y -= unit_step * 0.25
 
         fig.savefig(path, bbox_inches="tight", facecolor=fig.get_facecolor())
         plt.close(fig)
