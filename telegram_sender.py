@@ -283,10 +283,7 @@ class TelegramSender:
 
         lines = ["<b>Sinyal kodlari:</b>"]
         for strategy in enabled:
-            lines.append(
-                f"• <b>{strategy['code']} - {strategy['name']}</b>: "
-                f"{strategy['description']}"
-            )
+            lines.append(f"- <b>{strategy['code']}</b>")
         return "\n".join(lines)
 
     def _format_bar_time(self, value: Optional[str]) -> str:
@@ -372,11 +369,8 @@ class TelegramSender:
                                    color=color, ec=color))
             ax.text(0.0975, y + 0.002, strategy["code"], transform=ax.transAxes,
                     color="white", fontsize=12, fontweight="bold", ha="center", va="center")
-            ax.text(0.155, y + 0.014, strategy["name"], transform=ax.transAxes,
+            ax.text(0.155, y + 0.002, strategy["code"], transform=ax.transAxes,
                     color="#111827", fontsize=12.5, fontweight="bold", va="center")
-            desc = "\n".join(textwrap.wrap(strategy["description"], width=88))
-            ax.text(0.155, y - 0.014, desc, transform=ax.transAxes,
-                    color="#4b5563", fontsize=9.5, va="top")
             y -= 0.067
 
         ax.text(0.055, 0.045, "Bu gorsel periyodu ve kullanilan sinyal kodlarinin anlamini gosterir.",
@@ -699,7 +693,7 @@ class TelegramSender:
                     continue
 
                 row_chunks = self._balanced_chunks(rows, SCAN_RESULT_IMAGE_MAX_ROWS)
-                strategy_label = strategy["name"]
+                strategy_label = strategy["code"]
                 image_paths = [
                     self._write_scan_result_image(
                         period=period,
@@ -738,7 +732,7 @@ class TelegramSender:
             for idx, result_path in enumerate(result_paths, start=1):
                 caption = f"<b>Sinyal Sonucu</b> — {p_name}"
                 if strategy:
-                    caption += f" — {strategy['name']}"
+                    caption += f" — {strategy['code']}"
                 if len(result_paths) > 1:
                     caption += f" — Sayfa {idx}/{len(result_paths)}"
                 ok_results = self.send_photo(result_path, caption=caption) and ok_results
