@@ -179,3 +179,47 @@ EMOJI_SUCCESS = "✅"
 # ============================================================================
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# ============================================================================
+# FILTRE / KAPI AYARLARI
+# ============================================================================
+# Bu filtreler mevcut tarama sinyallerinin ustune uygulanir. Amac daha az,
+# daha secici ve daha islem yapilabilir sonuc uretmektir.
+
+# Rejim filtresi: "ER" = Kaufman Efficiency Ratio, "ADX" = klasik ADX.
+REGIME_METHOD = "ER"
+
+# Trend gucu esikleri.
+ER_PERIOD = 10
+ER_TREND_MIN = 0.30
+ER_TREND_SOFT_MIN = 0.22
+ER_REVERSAL_MAX = 0.35
+
+ADX_PERIOD = 14
+ADX_TREND_MIN = 25
+ADX_TREND_SOFT_MIN = 18
+ADX_REVERSAL_MAX = 20
+
+# Hacim ve para akisi.
+ATR_PERIOD = 14
+CMF_PERIOD = 20
+DIRECTIONAL_VOL_MULT = 1.5
+
+# Trend tabani.
+TREND_FLOOR_MA = 50
+TREND_CONFIRM_MA = 200
+
+# Tepeden alma frenleri.
+LIMIT_UP_THRESHOLD = 9.5
+EMA_EXTENSION_ATR_MULT = 2.5
+EMA_RSI_MAX = 75
+RSI_UPPER_LIMIT = 85
+REVERSAL_LOOKBACK = 5
+
+# Filtreleri tek tek kapatip acarak sonuc sayisi olculebilir.
+ENABLE_REGIME_FILTER = True
+ENABLE_DIRECTIONAL_VOLUME = True
+ENABLE_LIMIT_UP_FILTER = True
+ENABLE_EXTENSION_FILTER = True
+ENABLE_RSI_CAP_FILTER = True
+ENABLE_REVERSAL_STRUCTURE_FILTER = True

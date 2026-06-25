@@ -1,7 +1,7 @@
-"""
-Taramabot Tarama Motoru Modülü
-Asenkron olarak sembolleri tarar ve alım sinyallerini tespit eder.
-SMI/MACD, RSI ve SMA tabanlı üç farklı strateji destekler.
+﻿"""
+Taramabot Tarama Motoru ModÃ¼lÃ¼
+Asenkron olarak sembolleri tarar ve alÄ±m sinyallerini tespit eder.
+SMI/MACD, RSI ve SMA tabanlÄ± Ã¼Ã§ farklÄ± strateji destekler.
 """
 
 import asyncio
@@ -20,33 +20,34 @@ from indicators import (
     check_smi_macd_signal, check_rsi_signal, check_new_scan_signal, 
     check_rsi_macd_scan_signal, check_ema_scan_signal, check_macd_positive_cross_signal, check_h8_smi_macd_positive_signal, check_i9_smi_macd_positive_full_signal
 )
+from filters import candidate_signal_exists, passes_strategy_filter, should_fetch_daily_limit_df
 
 logger = logging.getLogger(__name__)
 
 
 class ScannerState:
-    """Tarama durumunu yönetir (son gönderilen sinyalleri takip eder)."""
+    """Tarama durumunu yÃ¶netir (son gÃ¶nderilen sinyalleri takip eder)."""
     
     def __init__(self, state_file: str = STATE_FILE):
         self.state_file = state_file
         self.state = self._load_state()
     
     def _load_state(self) -> dict:
-        """Durumu dosyadan yükle."""
+        """Durumu dosyadan yÃ¼kle."""
         if not os.path.exists(self.state_file):
-            logger.info(f"Durum dosyası bulunamadı: {self.state_file}. Yeni durum oluşturuluyor.")
+            logger.info(f"Durum dosyasÄ± bulunamadÄ±: {self.state_file}. Yeni durum oluÅŸturuluyor.")
             return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}, "last_sent_h8": {}, "last_sent_i9": {}}
         
         try:
             with open(self.state_file, "r", encoding="utf-8") as f:
                 state = json.load(f)
-                # Eksik anahtarları tamamla
+                # Eksik anahtarlarÄ± tamamla
                 for key in ["last_sent_smi_macd", "last_sent_rsi", "last_sent_new_scan", "last_sent_rsi_macd", "last_sent_ema", "last_sent_macd_cross", "last_sent_h8", "last_sent_i9"]:
                     if key not in state:
                         state[key] = {}
                 return state
         except (json.JSONDecodeError, FileNotFoundError) as e:
-            logger.error(f"Durum dosyası yükleme hatası: {e}. Yeni durum oluşturuluyor.")
+            logger.error(f"Durum dosyasÄ± yÃ¼kleme hatasÄ±: {e}. Yeni durum oluÅŸturuluyor.")
             return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}, "last_sent_h8": {}, "last_sent_i9": {}}
     
     def save(self) -> None:
@@ -56,10 +57,10 @@ class ScannerState:
                 json.dump(self.state, f, ensure_ascii=False, indent=2)
             logger.info(f"Durum kaydedildi: {self.state_file}")
         except Exception as e:
-            logger.error(f"Durum kaydetme hatası: {e}")
+            logger.error(f"Durum kaydetme hatasÄ±: {e}")
     
     def is_signal_sent(self, symbol: str, period: str, strategy: str, bar_time: str) -> bool:
-        """Sinyal bu bar için daha önce gönderilmiş mi kontrol et."""
+        """Sinyal bu bar iÃ§in daha Ã¶nce gÃ¶nderilmiÅŸ mi kontrol et."""
         key = f"{symbol}_{period}"
         strategy_map = {
             "smi_macd": "last_sent_smi_macd",
@@ -79,7 +80,7 @@ class ScannerState:
         return False
     
     def mark_signal_sent(self, symbol: str, period: str, strategy: str, bar_time: str, price: float = 0.0, **metadata) -> None:
-        """Sinyali bu bar için gönderildi olarak işaretle ve fiyatı kaydet."""
+        """Sinyali bu bar iÃ§in gÃ¶nderildi olarak iÅŸaretle ve fiyatÄ± kaydet."""
         key = f"{symbol}_{period}"
         strategy_map = {
             "smi_macd": "last_sent_smi_macd",
@@ -101,25 +102,26 @@ class ScannerState:
 
 
 class MarketScanner:
-    """Pazar tarayıcı."""
+    """Pazar tarayÄ±cÄ±."""
     
     def __init__(self):
         self.tv = self._create_tv_connection()
         self.state = ScannerState()
+        self._daily_limit_cache = {}
     
     def _create_tv_connection(self) -> TvDatafeed:
-        """TradingView bağlantısı oluştur."""
+        """TradingView baÄŸlantÄ±sÄ± oluÅŸtur."""
         if TV_USERNAME and TV_PASSWORD:
             try:
-                logger.info(f"TradingView'a giriş yapılıyor: {TV_USERNAME}")
-                # Hata durumunda programın çökmesini engellemek için try-except
+                logger.info(f"TradingView'a giriÅŸ yapÄ±lÄ±yor: {TV_USERNAME}")
+                # Hata durumunda programÄ±n Ã§Ã¶kmesini engellemek iÃ§in try-except
                 tv = TvDatafeed(username=TV_USERNAME, password=TV_PASSWORD)
                 return tv
             except Exception as e:
-                logger.warning(f"tvDatafeed giriş hatası: {e}. Anonim (nologin) modda devam ediliyor.")
+                logger.warning(f"tvDatafeed giriÅŸ hatasÄ±: {e}. Anonim (nologin) modda devam ediliyor.")
                 return TvDatafeed()
         
-        logger.info("TradingView'a anonim (nologin) olarak bağlanılıyor.")
+        logger.info("TradingView'a anonim (nologin) olarak baÄŸlanÄ±lÄ±yor.")
         return TvDatafeed()
     
     @staticmethod
@@ -147,6 +149,20 @@ class MarketScanner:
             pass
         return fallback
 
+    def _get_daily_limit_df(self, symbol: str, exchange: str):
+        key = (symbol, exchange)
+        if key not in self._daily_limit_cache:
+            try:
+                self._daily_limit_cache[key] = self.tv.get_hist(
+                    symbol,
+                    exchange,
+                    interval=Interval.in_daily,
+                    n_bars=max(BARS_TO_FETCH, 60),
+                )
+            except Exception as e:
+                logger.debug("Gunluk tavan verisi alinamadi (%s): %s", symbol, e)
+                self._daily_limit_cache[key] = None
+        return self._daily_limit_cache[key]
     async def scan_symbol(
         self,
         symbol: str,
@@ -156,25 +172,25 @@ class MarketScanner:
         strategies: List[str] = None
     ) -> Dict[str, any]:
         """
-        Bir sembolü tara.
+        Bir sembolÃ¼ tara.
         """
         if strategies is None:
             strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross", "h8", "i9"]
         
         try:
-            # Veri çek
+            # Veri Ã§ek
             df = self.tv.get_hist(symbol, exchange, interval=interval, n_bars=BARS_TO_FETCH)
             
             if df is None or df.empty or len(df) < 2:
                 return None
             
             stale_bar = False
-            # Endeks kapalıyken (BIST için) son veri eski kalabilir; yine de rapor üret.
+            # Endeks kapalÄ±yken (BIST iÃ§in) son veri eski kalabilir; yine de rapor Ã¼ret.
             if exchange == "BIST":
                 last_bar_time = df.index[-1]
                 now = datetime.now(last_bar_time.tzinfo)
-                # Hafta sonu boşluğunu kapsayacak şekilde 90 saate esnetildi.
-                if interval in [Interval.in_15_minute, Interval.in_1_hour, Interval.in_4_hour]:
+                # Hafta sonu boÅŸluÄŸunu kapsayacak ÅŸekilde 90 saate esnetildi.
+                if interval in [Interval.in_15_minute, Interval.in_30_minute, Interval.in_45_minute, Interval.in_1_hour, Interval.in_2_hour, Interval.in_4_hour]:
                     if (now - last_bar_time).total_seconds() > 324000: # 90 saat
                         stale_bar = True
                         logger.debug(
@@ -188,8 +204,9 @@ class MarketScanner:
             last_bar = df.iloc[-1]
             prev_bar = df.iloc[-2] if len(df) > 1 else last_bar
             
-            # Fiyat değişimi
+            # Fiyat deÄŸiÅŸimi
             change_percent = ((last_bar['close'] - prev_bar['close']) / prev_bar['close']) * 100
+            daily_change_percent = self._daily_change_percent(df, fallback=change_percent)
             
             result = {
                 "symbol": symbol,
@@ -222,10 +239,38 @@ class MarketScanner:
             if "i9" in strategies:
                 result["signals"]["i9"] = check_i9_smi_macd_positive_full_signal(df)
             
+            daily_limit_df = None
+            if should_fetch_daily_limit_df(exchange, period_str, candidate_signal_exists(result["signals"])):
+                daily_limit_df = self._get_daily_limit_df(symbol, exchange)
+
+            if "smi_macd" in result["signals"]:
+                smi_filter = result["signals"]["smi_macd"]
+                smi_filter["passes_full_filter"] = passes_strategy_filter(
+                    df, "smi_macd", signal_kind="full", daily_df=daily_limit_df
+                )
+                smi_filter["passes_early_filter"] = passes_strategy_filter(
+                    df, "smi_macd", signal_kind="early", daily_df=daily_limit_df
+                )
+            if "rsi" in result["signals"]:
+                result["signals"]["rsi"]["passes_filter"] = passes_strategy_filter(df, "rsi", daily_df=daily_limit_df)
+            if "new_scan" in result["signals"]:
+                result["signals"]["new_scan"]["passes_filter"] = passes_strategy_filter(df, "new_scan", daily_df=daily_limit_df)
+            if "rsi_macd" in result["signals"]:
+                result["signals"]["rsi_macd"]["passes_filter"] = passes_strategy_filter(df, "rsi_macd", daily_df=daily_limit_df)
+            if "ema" in result["signals"]:
+                result["signals"]["ema"]["passes_filter"] = passes_strategy_filter(df, "ema", daily_df=daily_limit_df)
+            if "macd_cross" in result["signals"]:
+                result["signals"]["macd_cross"]["passes_filter"] = passes_strategy_filter(df, "macd_cross", daily_df=daily_limit_df)
+            if "h8" in result["signals"]:
+                result["signals"]["h8"]["passes_filter"] = passes_strategy_filter(df, "h8", daily_df=daily_limit_df)
+            if "i9" in result["signals"]:
+                i9_filter = result["signals"]["i9"]
+                i9_filter["passes_filter"] = passes_strategy_filter(df, "i9", daily_df=daily_limit_df)
+                i9_filter["passes_h8_filter"] = passes_strategy_filter(df, "h8", daily_df=daily_limit_df)
             return result
             
         except Exception as e:
-            logger.error(f"Sembol tarama hatası ({symbol}): {str(e)}")
+            logger.error(f"Sembol tarama hatasÄ± ({symbol}): {str(e)}")
             return None
     
     async def scan_market(
@@ -236,12 +281,12 @@ class MarketScanner:
         use_state: bool = True
     ) -> Tuple[List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], List[dict], int]:
         """
-        Pazarı tara.
+        PazarÄ± tara.
         """
         if strategies is None:
             strategies = ["smi_macd", "rsi", "new_scan", "rsi_macd", "ema", "macd_cross", "h8", "i9"]
         
-        # Sembol listesini seç
+        # Sembol listesini seÃ§
         if market_type.lower() == "bist":
             symbols = [(s, "BIST") for s in BIST_STOCKS]
         elif market_type.lower() == "nasdaq":
@@ -253,10 +298,10 @@ class MarketScanner:
         elif market_type.lower() == "kripto":
             symbols = CRYPTO
         else:
-            logger.error(f"Bilinmeyen pazar türü: {market_type}")
+            logger.error(f"Bilinmeyen pazar tÃ¼rÃ¼: {market_type}")
             return [], [], [], [], [], [], [], [], [], 0
         
-        # Zaman dilimini TvDatafeed formatına çevir
+        # Zaman dilimini TvDatafeed formatÄ±na Ã§evir
         interval_map = {
             "15m": Interval.in_15_minute, "15M": Interval.in_15_minute,
             "1h": Interval.in_1_hour, "1H": Interval.in_1_hour,
@@ -267,9 +312,9 @@ class MarketScanner:
         }
         interval = interval_map.get(period, Interval.in_daily)
         
-        logger.info(f"{market_type.upper()} pazarı taranıyor ({period})...")
+        logger.info(f"{market_type.upper()} pazarÄ± taranÄ±yor ({period})...")
         
-        # Paralel tarama için sembolleri parçalara böl (TV rate limit koruması)
+        # Paralel tarama iÃ§in sembolleri parÃ§alara bÃ¶l (TV rate limit korumasÄ±)
         chunk_size = 50
         all_results = []
         for i in range(0, len(symbols), chunk_size):
@@ -278,7 +323,7 @@ class MarketScanner:
             chunk_results = await asyncio.gather(*tasks)
             all_results.extend([r for r in chunk_results if r is not None])
             if i + chunk_size < len(symbols):
-                await asyncio.sleep(1) # Chunklar arası kısa bekleme
+                await asyncio.sleep(1) # Chunklar arasÄ± kÄ±sa bekleme
         
         results = all_results
         total_scanned = len(results)
@@ -292,53 +337,54 @@ class MarketScanner:
             # SMI/MACD
             if "smi_macd" in result["signals"]:
                 smi_res = result["signals"]["smi_macd"]
-                if smi_res["full_buy_signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "smi_macd", bar_time)):
+                if smi_res["full_buy_signal"] and smi_res.get("passes_full_filter", True) and (not use_state or not self.state.is_signal_sent(sym, p, "smi_macd", bar_time)):
                     full_signals.append(result)
                     if use_state: self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close, is_full=True)
-                elif smi_res["smi_macd_buy"] and (not use_state or not self.state.is_signal_sent(sym, p, "smi_macd", bar_time)):
+                elif smi_res["smi_macd_buy"] and smi_res.get("passes_early_filter", True) and (not use_state or not self.state.is_signal_sent(sym, p, "smi_macd", bar_time)):
                     smi_signals.append(result)
                     if use_state: self.state.mark_signal_sent(sym, p, "smi_macd", bar_time, close, is_full=False)
             
             # RSI
-            if "rsi" in result["signals"] and result["signals"]["rsi"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "rsi", bar_time)):
+            if "rsi" in result["signals"] and result["signals"]["rsi"]["signal"] and result["signals"]["rsi"].get("passes_filter", True) and (not use_state or not self.state.is_signal_sent(sym, p, "rsi", bar_time)):
                 rsi_signals.append(result)
                 if use_state: self.state.mark_signal_sent(sym, p, "rsi", bar_time, close)
             
             # New Scan
-            if "new_scan" in result["signals"] and result["signals"]["new_scan"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "new_scan", bar_time)):
+            if "new_scan" in result["signals"] and result["signals"]["new_scan"]["signal"] and result["signals"]["new_scan"].get("passes_filter", True) and (not use_state or not self.state.is_signal_sent(sym, p, "new_scan", bar_time)):
                 new_scan_signals.append(result)
                 if use_state: self.state.mark_signal_sent(sym, p, "new_scan", bar_time, close)
             
             # RSI MACD
-            if "rsi_macd" in result["signals"] and result["signals"]["rsi_macd"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "rsi_macd", bar_time)):
+            if "rsi_macd" in result["signals"] and result["signals"]["rsi_macd"]["signal"] and result["signals"]["rsi_macd"].get("passes_filter", True) and (not use_state or not self.state.is_signal_sent(sym, p, "rsi_macd", bar_time)):
                 rsi_macd_signals.append(result)
                 if use_state: self.state.mark_signal_sent(sym, p, "rsi_macd", bar_time, close)
             
             # EMA
-            if "ema" in result["signals"] and result["signals"]["ema"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "ema", bar_time)):
+            if "ema" in result["signals"] and result["signals"]["ema"]["signal"] and result["signals"]["ema"].get("passes_filter", True) and (not use_state or not self.state.is_signal_sent(sym, p, "ema", bar_time)):
                 ema_signals.append(result)
                 if use_state: self.state.mark_signal_sent(sym, p, "ema", bar_time, close)
             
             # MACD Cross
-            if "macd_cross" in result["signals"] and result["signals"]["macd_cross"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "macd_cross", bar_time)):
+            if "macd_cross" in result["signals"] and result["signals"]["macd_cross"]["signal"] and result["signals"]["macd_cross"].get("passes_filter", True) and (not use_state or not self.state.is_signal_sent(sym, p, "macd_cross", bar_time)):
                 macd_cross_signals.append(result)
                 if use_state: self.state.mark_signal_sent(sym, p, "macd_cross", bar_time, close)
         
             # S-M-1
-            if "h8" in result["signals"] and result["signals"]["h8"]["signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "h8", bar_time)):
+            if "h8" in result["signals"] and result["signals"]["h8"]["signal"] and result["signals"]["h8"].get("passes_filter", True) and (not use_state or not self.state.is_signal_sent(sym, p, "h8", bar_time)):
                 h8_signals.append(result)
                 if use_state: self.state.mark_signal_sent(sym, p, "h8", bar_time, close)
             
             # S-M-V-1
             if "i9" in result["signals"]:
                 i9_res = result["signals"]["i9"]
-                if i9_res["full_signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "i9", bar_time)):
+                if i9_res["full_signal"] and i9_res.get("passes_filter", True) and (not use_state or not self.state.is_signal_sent(sym, p, "i9", bar_time)):
                     i9_signals.append(result)
                     if use_state: self.state.mark_signal_sent(sym, p, "i9", bar_time, close)
-                elif i9_res["h8_signal"] and (not use_state or not self.state.is_signal_sent(sym, p, "h8", bar_time)):
+                elif "h8" not in result["signals"] and i9_res["h8_signal"] and i9_res.get("passes_h8_filter", i9_res.get("passes_filter", True)) and (not use_state or not self.state.is_signal_sent(sym, p, "h8", bar_time)):
                     h8_signals.append(result)
                     if use_state: self.state.mark_signal_sent(sym, p, "h8", bar_time, close)
         
         if use_state:
             self.state.save()
         return full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned
+
