@@ -8,8 +8,9 @@ import asyncio
 import logging
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple
+from zoneinfo import ZoneInfo
 from tvDatafeed import TvDatafeed, Interval
 
 from config import (
@@ -24,6 +25,10 @@ from filters import candidate_signal_exists, passes_strategy_filter, should_fetc
 
 logger = logging.getLogger(__name__)
 
+TZ_TURKEY = ZoneInfo("Europe/Istanbul")
+SIGNAL_HISTORY_RETENTION_DAYS = int(os.getenv("SIGNAL_HISTORY_RETENTION_DAYS", "45"))
+SIGNAL_HISTORY_MAX_ENTRIES = int(os.getenv("SIGNAL_HISTORY_MAX_ENTRIES", "25000"))
+
 
 class ScannerState:
     """Tarama durumunu yÃ¶netir (son gÃ¶nderilen sinyalleri takip eder)."""
@@ -36,7 +41,7 @@ class ScannerState:
         """Durumu dosyadan yÃ¼kle."""
         if not os.path.exists(self.state_file):
             logger.info(f"Durum dosyasÄ± bulunamadÄ±: {self.state_file}. Yeni durum oluÅŸturuluyor.")
-            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}, "last_sent_h8": {}, "last_sent_i9": {}}
+            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}, "last_sent_h8": {}, "last_sent_i9": {}, "signal_history": []}
         
         try:
             with open(self.state_file, "r", encoding="utf-8") as f:
@@ -45,14 +50,40 @@ class ScannerState:
                 for key in ["last_sent_smi_macd", "last_sent_rsi", "last_sent_new_scan", "last_sent_rsi_macd", "last_sent_ema", "last_sent_macd_cross", "last_sent_h8", "last_sent_i9"]:
                     if key not in state:
                         state[key] = {}
+                if not isinstance(state.get("signal_history"), list):
+                    state["signal_history"] = []
                 return state
         except (json.JSONDecodeError, FileNotFoundError) as e:
             logger.error(f"Durum dosyasÄ± yÃ¼kleme hatasÄ±: {e}. Yeni durum oluÅŸturuluyor.")
-            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}, "last_sent_h8": {}, "last_sent_i9": {}}
+            return {"last_sent_smi_macd": {}, "last_sent_rsi": {}, "last_sent_new_scan": {}, "last_sent_rsi_macd": {}, "last_sent_ema": {}, "last_sent_macd_cross": {}, "last_sent_h8": {}, "last_sent_i9": {}, "signal_history": []}
+
+    def _prune_signal_history(self) -> None:
+        history = self.state.get("signal_history", [])
+        if not isinstance(history, list):
+            self.state["signal_history"] = []
+            return
+
+        cutoff = datetime.now(TZ_TURKEY) - timedelta(days=SIGNAL_HISTORY_RETENTION_DAYS)
+        retained = []
+        for event in history:
+            if not isinstance(event, dict):
+                continue
+            try:
+                detected_at = datetime.fromisoformat(str(event.get("detected_at", "")))
+                if detected_at.tzinfo is None:
+                    detected_at = detected_at.replace(tzinfo=TZ_TURKEY)
+                else:
+                    detected_at = detected_at.astimezone(TZ_TURKEY)
+            except (TypeError, ValueError):
+                continue
+            if detected_at >= cutoff:
+                retained.append(event)
+        self.state["signal_history"] = retained[-SIGNAL_HISTORY_MAX_ENTRIES:]
     
     def save(self) -> None:
         """Durumu dosyaya kaydet."""
         try:
+            self._prune_signal_history()
             with open(self.state_file, "w", encoding="utf-8") as f:
                 json.dump(self.state, f, ensure_ascii=False, indent=2)
             logger.info(f"Durum kaydedildi: {self.state_file}")
@@ -93,12 +124,24 @@ class ScannerState:
         
         state_key = strategy_map.get(strategy)
         if state_key:
+            detected_at = datetime.now(TZ_TURKEY).isoformat(timespec="seconds")
             entry = {
                 "time": bar_time,
-                "price": price
+                "price": price,
+                "detected_at": detected_at,
             }
             entry.update(metadata)
             self.state.setdefault(state_key, {})[key] = entry
+            history_entry = {
+                "symbol": symbol,
+                "period": period,
+                "strategy": strategy,
+                "bar_time": bar_time,
+                "detected_at": detected_at,
+                "price": price,
+            }
+            history_entry.update(metadata)
+            self.state.setdefault("signal_history", []).append(history_entry)
 
 
 class MarketScanner:

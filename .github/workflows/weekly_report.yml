@@ -7,6 +7,8 @@ on:
     paths:
       - ".github/workflows/weekly_report.yml"
       - "weekly_report.py"
+      - "performance_report.py"
+      - "performance_image.py"
       - "telegram_sender.py"
       - "scanner.py"
       - "main.py"
@@ -17,6 +19,8 @@ on:
     paths:
       - ".github/workflows/weekly_report.yml"
       - "weekly_report.py"
+      - "performance_report.py"
+      - "performance_image.py"
       - "telegram_sender.py"
       - "scanner.py"
       - "main.py"
@@ -68,6 +72,8 @@ jobs:
         run: |
           python -m py_compile \
             weekly_report.py \
+            performance_report.py \
+            performance_image.py \
             telegram_sender.py \
             main.py \
             scanner.py \
@@ -104,7 +110,7 @@ jobs:
       - name: 📦 Install dependencies
         run: |
           pip install --upgrade pip
-          pip install requests python-dotenv pandas numpy matplotlib
+          pip install requests python-dotenv pandas numpy matplotlib pillow
           pip install git+https://github.com/saidsurucu/borsapy.git
           pip install git+https://github.com/rongardF/tvdatafeed.git
 
