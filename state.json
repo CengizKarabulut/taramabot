@@ -8,6 +8,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>> Stashed changes
 =======
@@ -79,31 +80,50 @@
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
   "last_sent_smi_macd": {},
   "last_sent_rsi": {
     "DSTKF_15m": {
       "time": "2026-06-29T15:00:00",
       "price": 3550.0,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00"
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00"
+>>>>>>> Stashed changes
     },
     "CEOEM_4H": {
       "time": "2026-06-29T14:00:00",
       "price": 27.0,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:59:03+03:00"
+=======
+      "detected_at": "2026-06-29T19:43:44+03:00"
+>>>>>>> Stashed changes
     },
     "HEDEF_4H": {
       "time": "2026-06-29T14:00:00",
       "price": 153.5,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:59:03+03:00"
+=======
+      "detected_at": "2026-06-29T19:43:44+03:00"
+>>>>>>> Stashed changes
     },
     "BIOEN_1D": {
       "time": "2026-06-29T06:00:00",
       "price": 18.77,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00"
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00"
+>>>>>>> Stashed changes
     },
     "VSNMD_1D": {
       "time": "2026-06-29T06:00:00",
       "price": 108.0,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00"
     }
   },
@@ -174,10 +194,14 @@
       "time": "2026-06-29T06:00:00",
       "price": 108.5,
       "detected_at": "2026-06-29T18:19:47+03:00"
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00"
+>>>>>>> Stashed changes
     }
   },
   "last_sent_new_scan": {
     "AHGAZ_15m": {
+<<<<<<< Updated upstream
       "time": "2026-06-29T14:30:00",
       "price": 37.0,
       "detected_at": "2026-06-29T18:00:42+03:00"
@@ -572,10 +596,16 @@
       "time": "2026-06-29T15:00:00",
       "price": 37.2,
       "detected_at": "2026-06-29T18:44:45+03:00"
+=======
+      "time": "2026-06-29T15:00:00",
+      "price": 37.2,
+      "detected_at": "2026-06-29T19:30:02+03:00"
+>>>>>>> Stashed changes
     },
     "DGATE_15m": {
       "time": "2026-06-29T15:00:00",
       "price": 122.0,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00"
     },
     "GUNDG_15m": {
@@ -587,35 +617,89 @@
       "time": "2026-06-29T15:00:00",
       "price": 65.8,
       "detected_at": "2026-06-29T18:44:45+03:00"
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00"
+    },
+    "DSTKF_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 3550.0,
+      "detected_at": "2026-06-29T19:30:02+03:00"
+    },
+    "GSDHO_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 5.87,
+      "detected_at": "2026-06-29T19:30:02+03:00"
+    },
+    "GUNDG_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 1604.0,
+      "detected_at": "2026-06-29T19:30:02+03:00"
+    },
+    "HEDEF_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 153.5,
+      "detected_at": "2026-06-29T19:30:02+03:00"
+    },
+    "IZFAS_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 65.8,
+      "detected_at": "2026-06-29T19:30:02+03:00"
+>>>>>>> Stashed changes
     },
     "KOTON_15m": {
       "time": "2026-06-29T15:00:00",
       "price": 14.71,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00"
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00"
+>>>>>>> Stashed changes
     },
     "OBASE_15m": {
       "time": "2026-06-29T15:00:00",
       "price": 39.54,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00"
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00"
+>>>>>>> Stashed changes
     },
     "ODINE_15m": {
       "time": "2026-06-29T15:00:00",
       "price": 1890.0,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00"
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00"
+    },
+    "OZATD_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 1645.0,
+      "detected_at": "2026-06-29T19:30:02+03:00"
+>>>>>>> Stashed changes
     },
     "PEKGY_15m": {
       "time": "2026-06-29T15:00:00",
       "price": 13.99,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00"
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00"
+>>>>>>> Stashed changes
     },
     "TEHOL_15m": {
       "time": "2026-06-29T15:00:00",
       "price": 37.2,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00"
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00"
+>>>>>>> Stashed changes
     },
     "THYAO_15m": {
       "time": "2026-06-29T15:00:00",
       "price": 329.0,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00"
     },
     "DSTKF_1H": {
@@ -800,17 +884,41 @@
       "time": "2026-06-29T14:00:00",
       "price": 23.9,
       "detected_at": "2026-06-29T18:07:17+03:00"
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00"
+    },
+    "TRCAS_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 42.66,
+      "detected_at": "2026-06-29T19:30:02+03:00"
+    },
+    "GSDHO_1H": {
+      "time": "2026-06-29T15:00:00",
+      "price": 5.87,
+      "detected_at": "2026-06-29T19:36:36+03:00"
+    },
+    "HEDEF_1H": {
+      "time": "2026-06-29T15:00:00",
+      "price": 153.5,
+      "detected_at": "2026-06-29T19:36:36+03:00"
+    },
+    "DCTTR_4H": {
+      "time": "2026-06-29T14:00:00",
+      "price": 12.94,
+      "detected_at": "2026-06-29T19:43:44+03:00"
+>>>>>>> Stashed changes
     },
     "DMRGD_4H": {
       "time": "2026-06-29T14:00:00",
-      "price": 11.22,
-      "detected_at": "2026-06-29T18:14:22+03:00"
+      "price": 11.24,
+      "detected_at": "2026-06-29T19:43:44+03:00"
     },
-    "KRONT_4H": {
+    "HEDEF_4H": {
       "time": "2026-06-29T14:00:00",
-      "price": 24.02,
-      "detected_at": "2026-06-29T18:14:22+03:00"
+      "price": 153.5,
+      "detected_at": "2026-06-29T19:43:44+03:00"
     },
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     "MARMR_4H": {
       "time": "2026-06-29T10:00:00",
@@ -837,18 +945,21 @@
       "price": 25.16,
       "detected_at": "2026-06-29T17:41:08+03:00"
 =======
+=======
+>>>>>>> Stashed changes
     "BSOKE_1D": {
       "time": "2026-06-29T06:00:00",
-      "price": 37.12,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "price": 37.16,
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
     "DMSAS_1D": {
       "time": "2026-06-29T06:00:00",
       "price": 10.05,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
-    "ISGYO_1D": {
+    "HEDEF_1D": {
       "time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "price": 24.9,
       "detected_at": "2026-06-29T18:19:47+03:00"
 >>>>>>> Stashed changes
@@ -1002,410 +1113,345 @@
       "price": 19.92,
       "detected_at": "2026-06-29T16:13:55+03:00"
 =======
+=======
+      "price": 153.5,
+      "detected_at": "2026-06-29T19:48:57+03:00"
+    },
+    "KOCMT_1D": {
+      "time": "2026-06-29T06:00:00",
+>>>>>>> Stashed changes
       "price": 3.35,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "detected_at": "2026-06-29T19:48:57+03:00"
+    },
+    "OZYSR_1D": {
+      "time": "2026-06-29T06:00:00",
+      "price": 12.59,
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
     "PRKME_1D": {
       "time": "2026-06-29T06:00:00",
-      "price": 20.3,
-      "detected_at": "2026-06-29T18:19:47+03:00"
->>>>>>> Stashed changes
+      "price": 20.16,
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
     "SNICA_1D": {
       "time": "2026-06-29T06:00:00",
       "price": 4.5,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
     "VSNMD_1D": {
       "time": "2026-06-29T06:00:00",
-      "price": 108.5,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "price": 108.0,
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
     "AKSUE_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 37.0,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "AYEN_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 36.24,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "BAKAB_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 48.98,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "EGPRO_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 38.72,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "ESCOM_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 5.65,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "GSDDE_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 12.27,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "GSDHO_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 5.87,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "ICBCT_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 20.48,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "KAREL_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 10.86,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "KGYO_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 12.05,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "KRDMA_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 40.0,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "MAALT_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 1203.0,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "PKART_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 125.8,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "RYSAS_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 22.38,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     }
   },
   "last_sent_rsi_macd": {
-    "AKSUE_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 37.08,
-      "detected_at": "2026-06-29T18:00:42+03:00"
+    "CEOEM_4H": {
+      "time": "2026-06-29T14:00:00",
+      "price": 27.0,
+      "detected_at": "2026-06-29T19:43:44+03:00"
     },
-    "LKMNH_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 15.42,
-      "detected_at": "2026-06-29T18:00:42+03:00"
+    "DCTTR_4H": {
+      "time": "2026-06-29T14:00:00",
+      "price": 12.94,
+      "detected_at": "2026-06-29T19:43:44+03:00"
+    },
+    "OZYSR_1D": {
+      "time": "2026-06-29T06:00:00",
+      "price": 12.59,
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
     "VSNMD_1D": {
       "time": "2026-06-29T06:00:00",
-      "price": 108.5,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "price": 108.0,
+      "detected_at": "2026-06-29T19:48:57+03:00"
     }
   },
   "last_sent_ema": {
-    "AEFES_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 21.4,
-      "detected_at": "2026-06-29T18:00:42+03:00"
+    "AGESA_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 253.0,
+      "detected_at": "2026-06-29T19:30:02+03:00"
     },
     "AHGAZ_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 37.0,
-      "detected_at": "2026-06-29T18:00:42+03:00"
-    },
-    "AZTEK_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 5.03,
-      "detected_at": "2026-06-29T18:00:42+03:00"
-    },
-    "BANVT_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 176.7,
-      "detected_at": "2026-06-29T18:00:42+03:00"
-    },
-    "BIGTK_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 246.8,
-      "detected_at": "2026-06-29T18:00:42+03:00"
+      "time": "2026-06-29T15:00:00",
+      "price": 37.2,
+      "detected_at": "2026-06-29T19:30:02+03:00"
     },
     "DGATE_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 121.7,
-      "detected_at": "2026-06-29T18:00:42+03:00"
+      "time": "2026-06-29T15:00:00",
+      "price": 122.0,
+      "detected_at": "2026-06-29T19:30:02+03:00"
     },
-    "EKSUN_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 6.86,
-      "detected_at": "2026-06-29T18:00:42+03:00"
+    "GUNDG_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 1604.0,
+      "detected_at": "2026-06-29T19:30:02+03:00"
     },
-    "GIPTA_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 73.75,
-      "detected_at": "2026-06-29T18:00:42+03:00"
+    "IZFAS_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 65.8,
+      "detected_at": "2026-06-29T19:30:02+03:00"
     },
-    "HEDEF_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 152.3,
-      "detected_at": "2026-06-29T18:00:42+03:00"
+    "KOTON_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 14.71,
+      "detected_at": "2026-06-29T19:30:02+03:00"
     },
-    "LKMNH_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 15.42,
-      "detected_at": "2026-06-29T18:00:42+03:00"
+    "OBASE_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 39.54,
+      "detected_at": "2026-06-29T19:30:02+03:00"
     },
-    "SMART_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 33.22,
-      "detected_at": "2026-06-29T18:00:42+03:00"
+    "ODINE_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 1890.0,
+      "detected_at": "2026-06-29T19:30:02+03:00"
+    },
+    "PEKGY_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 13.99,
+      "detected_at": "2026-06-29T19:30:02+03:00"
     },
     "TEHOL_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 37.24,
-      "detected_at": "2026-06-29T18:00:42+03:00"
+      "time": "2026-06-29T15:00:00",
+      "price": 37.2,
+      "detected_at": "2026-06-29T19:30:02+03:00"
     },
-    "AKSEN_1H": {
-      "time": "2026-06-29T14:00:00",
-      "price": 84.05,
-      "detected_at": "2026-06-29T18:07:17+03:00"
+    "THYAO_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 329.0,
+      "detected_at": "2026-06-29T19:30:02+03:00"
     },
-    "ALCTL_1H": {
-      "time": "2026-06-29T14:00:00",
-      "price": 168.9,
-      "detected_at": "2026-06-29T18:07:17+03:00"
+    "DSTKF_1H": {
+      "time": "2026-06-29T15:00:00",
+      "price": 3550.0,
+      "detected_at": "2026-06-29T19:36:36+03:00"
     },
-    "ARFYE_1H": {
+    "CEOEM_4H": {
       "time": "2026-06-29T14:00:00",
-      "price": 31.08,
-      "detected_at": "2026-06-29T18:07:17+03:00"
+      "price": 27.0,
+      "detected_at": "2026-06-29T19:43:44+03:00"
     },
-    "CATES_1H": {
+    "DCTTR_4H": {
       "time": "2026-06-29T14:00:00",
-      "price": 40.68,
-      "detected_at": "2026-06-29T18:07:17+03:00"
-    },
-    "DCTTR_1H": {
-      "time": "2026-06-29T14:00:00",
-      "price": 12.9,
-      "detected_at": "2026-06-29T18:07:17+03:00"
-    },
-    "DGATE_1H": {
-      "time": "2026-06-29T14:00:00",
-      "price": 121.5,
-      "detected_at": "2026-06-29T18:07:17+03:00"
-    },
-    "DMRGD_1H": {
-      "time": "2026-06-29T14:00:00",
-      "price": 11.29,
-      "detected_at": "2026-06-29T18:07:17+03:00"
-    },
-    "EGEGY_1H": {
-      "time": "2026-06-29T14:00:00",
-      "price": 29.1,
-      "detected_at": "2026-06-29T18:07:17+03:00"
-    },
-    "GIPTA_1H": {
-      "time": "2026-06-29T14:00:00",
-      "price": 74.25,
-      "detected_at": "2026-06-29T18:07:17+03:00"
-    },
-    "GLCVY_1H": {
-      "time": "2026-06-29T14:00:00",
-      "price": 60.1,
-      "detected_at": "2026-06-29T18:07:17+03:00"
-    },
-    "GLRYH_1H": {
-      "time": "2026-06-29T14:00:00",
-      "price": 3.37,
-      "detected_at": "2026-06-29T18:07:17+03:00"
-    },
-    "HUNER_1H": {
-      "time": "2026-06-29T14:00:00",
-      "price": 4.07,
-      "detected_at": "2026-06-29T18:07:17+03:00"
+      "price": 12.94,
+      "detected_at": "2026-06-29T19:43:44+03:00"
     },
     "DMRGD_4H": {
       "time": "2026-06-29T14:00:00",
-      "price": 11.22,
-      "detected_at": "2026-06-29T18:14:22+03:00"
+      "price": 11.24,
+      "detected_at": "2026-06-29T19:43:44+03:00"
     },
-    "BIOEN_1D": {
-      "time": "2026-06-29T06:00:00",
-      "price": 18.89,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+    "UFUK_4H": {
+      "time": "2026-06-29T14:00:00",
+      "price": 1730.0,
+      "detected_at": "2026-06-29T19:43:44+03:00"
     },
     "BSOKE_1D": {
       "time": "2026-06-29T06:00:00",
-      "price": 37.12,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "price": 37.16,
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
     "DMSAS_1D": {
       "time": "2026-06-29T06:00:00",
       "price": 10.05,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
     "FORTE_1D": {
       "time": "2026-06-29T06:00:00",
-      "price": 95.75,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "price": 95.45,
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
-    "ISGYO_1D": {
+    "OZYSR_1D": {
       "time": "2026-06-29T06:00:00",
-      "price": 24.9,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "price": 12.59,
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
     "PRKME_1D": {
       "time": "2026-06-29T06:00:00",
-      "price": 20.3,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "price": 20.16,
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
     "UNLU_1D": {
       "time": "2026-06-29T06:00:00",
-      "price": 14.69,
-      "detected_at": "2026-06-29T18:19:47+03:00"
+      "price": 14.71,
+      "detected_at": "2026-06-29T19:48:57+03:00"
     },
     "AKENR_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 11.94,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "AYEN_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 36.24,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "BAKAB_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 48.98,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "DGNMO_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 8.85,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "EGPRO_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 38.72,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "ESCOM_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 5.65,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "GSDDE_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 12.27,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "GSDHO_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 5.87,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "ICBCT_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 20.48,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "KORDS_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 70.5,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "KRDMA_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 40.0,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "MAALT_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 1203.0,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "OZGYO_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 2.13,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "PKART_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 125.8,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "RYSAS_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 22.38,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "TTKOM_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 62.5,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     },
     "VAKBN_1M": {
       "time": "2026-06-01T06:00:00",
       "price": 32.64,
-      "detected_at": "2026-06-29T18:35:33+03:00"
+      "detected_at": "2026-06-29T20:04:58+03:00"
     }
   },
   "last_sent_macd_cross": {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    "BALSU_1D": {
-      "time": "2026-06-29T06:00:00",
-<<<<<<< Updated upstream
-      "price": 21.36,
-      "detected_at": "2026-06-29T12:53:00+03:00"
-=======
-      "detected_at": "2026-06-29T15:07:44+03:00"
-=======
-      "price": 22.42,
-      "detected_at": "2026-06-29T16:25:06+03:00"
+    "DSTKF_15m": {
+      "time": "2026-06-29T15:00:00",
+      "price": 3550.0,
+      "detected_at": "2026-06-29T19:30:02+03:00"
     },
-    "TTKOM_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 62.35,
-      "detected_at": "2026-06-29T16:25:06+03:00"
+    "DCTTR_4H": {
+      "time": "2026-06-29T14:00:00",
+      "price": 12.94,
+      "detected_at": "2026-06-29T19:43:44+03:00"
     },
-    "VAKBN_1M": {
-      "time": "2026-06-01T06:00:00",
-      "price": 32.5,
-      "detected_at": "2026-06-29T16:25:06+03:00"
-    }
-  },
-  "last_sent_macd_cross": {
-    "SKYMD_15m": {
-      "time": "2026-06-29T12:30:00",
-      "price": 14.63,
-      "detected_at": "2026-06-29T15:54:23+03:00"
->>>>>>> Stashed changes
-    },
-    "TRGYO_15m": {
-      "time": "2026-06-29T12:30:00",
-      "price": 99.05,
-      "detected_at": "2026-06-29T15:54:23+03:00"
-    },
-    "KARTN_4H": {
-      "time": "2026-06-29T10:00:00",
-      "price": 147.8,
-      "detected_at": "2026-06-29T16:08:29+03:00"
-    },
-    "KRONT_4H": {
-      "time": "2026-06-29T10:00:00",
-      "price": 23.54,
-      "detected_at": "2026-06-29T16:08:29+03:00"
+    "HEDEF_4H": {
+      "time": "2026-06-29T14:00:00",
+      "price": 153.5,
+      "detected_at": "2026-06-29T19:43:44+03:00"
     },
     "BIOEN_1D": {
       "time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "price": 19.1,
       "detected_at": "2026-06-29T16:13:55+03:00"
 =======
@@ -1416,59 +1462,120 @@
       "price": 108.0,
       "detected_at": "2026-06-29T19:04:11+03:00"
 >>>>>>> Stashed changes
+=======
+      "price": 18.77,
+      "detected_at": "2026-06-29T19:48:57+03:00"
+    },
+    "HEDEF_1D": {
+      "time": "2026-06-29T06:00:00",
+      "price": 153.5,
+      "detected_at": "2026-06-29T19:48:57+03:00"
+    },
+    "KOCMT_1D": {
+      "time": "2026-06-29T06:00:00",
+      "price": 3.35,
+      "detected_at": "2026-06-29T19:48:57+03:00"
+    },
+    "OZYSR_1D": {
+      "time": "2026-06-29T06:00:00",
+      "price": 12.59,
+      "detected_at": "2026-06-29T19:48:57+03:00"
+    },
+    "VSNMD_1D": {
+      "time": "2026-06-29T06:00:00",
+      "price": 108.0,
+      "detected_at": "2026-06-29T19:48:57+03:00"
+>>>>>>> Stashed changes
     }
   },
   "last_sent_h8": {
     "DSTKF_15m": {
       "time": "2026-06-29T15:00:00",
       "price": 3550.0,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00"
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00"
+>>>>>>> Stashed changes
     },
     "CEOEM_4H": {
       "time": "2026-06-29T14:00:00",
       "price": 27.0,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:59:03+03:00"
+=======
+      "detected_at": "2026-06-29T19:43:44+03:00"
+>>>>>>> Stashed changes
     },
     "DCTTR_4H": {
       "time": "2026-06-29T14:00:00",
       "price": 12.94,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:59:03+03:00"
+=======
+      "detected_at": "2026-06-29T19:43:44+03:00"
+>>>>>>> Stashed changes
     },
     "HEDEF_4H": {
       "time": "2026-06-29T14:00:00",
       "price": 153.5,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:59:03+03:00"
+=======
+      "detected_at": "2026-06-29T19:43:44+03:00"
+>>>>>>> Stashed changes
     },
     "BIOEN_1D": {
       "time": "2026-06-29T06:00:00",
       "price": 18.77,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00"
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00"
+>>>>>>> Stashed changes
     },
     "HEDEF_1D": {
       "time": "2026-06-29T06:00:00",
       "price": 153.5,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00"
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00"
+>>>>>>> Stashed changes
     },
     "KOCMT_1D": {
       "time": "2026-06-29T06:00:00",
       "price": 3.35,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00"
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00"
+>>>>>>> Stashed changes
     },
     "OZYSR_1D": {
       "time": "2026-06-29T06:00:00",
       "price": 12.59,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00"
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00"
+>>>>>>> Stashed changes
     },
     "VSNMD_1D": {
       "time": "2026-06-29T06:00:00",
       "price": 108.0,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00"
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00"
+>>>>>>> Stashed changes
     }
   },
   "last_sent_i9": {
     "DSTKF_15m": {
       "time": "2026-06-29T15:00:00",
       "price": 3550.0,
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00"
     },
     "CEOEM_4H": {
@@ -1504,54 +1611,43 @@
       "time": "2026-06-29T14:30:00",
       "price": 169.9,
       "detected_at": "2026-06-29T18:00:42+03:00"
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00"
+>>>>>>> Stashed changes
     },
-    "CEOEM_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 26.4,
-      "detected_at": "2026-06-29T18:00:42+03:00"
-    },
-    "DCTTR_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 12.88,
-      "detected_at": "2026-06-29T18:00:42+03:00"
-    },
-    "LKMNH_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 15.42,
-      "detected_at": "2026-06-29T18:00:42+03:00"
-    },
-    "PAGYO_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 146.7,
-      "detected_at": "2026-06-29T18:00:42+03:00"
-    },
-    "TEHOL_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 37.24,
-      "detected_at": "2026-06-29T18:00:42+03:00"
-    },
-    "TRCAS_15m": {
-      "time": "2026-06-29T14:30:00",
-      "price": 42.48,
-      "detected_at": "2026-06-29T18:00:42+03:00"
-    },
-    "KRONT_4H": {
+    "CEOEM_4H": {
       "time": "2026-06-29T14:00:00",
-      "price": 24.02,
-      "detected_at": "2026-06-29T18:14:22+03:00"
+      "price": 27.0,
+      "detected_at": "2026-06-29T19:43:44+03:00"
     },
-    "BIOEN_1D": {
+    "DCTTR_4H": {
+      "time": "2026-06-29T14:00:00",
+      "price": 12.94,
+      "detected_at": "2026-06-29T19:43:44+03:00"
+    },
+    "HEDEF_4H": {
+      "time": "2026-06-29T14:00:00",
+      "price": 153.5,
+      "detected_at": "2026-06-29T19:43:44+03:00"
+    },
+    "HEDEF_1D": {
       "time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "price": 18.89,
       "detected_at": "2026-06-29T18:19:47+03:00"
 =======
       "price": 153.5,
       "detected_at": "2026-06-29T19:04:11+03:00"
 >>>>>>> Stashed changes
+=======
+      "price": 153.5,
+      "detected_at": "2026-06-29T19:48:57+03:00"
+>>>>>>> Stashed changes
     },
     "KOCMT_1D": {
       "time": "2026-06-29T06:00:00",
       "price": 3.35,
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:19:47+03:00"
     },
@@ -1716,10 +1812,24 @@
       "price": 108.0,
       "detected_at": "2026-06-29T19:04:11+03:00"
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00"
+    },
+    "OZYSR_1D": {
+      "time": "2026-06-29T06:00:00",
+      "price": 12.59,
+      "detected_at": "2026-06-29T19:48:57+03:00"
+    },
+    "VSNMD_1D": {
+      "time": "2026-06-29T06:00:00",
+      "price": 108.0,
+      "detected_at": "2026-06-29T19:48:57+03:00"
+>>>>>>> Stashed changes
     }
   },
   "signal_history": [
     {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -1740,72 +1850,36 @@
 =======
       "symbol": "AEFES",
 >>>>>>> Stashed changes
+=======
+      "symbol": "AGESA",
+>>>>>>> Stashed changes
       "period": "15m",
       "strategy": "ema",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 21.4
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 253.0
     },
     {
       "symbol": "AHGAZ",
       "period": "15m",
       "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.0
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 37.2
     },
     {
       "symbol": "AHGAZ",
       "period": "15m",
       "strategy": "ema",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.0
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 37.2
     },
     {
-      "symbol": "AKSUE",
-      "period": "15m",
-      "strategy": "rsi",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.08
-    },
-    {
-      "symbol": "AKSUE",
-      "period": "15m",
-      "strategy": "rsi_macd",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.08
-    },
-    {
-      "symbol": "AKSUE",
-      "period": "15m",
-      "strategy": "h8",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.08
-    },
-    {
-      "symbol": "AKSUE",
-      "period": "15m",
-      "strategy": "i9",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.08
-    },
-    {
-      "symbol": "ALCTL",
-      "period": "15m",
-      "strategy": "rsi",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 169.9
-    },
-    {
-      "symbol": "ALCTL",
+      "symbol": "DGATE",
       "period": "15m",
       "strategy": "new_scan",
+<<<<<<< Updated upstream
       "bar_time": "2026-06-29T14:30:00",
       "detected_at": "2026-06-29T18:00:42+03:00",
       "price": 169.9
@@ -1903,6 +1977,10 @@
       "strategy": "new_scan",
       "bar_time": "2026-06-29T15:00:00",
       "detected_at": "2026-06-29T18:44:45+03:00",
+=======
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+>>>>>>> Stashed changes
       "price": 122.0
     },
     {
@@ -1910,7 +1988,11 @@
       "period": "15m",
       "strategy": "ema",
       "bar_time": "2026-06-29T15:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00",
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00",
+>>>>>>> Stashed changes
       "price": 122.0
     },
     {
@@ -1918,11 +2000,16 @@
       "period": "15m",
       "strategy": "rsi",
       "bar_time": "2026-06-29T15:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:44:45+03:00",
+=======
+      "detected_at": "2026-06-29T19:30:02+03:00",
+>>>>>>> Stashed changes
       "price": 3550.0
     },
     {
       "symbol": "DSTKF",
+<<<<<<< Updated upstream
       "period": "15m",
       "strategy": "new_scan",
       "bar_time": "2026-06-29T15:00:00",
@@ -2351,501 +2438,280 @@
       "bar_time": "2026-06-29T14:30:00",
       "detected_at": "2026-06-29T18:00:42+03:00",
       "price": 73.75
+=======
+      "period": "15m",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 3550.0
+    },
+    {
+      "symbol": "DSTKF",
+      "period": "15m",
+      "strategy": "macd_cross",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 3550.0
+    },
+    {
+      "symbol": "DSTKF",
+      "period": "15m",
+      "strategy": "h8",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 3550.0
+    },
+    {
+      "symbol": "DSTKF",
+      "period": "15m",
+      "strategy": "i9",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 3550.0
+>>>>>>> Stashed changes
     },
     {
       "symbol": "GSDHO",
       "period": "15m",
-      "strategy": "smi_macd",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 5.66,
-      "is_full": false
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 5.87
     },
     {
-      "symbol": "HEDEF",
+      "symbol": "GUNDG",
       "period": "15m",
-      "strategy": "rsi",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 152.3
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 1604.0
     },
     {
-      "symbol": "HEDEF",
+      "symbol": "GUNDG",
       "period": "15m",
       "strategy": "ema",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 152.3
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 1604.0
     },
     {
-      "symbol": "ISBTR",
+      "symbol": "HEDEF",
       "period": "15m",
       "strategy": "new_scan",
-      "bar_time": "2026-06-29T10:45:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 475000.0
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 153.5
     },
     {
-      "symbol": "KCAER",
-      "period": "15m",
-      "strategy": "rsi",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 15.02
-    },
-    {
-      "symbol": "KCAER",
-      "period": "15m",
-      "strategy": "h8",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 15.02
-    },
-    {
-      "symbol": "KFEIN",
-      "period": "15m",
-      "strategy": "smi_macd",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 9.39,
-      "is_full": false
-    },
-    {
-      "symbol": "KONYA",
-      "period": "15m",
-      "strategy": "smi_macd",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 3850.0,
-      "is_full": true
-    },
-    {
-      "symbol": "KRONT",
-      "period": "15m",
-      "strategy": "rsi",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 23.96
-    },
-    {
-      "symbol": "LKMNH",
-      "period": "15m",
-      "strategy": "rsi",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 15.42
-    },
-    {
-      "symbol": "LKMNH",
+      "symbol": "IZFAS",
       "period": "15m",
       "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 15.42
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 65.8
     },
     {
-      "symbol": "LKMNH",
+      "symbol": "IZFAS",
       "period": "15m",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 65.8
+    },
+    {
+      "symbol": "KOTON",
+      "period": "15m",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 14.71
+    },
+    {
+      "symbol": "KOTON",
+      "period": "15m",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 14.71
+    },
+    {
+      "symbol": "OBASE",
+      "period": "15m",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 39.54
+    },
+    {
+      "symbol": "OBASE",
+      "period": "15m",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 39.54
+    },
+    {
+      "symbol": "ODINE",
+      "period": "15m",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 1890.0
+    },
+    {
+      "symbol": "ODINE",
+      "period": "15m",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 1890.0
+    },
+    {
+      "symbol": "OZATD",
+      "period": "15m",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 1645.0
+    },
+    {
+      "symbol": "PEKGY",
+      "period": "15m",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 13.99
+    },
+    {
+      "symbol": "PEKGY",
+      "period": "15m",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 13.99
+    },
+    {
+      "symbol": "TEHOL",
+      "period": "15m",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 37.2
+    },
+    {
+      "symbol": "TEHOL",
+      "period": "15m",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 37.2
+    },
+    {
+      "symbol": "THYAO",
+      "period": "15m",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 329.0
+    },
+    {
+      "symbol": "THYAO",
+      "period": "15m",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 329.0
+    },
+    {
+      "symbol": "TRCAS",
+      "period": "15m",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:30:02+03:00",
+      "price": 42.66
+    },
+    {
+      "symbol": "DSTKF",
+      "period": "1H",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:36:36+03:00",
+      "price": 3550.0
+    },
+    {
+      "symbol": "GSDHO",
+      "period": "1H",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:36:36+03:00",
+      "price": 5.87
+    },
+    {
+      "symbol": "HEDEF",
+      "period": "1H",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T15:00:00",
+      "detected_at": "2026-06-29T19:36:36+03:00",
+      "price": 153.5
+    },
+    {
+      "symbol": "CEOEM",
+      "period": "4H",
+      "strategy": "rsi",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 27.0
+    },
+    {
+      "symbol": "CEOEM",
+      "period": "4H",
       "strategy": "rsi_macd",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 15.42
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 27.0
     },
     {
-      "symbol": "LKMNH",
-      "period": "15m",
+      "symbol": "CEOEM",
+      "period": "4H",
       "strategy": "ema",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 15.42
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 27.0
     },
     {
-      "symbol": "LKMNH",
-      "period": "15m",
-      "strategy": "macd_cross",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 15.42
-    },
-    {
-      "symbol": "PAGYO",
-      "period": "15m",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 146.7
-    },
-    {
-      "symbol": "PAGYO",
-      "period": "15m",
-      "strategy": "macd_cross",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 146.7
-    },
-    {
-      "symbol": "PAGYO",
-      "period": "15m",
+      "symbol": "CEOEM",
+      "period": "4H",
       "strategy": "h8",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 146.7
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 27.0
     },
     {
-      "symbol": "PAGYO",
-      "period": "15m",
+      "symbol": "CEOEM",
+      "period": "4H",
       "strategy": "i9",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 146.7
-    },
-    {
-      "symbol": "QUAGR",
-      "period": "15m",
-      "strategy": "smi_macd",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 3.84,
-      "is_full": false
-    },
-    {
-      "symbol": "RUBNS",
-      "period": "15m",
-      "strategy": "rsi",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 23.84
-    },
-    {
-      "symbol": "RUBNS",
-      "period": "15m",
-      "strategy": "h8",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 23.84
-    },
-    {
-      "symbol": "SASA",
-      "period": "15m",
-      "strategy": "smi_macd",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 2.47,
-      "is_full": false
-    },
-    {
-      "symbol": "SMART",
-      "period": "15m",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 33.22
-    },
-    {
-      "symbol": "SMART",
-      "period": "15m",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 33.22
-    },
-    {
-      "symbol": "TEHOL",
-      "period": "15m",
-      "strategy": "rsi",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.24
-    },
-    {
-      "symbol": "TEHOL",
-      "period": "15m",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.24
-    },
-    {
-      "symbol": "TEHOL",
-      "period": "15m",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.24
-    },
-    {
-      "symbol": "TEHOL",
-      "period": "15m",
-      "strategy": "macd_cross",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.24
-    },
-    {
-      "symbol": "TEHOL",
-      "period": "15m",
-      "strategy": "h8",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.24
-    },
-    {
-      "symbol": "TEHOL",
-      "period": "15m",
-      "strategy": "i9",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 37.24
-    },
-    {
-      "symbol": "TRCAS",
-      "period": "15m",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 42.48
-    },
-    {
-      "symbol": "TRCAS",
-      "period": "15m",
-      "strategy": "macd_cross",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 42.48
-    },
-    {
-      "symbol": "TRCAS",
-      "period": "15m",
-      "strategy": "h8",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 42.48
-    },
-    {
-      "symbol": "TRCAS",
-      "period": "15m",
-      "strategy": "i9",
-      "bar_time": "2026-06-29T14:30:00",
-      "detected_at": "2026-06-29T18:00:42+03:00",
-      "price": 42.48
-    },
-    {
-      "symbol": "AKSEN",
-      "period": "1H",
-      "strategy": "new_scan",
       "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 84.05
-    },
-    {
-      "symbol": "AKSEN",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 84.05
-    },
-    {
-      "symbol": "ALCTL",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 168.9
-    },
-    {
-      "symbol": "ALCTL",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 168.9
-    },
-    {
-      "symbol": "ARFYE",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 31.08
-    },
-    {
-      "symbol": "ARFYE",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 31.08
-    },
-    {
-      "symbol": "CATES",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 40.68
-    },
-    {
-      "symbol": "CATES",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 40.68
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 27.0
     },
     {
       "symbol": "DCTTR",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 12.9
-    },
-    {
-      "symbol": "DCTTR",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 12.9
-    },
-    {
-      "symbol": "DGATE",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 121.5
-    },
-    {
-      "symbol": "DGATE",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 121.5
-    },
-    {
-      "symbol": "DMRGD",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 11.29
-    },
-    {
-      "symbol": "DMRGD",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 11.29
-    },
-    {
-      "symbol": "EGEGY",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 29.1
-    },
-    {
-      "symbol": "EGEGY",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 29.1
-    },
-    {
-      "symbol": "EKDMR",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 63.2
-    },
-    {
-      "symbol": "GIPTA",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 74.25
-    },
-    {
-      "symbol": "GIPTA",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 74.25
-    },
-    {
-      "symbol": "GLCVY",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 60.1
-    },
-    {
-      "symbol": "GLRYH",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 3.37
-    },
-    {
-      "symbol": "GLRYH",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 3.37
-    },
-    {
-      "symbol": "HUNER",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 4.07
-    },
-    {
-      "symbol": "HUNER",
-      "period": "1H",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 4.07
-    },
-    {
-      "symbol": "ISBTR",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T10:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 475000.0
-    },
-    {
-      "symbol": "KRONT",
-      "period": "1H",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:07:17+03:00",
-      "price": 23.9
-    },
-    {
-      "symbol": "DMRGD",
       "period": "4H",
       "strategy": "new_scan",
       "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:14:22+03:00",
-      "price": 11.22
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 12.94
     },
     {
+      "symbol": "DCTTR",
+      "period": "4H",
+      "strategy": "rsi_macd",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 12.94
+    },
+    {
+<<<<<<< Updated upstream
 =======
       "bar_time": "2026-06-29T15:00:00",
       "detected_at": "2026-06-29T18:51:45+03:00",
@@ -3025,15 +2891,102 @@
 <<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:14:22+03:00",
       "price": 24.02
+=======
+      "symbol": "DCTTR",
+      "period": "4H",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 12.94
     },
     {
-      "symbol": "TRHOL",
+      "symbol": "DCTTR",
       "period": "4H",
-      "strategy": "smi_macd",
+      "strategy": "macd_cross",
       "bar_time": "2026-06-29T14:00:00",
-      "detected_at": "2026-06-29T18:14:22+03:00",
-      "price": 1610.0,
-      "is_full": true
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 12.94
+    },
+    {
+      "symbol": "DCTTR",
+      "period": "4H",
+      "strategy": "h8",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 12.94
+    },
+    {
+      "symbol": "DCTTR",
+      "period": "4H",
+      "strategy": "i9",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 12.94
+>>>>>>> Stashed changes
+    },
+    {
+      "symbol": "DMRGD",
+      "period": "4H",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 11.24
+    },
+    {
+      "symbol": "DMRGD",
+      "period": "4H",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 11.24
+    },
+    {
+      "symbol": "HEDEF",
+      "period": "4H",
+      "strategy": "rsi",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 153.5
+    },
+    {
+      "symbol": "HEDEF",
+      "period": "4H",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 153.5
+    },
+    {
+      "symbol": "HEDEF",
+      "period": "4H",
+      "strategy": "macd_cross",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 153.5
+    },
+    {
+      "symbol": "HEDEF",
+      "period": "4H",
+      "strategy": "h8",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 153.5
+    },
+    {
+      "symbol": "HEDEF",
+      "period": "4H",
+      "strategy": "i9",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 153.5
+    },
+    {
+      "symbol": "UFUK",
+      "period": "4H",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T14:00:00",
+      "detected_at": "2026-06-29T19:43:44+03:00",
+      "price": 1730.0
     },
     {
       "symbol": "BIOEN",
@@ -3041,27 +2994,6 @@
       "strategy": "rsi",
       "bar_time": "2026-06-29T06:00:00",
 <<<<<<< Updated upstream
-      "detected_at": "2026-06-29T16:54:31+03:00",
-      "price": 18.91
->>>>>>> Stashed changes
-=======
-      "symbol": "BIOEN",
-      "period": "1D",
-      "strategy": "rsi",
-      "bar_time": "2026-06-29T06:00:00",
-      "detected_at": "2026-06-29T17:41:08+03:00",
-      "price": 18.91
->>>>>>> Stashed changes
-=======
-      "detected_at": "2026-06-29T18:19:47+03:00",
-      "price": 18.89
->>>>>>> Stashed changes
-    },
-    {
-      "symbol": "BIOEN",
-      "period": "1D",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T06:00:00",
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3099,12 +3031,17 @@
       "detected_at": "2026-06-29T19:04:11+03:00",
       "price": 18.77
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 18.77
+>>>>>>> Stashed changes
     },
     {
       "symbol": "BIOEN",
       "period": "1D",
       "strategy": "macd_cross",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3125,6 +3062,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:04:11+03:00",
+      "price": 18.77
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
       "price": 18.77
 >>>>>>> Stashed changes
     },
@@ -3137,6 +3078,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T16:13:55+03:00",
       "price": 19.1
 >>>>>>> Stashed changes
@@ -3146,41 +3088,45 @@
 =======
       "detected_at": "2026-06-29T18:19:47+03:00",
       "price": 18.89
-    },
-    {
-      "symbol": "BSOKE",
-      "period": "1D",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T06:00:00",
-      "detected_at": "2026-06-29T18:19:47+03:00",
-      "price": 37.12
-    },
-    {
-      "symbol": "BSOKE",
-      "period": "1D",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T06:00:00",
-      "detected_at": "2026-06-29T18:19:47+03:00",
-      "price": 37.12
-    },
-    {
-      "symbol": "DMSAS",
-      "period": "1D",
-      "strategy": "new_scan",
-      "bar_time": "2026-06-29T06:00:00",
-      "detected_at": "2026-06-29T18:19:47+03:00",
-      "price": 10.05
-    },
-    {
-      "symbol": "DMSAS",
-      "period": "1D",
-      "strategy": "ema",
-      "bar_time": "2026-06-29T06:00:00",
-      "detected_at": "2026-06-29T18:19:47+03:00",
-      "price": 10.05
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 18.77
 >>>>>>> Stashed changes
     },
     {
+      "symbol": "BSOKE",
+      "period": "1D",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T06:00:00",
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 37.16
+    },
+    {
+      "symbol": "BSOKE",
+      "period": "1D",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T06:00:00",
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 37.16
+    },
+    {
+      "symbol": "DMSAS",
+      "period": "1D",
+      "strategy": "new_scan",
+      "bar_time": "2026-06-29T06:00:00",
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 10.05
+    },
+    {
+      "symbol": "DMSAS",
+      "period": "1D",
+      "strategy": "ema",
+      "bar_time": "2026-06-29T06:00:00",
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 10.05
+    },
+    {
+<<<<<<< Updated upstream
 =======
       "detected_at": "2026-06-29T17:41:08+03:00",
       "price": 18.91
@@ -3222,10 +3168,13 @@
       "price": 10.05
     },
     {
+=======
+>>>>>>> Stashed changes
       "symbol": "FORTE",
       "period": "1D",
       "strategy": "ema",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3240,12 +3189,17 @@
       "detected_at": "2026-06-29T19:04:11+03:00",
       "price": 95.45
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 95.45
+>>>>>>> Stashed changes
     },
     {
       "symbol": "HEDEF",
       "period": "1D",
       "strategy": "new_scan",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3277,13 +3231,21 @@
       "detected_at": "2026-06-29T19:04:11+03:00",
       "price": 153.5
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 153.5
+>>>>>>> Stashed changes
     },
     {
       "symbol": "HEDEF",
       "period": "1D",
       "strategy": "macd_cross",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00",
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+>>>>>>> Stashed changes
       "price": 153.5
     },
     {
@@ -3291,7 +3253,11 @@
       "period": "1D",
       "strategy": "h8",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00",
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+>>>>>>> Stashed changes
       "price": 153.5
     },
     {
@@ -3299,7 +3265,11 @@
       "period": "1D",
       "strategy": "i9",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00",
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+>>>>>>> Stashed changes
       "price": 153.5
     },
     {
@@ -3307,6 +3277,7 @@
       "period": "1D",
       "strategy": "new_scan",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3341,13 +3312,21 @@
       "detected_at": "2026-06-29T19:04:11+03:00",
       "price": 3.35
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 3.35
+>>>>>>> Stashed changes
     },
     {
       "symbol": "KOCMT",
       "period": "1D",
       "strategy": "macd_cross",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00",
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+>>>>>>> Stashed changes
       "price": 3.35
     },
     {
@@ -3355,7 +3334,11 @@
       "period": "1D",
       "strategy": "h8",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00",
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+>>>>>>> Stashed changes
       "price": 3.35
     },
     {
@@ -3363,7 +3346,11 @@
       "period": "1D",
       "strategy": "i9",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00",
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+>>>>>>> Stashed changes
       "price": 3.35
     },
     {
@@ -3371,7 +3358,11 @@
       "period": "1D",
       "strategy": "new_scan",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00",
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+>>>>>>> Stashed changes
       "price": 12.59
     },
     {
@@ -3379,7 +3370,11 @@
       "period": "1D",
       "strategy": "rsi_macd",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00",
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+>>>>>>> Stashed changes
       "price": 12.59
     },
     {
@@ -3387,6 +3382,7 @@
       "period": "1D",
       "strategy": "ema",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
       "detected_at": "2026-06-29T17:41:08+03:00",
@@ -3425,6 +3421,17 @@
       "strategy": "macd_cross",
       "bar_time": "2026-06-29T06:00:00",
       "detected_at": "2026-06-29T19:04:11+03:00",
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 12.59
+    },
+    {
+      "symbol": "OZYSR",
+      "period": "1D",
+      "strategy": "macd_cross",
+      "bar_time": "2026-06-29T06:00:00",
+      "detected_at": "2026-06-29T19:48:57+03:00",
+>>>>>>> Stashed changes
       "price": 12.59
     },
     {
@@ -3432,7 +3439,11 @@
       "period": "1D",
       "strategy": "h8",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T19:04:11+03:00",
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+>>>>>>> Stashed changes
       "price": 12.59
     },
     {
@@ -3440,6 +3451,7 @@
       "period": "1D",
       "strategy": "i9",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
       "detected_at": "2026-06-29T17:41:08+03:00",
       "price": 3.33
@@ -3559,12 +3571,17 @@
       "detected_at": "2026-06-29T19:04:11+03:00",
       "price": 12.59
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 12.59
+>>>>>>> Stashed changes
     },
     {
       "symbol": "PRKME",
       "period": "1D",
       "strategy": "new_scan",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3600,6 +3617,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:04:11+03:00",
+      "price": 20.16
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
       "price": 20.16
 >>>>>>> Stashed changes
     },
@@ -3615,6 +3636,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T14:17:50+03:00",
       "price": 20.34
 =======
@@ -3645,12 +3667,17 @@
       "detected_at": "2026-06-29T19:04:11+03:00",
       "price": 20.16
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 20.16
+>>>>>>> Stashed changes
     },
     {
       "symbol": "SNICA",
       "period": "1D",
       "strategy": "new_scan",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3695,14 +3722,17 @@
       "symbol": "VSNMD",
 =======
       "detected_at": "2026-06-29T18:19:47+03:00",
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+>>>>>>> Stashed changes
       "price": 4.5
     },
     {
       "symbol": "UNLU",
->>>>>>> Stashed changes
       "period": "1D",
-      "strategy": "rsi",
+      "strategy": "ema",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3734,17 +3764,26 @@
 =======
       "detected_at": "2026-06-29T18:19:47+03:00",
       "price": 14.69
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 14.71
+>>>>>>> Stashed changes
     },
     {
       "symbol": "VSNMD",
       "period": "1D",
       "strategy": "rsi",
       "bar_time": "2026-06-29T06:00:00",
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T18:19:47+03:00",
       "price": 108.5
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:04:11+03:00",
+      "price": 108.0
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
       "price": 108.0
 >>>>>>> Stashed changes
     },
@@ -3756,6 +3795,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T16:54:31+03:00",
       "price": 107.3
 =======
@@ -3768,6 +3808,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:04:11+03:00",
+      "price": 108.0
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
       "price": 108.0
 >>>>>>> Stashed changes
     },
@@ -3779,6 +3823,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T16:54:31+03:00",
       "price": 107.3
 =======
@@ -3791,6 +3836,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:04:11+03:00",
+      "price": 108.0
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
       "price": 108.0
 >>>>>>> Stashed changes
     },
@@ -3802,6 +3851,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T16:54:31+03:00",
       "price": 107.3
 =======
@@ -3814,6 +3864,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:04:11+03:00",
+      "price": 108.0
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
       "price": 108.0
 >>>>>>> Stashed changes
     },
@@ -3825,6 +3879,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T16:54:31+03:00",
       "price": 107.3
 =======
@@ -3837,6 +3892,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:04:11+03:00",
+      "price": 108.0
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
       "price": 108.0
 >>>>>>> Stashed changes
     },
@@ -3848,6 +3907,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T16:54:31+03:00",
       "price": 107.3
 >>>>>>> Stashed changes
@@ -3863,12 +3923,17 @@
       "detected_at": "2026-06-29T19:04:11+03:00",
       "price": 108.0
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T19:48:57+03:00",
+      "price": 108.0
+>>>>>>> Stashed changes
     },
     {
       "symbol": "AKENR",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3906,12 +3971,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 11.94
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 11.94
+>>>>>>> Stashed changes
     },
     {
       "symbol": "AKSUE",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -3973,12 +4043,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 37.0
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 37.0
+>>>>>>> Stashed changes
     },
     {
       "symbol": "AYEN",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
       "detected_at": "2026-06-29T17:52:02+03:00",
@@ -3991,12 +4066,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 36.24
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 36.24
+>>>>>>> Stashed changes
     },
     {
       "symbol": "AYEN",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4029,12 +4109,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 36.24
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 36.24
+>>>>>>> Stashed changes
     },
     {
       "symbol": "BAKAB",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4062,12 +4147,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 48.98
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 48.98
+>>>>>>> Stashed changes
     },
     {
       "symbol": "BAKAB",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4120,12 +4210,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 48.98
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 48.98
+>>>>>>> Stashed changes
     },
     {
       "symbol": "DGNMO",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4180,12 +4275,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 8.85
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 8.85
+>>>>>>> Stashed changes
     },
     {
       "symbol": "EGPRO",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4223,12 +4323,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 38.72
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 38.72
+>>>>>>> Stashed changes
     },
     {
       "symbol": "EGPRO",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4257,12 +4362,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 38.72
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 38.72
+>>>>>>> Stashed changes
     },
     {
       "symbol": "ESCOM",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4280,12 +4390,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 5.65
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 5.65
+>>>>>>> Stashed changes
     },
     {
       "symbol": "ESCOM",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4337,10 +4452,17 @@
     },
     {
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 5.65
+    },
+    {
+>>>>>>> Stashed changes
       "symbol": "GSDDE",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4378,12 +4500,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 12.27
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 12.27
+>>>>>>> Stashed changes
     },
     {
       "symbol": "GSDDE",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4421,12 +4548,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 12.27
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 12.27
+>>>>>>> Stashed changes
     },
     {
       "symbol": "GSDHO",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4464,12 +4596,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 5.87
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 5.87
+>>>>>>> Stashed changes
     },
     {
       "symbol": "GSDHO",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4507,12 +4644,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 5.87
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 5.87
+>>>>>>> Stashed changes
     },
     {
       "symbol": "ICBCT",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4548,6 +4690,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:21:58+03:00",
+      "price": 20.48
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
       "price": 20.48
 >>>>>>> Stashed changes
     },
@@ -4563,6 +4709,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T14:28:44+03:00",
       "price": 21.08
 =======
@@ -4590,6 +4737,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:21:58+03:00",
+      "price": 20.48
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
       "price": 20.48
 >>>>>>> Stashed changes
     },
@@ -4598,6 +4749,7 @@
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4626,12 +4778,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 10.86
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 10.86
+>>>>>>> Stashed changes
     },
     {
       "symbol": "KGYO",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4669,12 +4826,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 12.05
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 12.05
+>>>>>>> Stashed changes
     },
     {
       "symbol": "KORDS",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4712,12 +4874,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 70.5
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 70.5
+>>>>>>> Stashed changes
     },
     {
       "symbol": "KRDMA",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4755,12 +4922,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 40.0
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 40.0
+>>>>>>> Stashed changes
     },
     {
       "symbol": "KRDMA",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4798,12 +4970,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 40.0
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 40.0
+>>>>>>> Stashed changes
     },
     {
       "symbol": "MAALT",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4839,6 +5016,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:21:58+03:00",
+      "price": 1203.0
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
       "price": 1203.0
 >>>>>>> Stashed changes
     },
@@ -4854,6 +5035,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T14:28:44+03:00",
       "price": 1202.0
 =======
@@ -4882,6 +5064,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:21:58+03:00",
+      "price": 1203.0
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
       "price": 1203.0
 >>>>>>> Stashed changes
     },
@@ -4890,6 +5076,7 @@
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4927,12 +5114,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 2.13
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 2.13
+>>>>>>> Stashed changes
     },
     {
       "symbol": "PKART",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -4970,12 +5162,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 125.8
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 125.8
+>>>>>>> Stashed changes
     },
     {
       "symbol": "PKART",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5013,12 +5210,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 125.8
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 125.8
+>>>>>>> Stashed changes
     },
     {
       "symbol": "RYSAS",
       "period": "1M",
       "strategy": "new_scan",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5053,6 +5255,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:21:58+03:00",
+      "price": 22.38
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
       "price": 22.38
 >>>>>>> Stashed changes
     },
@@ -5068,6 +5274,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       "detected_at": "2026-06-29T14:28:44+03:00",
 =======
       "detected_at": "2026-06-29T15:07:44+03:00",
@@ -5095,6 +5302,10 @@
 >>>>>>> Stashed changes
 =======
       "detected_at": "2026-06-29T19:21:58+03:00",
+      "price": 22.38
+>>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
       "price": 22.38
 >>>>>>> Stashed changes
     },
@@ -5103,6 +5314,7 @@
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5140,12 +5352,17 @@
       "detected_at": "2026-06-29T19:21:58+03:00",
       "price": 62.5
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+      "price": 62.5
+>>>>>>> Stashed changes
     },
     {
       "symbol": "VAKBN",
       "period": "1M",
       "strategy": "ema",
       "bar_time": "2026-06-01T06:00:00",
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5160,10 +5377,14 @@
 =======
       "detected_at": "2026-06-29T19:21:58+03:00",
 >>>>>>> Stashed changes
+=======
+      "detected_at": "2026-06-29T20:04:58+03:00",
+>>>>>>> Stashed changes
       "price": 32.64
     }
   ],
   "last_successful_scans": {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -5248,6 +5469,9 @@
 >>>>>>> Stashed changes
 =======
     "2026-06-29_18:30": "2026-06-29 19:22:11"
+>>>>>>> Stashed changes
+=======
+    "2026-06-29_18:30": "2026-06-29 20:05:13"
 >>>>>>> Stashed changes
   }
 }
