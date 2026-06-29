@@ -120,7 +120,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase --autostash origin ${{ github.ref_name }} || true
+          cp state.json /tmp/scanned_state.json
+          git restore --source=HEAD --worktree -- state.json
+          git pull --rebase origin ${{ github.ref_name }}
+          python state_merge.py \
+            --base state.json \
+            --incoming /tmp/scanned_state.json \
+            --output state.json
+          python -m json.tool state.json > /dev/null
           git add state.json
           if ! git diff --staged --quiet; then
             git commit -m "chore: update state.json [skip ci]"

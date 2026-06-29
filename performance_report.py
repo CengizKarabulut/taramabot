@@ -133,6 +133,29 @@ def history_events(state: dict, strategy_key: str, start: datetime, end: datetim
     return events
 
 
+def aggregate_first_events(events: list[dict]) -> list[dict]:
+    """Keep one row per symbol/period and anchor it to the first detection."""
+    grouped = {}
+    for event in events:
+        key = (str(event.get("symbol", "")), str(event.get("period", "")))
+        if key not in grouped:
+            first = dict(event)
+            first["occurrences"] = 1
+            first["last_detected_at_dt"] = event["detected_at_dt"]
+            grouped[key] = first
+            continue
+
+        current = grouped[key]
+        current["occurrences"] += 1
+        current["last_detected_at_dt"] = max(
+            current["last_detected_at_dt"], event["detected_at_dt"]
+        )
+        if not current.get("price") and event.get("price"):
+            current["price"] = event["price"]
+
+    return sorted(grouped.values(), key=lambda event: event["detected_at_dt"])
+
+
 def normalize_price_frame(frame: pd.DataFrame) -> pd.DataFrame:
     if frame is None or frame.empty:
         return pd.DataFrame()
@@ -148,15 +171,31 @@ def normalize_price_frame(frame: pd.DataFrame) -> pd.DataFrame:
 
 def fetch_price_frame(symbol: str, scanner: MarketScanner) -> pd.DataFrame:
     try:
-        frame = scanner.tv.get_hist(
+        intraday = scanner.tv.get_hist(
             symbol,
             "BIST",
             interval=Interval.in_15_minute,
             n_bars=REPORT_PRICE_BARS,
         )
-        return normalize_price_frame(frame)
+        intraday = normalize_price_frame(intraday)
+        if not intraday.empty:
+            intraday.attrs["source_interval"] = "15m"
+            return intraday
     except Exception as exc:
-        print(f"Fiyat gecmisi alinamadi ({symbol}): {exc}")
+        print(f"15 dakikalik fiyat gecmisi alinamadi ({symbol}): {exc}")
+
+    try:
+        daily = scanner.tv.get_hist(
+            symbol,
+            "BIST",
+            interval=Interval.in_daily,
+            n_bars=15,
+        )
+        daily = normalize_price_frame(daily)
+        daily.attrs["source_interval"] = "daily"
+        return daily
+    except Exception as exc:
+        print(f"Gunluk fiyat gecmisi alinamadi ({symbol}): {exc}")
         return pd.DataFrame()
 
 
@@ -168,20 +207,31 @@ def calculate_row(event: dict, frame: pd.DataFrame, report_end: datetime) -> dic
         entry_price = 0.0
 
     close_price = None
-    peak_price = None
-    peak_time = None
+    peak_price = entry_price if entry_price > 0 else None
+    peak_time = detected_at if entry_price > 0 else None
+    close_is_fallback = False
     if not frame.empty:
-        post_signal = frame[(frame.index >= detected_at) & (frame.index <= report_end)]
+        available = frame[frame.index <= report_end]
+        if not available.empty:
+            close_price = float(available.iloc[-1]["close"])
+            if peak_price is None or close_price > peak_price:
+                peak_price = close_price
+                peak_time = available.index[-1].to_pydatetime()
+        if frame.attrs.get("source_interval") == "daily":
+            post_signal = available[available.index.date > detected_at.date()]
+        else:
+            post_signal = available[available.index >= detected_at]
         if not post_signal.empty:
-            close_price = float(post_signal.iloc[-1]["close"])
             peak_index = post_signal["high"].astype(float).idxmax()
-            peak_price = float(post_signal.loc[peak_index, "high"])
-            peak_time = peak_index.to_pydatetime()
+            candidate_peak = float(post_signal.loc[peak_index, "high"])
+            if peak_price is None or candidate_peak > peak_price:
+                peak_price = candidate_peak
+                peak_time = peak_index.to_pydatetime()
 
     if entry_price > 0:
-        if peak_price is None or peak_price < entry_price:
-            peak_price = entry_price
-            peak_time = detected_at
+        if close_price is None:
+            close_price = entry_price
+            close_is_fallback = True
         close_return = ((close_price - entry_price) / entry_price * 100) if close_price is not None else None
         peak_return = ((peak_price - entry_price) / entry_price * 100) if peak_price is not None else None
     else:
@@ -192,6 +242,9 @@ def calculate_row(event: dict, frame: pd.DataFrame, report_end: datetime) -> dic
         "symbol": str(event.get("symbol", "")),
         "period": str(event.get("period", "")),
         "time": detected_at.strftime("%d/%m %H:%M"),
+        "last_time": event.get("last_detected_at_dt", detected_at).strftime("%d/%m %H:%M"),
+        "occurrences": int(event.get("occurrences", 1)),
+        "close_is_fallback": close_is_fallback,
         "entry_price": entry_price or None,
         "close_price": close_price,
         "peak_price": peak_price,
@@ -206,8 +259,10 @@ def summarize_rows(rows: list[dict]) -> dict:
     peak_rows = [row for row in rows if row["peak_return"] is not None]
     close_values = [row["close_return"] for row in close_rows]
     peak_values = [row["peak_return"] for row in peak_rows]
+    event_count = sum(row.get("occurrences", 1) for row in rows)
     return {
         "signal_count": len(rows),
+        "event_count": event_count,
         "measured_count": len(close_rows),
         "close_total": sum(close_values) if close_values else None,
         "close_average": sum(close_values) / len(close_values) if close_values else None,
@@ -226,7 +281,8 @@ def format_change(value) -> str:
 
 def stats_block(summary: dict) -> str:
     lines = [
-        f"- Toplam sinyal: <b>{summary['signal_count']}</b>",
+        f"- Benzersiz hisse/periyot: <b>{summary['signal_count']}</b>",
+        f"- Toplam gelis: <b>{summary['event_count']}</b>",
         f"- Olculebilir: <b>{summary['measured_count']}</b>",
         f"- Kapanis toplam: <b>{format_change(summary['close_total'])}</b>",
         f"- Zirve toplam: <b>{format_change(summary['peak_total'])}</b>",
@@ -244,8 +300,12 @@ def stats_block(summary: dict) -> str:
 def signal_lines(rows: list[dict]) -> str:
     lines = []
     for row in rows:
+        code = f"{row['symbol']}/{row['period']}"
+        repeat = ""
+        if row.get("occurrences", 1) > 1:
+            repeat = f" | Son {row['last_time']} | {row['occurrences']} kez"
         lines.append(
-            f"- <b>{html.escape(row['symbol'])}</b> | {row['time']}\n"
+            f"- <b>{html.escape(code)}</b> | Ilk {row['time']}{repeat}\n"
             f"  <code>Giris {row['entry_price'] or 0:.2f} | "
             f"Kapanis {row['close_price'] or 0:.2f} ({format_change(row['close_return'])}) | "
             f"Zirve {row['peak_price'] or 0:.2f} ({format_change(row['peak_return'])})</code>"
@@ -305,7 +365,7 @@ async def build_strategy_report(
     end: datetime,
 ) -> tuple[list[str], list[Path]]:
     meta = STRATEGY_META[strategy_key]
-    events = history_events(state, strategy_key, start, end)
+    events = aggregate_first_events(history_events(state, strategy_key, start, end))
     if not events:
         return [], []
 
@@ -335,8 +395,11 @@ async def generate_performance_report_with_images(
 ) -> tuple[list[str], list[Path]]:
     if not os.path.exists("state.json"):
         return ["<b>state.json bulunamadi.</b>"], []
-    with open("state.json", "r", encoding="utf-8-sig") as file:
-        state = json.load(file)
+    try:
+        with open("state.json", "r", encoding="utf-8-sig") as file:
+            state = json.load(file)
+    except json.JSONDecodeError as exc:
+        return [f"<b>state.json gecersiz: {html.escape(str(exc))}</b>"], []
 
     start, end = report_window(report_type, now)
     scanner = MarketScanner()

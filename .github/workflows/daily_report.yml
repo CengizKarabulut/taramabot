@@ -22,8 +22,8 @@ on:
       - "scanner.py"
       - "requirements.txt"
   schedule:
-    # Weekdays at 19:15 Turkey time, after the BIST close and data settlement.
-    - cron: "15 16 * * 1-5"
+    # Weekdays at 18:45 Turkey time, after the BIST close and data settlement.
+    - cron: "45 15 * * 1-5"
   repository_dispatch:
     types:
       - stockmarketlab-daily-report

@@ -113,7 +113,7 @@ def create_performance_report_image(
         fill=COLOR_BLUE,
     )
 
-    badge = f"{total_rows} sinyal"
+    badge = f"{total_rows} satir | {summary.get('event_count', total_rows)} gelis"
     badge_width = _text_width(draw, badge, FONT_META_BOLD) + 42
     draw.rounded_rectangle(
         (CANVAS_WIDTH - PADDING_X - badge_width, 50, CANVAS_WIDTH - PADDING_X, 92),
@@ -147,8 +147,8 @@ def create_performance_report_image(
         "close_return": 1230,
         "peak_return": 1440,
     }
-    draw.text((columns["symbol"], header_y + 14), "Kod", font=FONT_HEAD, fill=COLOR_BRAND)
-    draw.text((columns["time"], header_y + 14), "Sinyal Ani", font=FONT_HEAD, fill=COLOR_BRAND)
+    draw.text((columns["symbol"], header_y + 14), "Kod/Periyot", font=FONT_HEAD, fill=COLOR_BRAND)
+    draw.text((columns["time"], header_y + 14), "Ilk Sinyal", font=FONT_HEAD, fill=COLOR_BRAND)
     _right_text(draw, columns["entry"], header_y + 14, "Giris", FONT_HEAD, COLOR_BRAND)
     _right_text(draw, columns["close"], header_y + 14, "Kapanis", FONT_HEAD, COLOR_BRAND)
     _right_text(draw, columns["peak"], header_y + 14, "Zirve", FONT_HEAD, COLOR_BRAND)
@@ -166,8 +166,12 @@ def create_performance_report_image(
                 draw.rectangle((PADDING_X, row_y, CANVAS_WIDTH - PADDING_X, row_y + ROW_HEIGHT), fill=COLOR_ROW_ALT)
             close_return, close_color = _format_change(row.get("close_return"))
             peak_return, peak_color = _format_change(row.get("peak_return"))
-            draw.text((columns["symbol"], row_y + 11), str(row.get("symbol", ""))[:12], font=FONT_ROW_BOLD, fill=COLOR_TEXT)
-            draw.text((columns["time"], row_y + 11), str(row.get("time", ""))[:16], font=FONT_ROW, fill=COLOR_TEXT)
+            code = f"{row.get('symbol', '')}/{row.get('period', '')}"[:14]
+            signal_time = str(row.get("time", ""))[:16]
+            if row.get("occurrences", 1) > 1:
+                signal_time += f" x{row['occurrences']}"
+            draw.text((columns["symbol"], row_y + 11), code, font=FONT_ROW_BOLD, fill=COLOR_TEXT)
+            draw.text((columns["time"], row_y + 11), signal_time, font=FONT_ROW, fill=COLOR_TEXT)
             _right_text(draw, columns["entry"], row_y + 11, _format_price(row.get("entry_price")), FONT_ROW, COLOR_TEXT)
             _right_text(draw, columns["close"], row_y + 11, _format_price(row.get("close_price")), FONT_ROW, COLOR_TEXT)
             _right_text(draw, columns["peak"], row_y + 11, _format_price(row.get("peak_price")), FONT_ROW, COLOR_TEXT)

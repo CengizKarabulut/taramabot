@@ -84,8 +84,11 @@ class ScannerState:
         """Durumu dosyaya kaydet."""
         try:
             self._prune_signal_history()
-            with open(self.state_file, "w", encoding="utf-8") as f:
+            temporary_file = f"{self.state_file}.tmp"
+            with open(temporary_file, "w", encoding="utf-8") as f:
                 json.dump(self.state, f, ensure_ascii=False, indent=2)
+                f.write("\n")
+            os.replace(temporary_file, self.state_file)
             logger.info(f"Durum kaydedildi: {self.state_file}")
         except Exception as e:
             logger.error(f"Durum kaydetme hatasÄ±: {e}")
