@@ -4,8 +4,13 @@ on:
   schedule:
     # Her 15 dakikada bir çalışarak tarama saatlerini kollar.
     # GitHub gecikse bile 45 dakikalık tolerans sayesinde taramayı kaçırmaz.
-    # Türkiye saati ile 09:00 - 19:00 arasını kapsar.
-    - cron: "*/15 6-16 * * 1-5"
+    # Türkiye saati: 10:15, 11:45, 13:30, 14:30, 16:00 ve 17:15.
+    - cron: "15 7 * * 1-5"
+    - cron: "45 8 * * 1-5"
+    - cron: "30 10 * * 1-5"
+    - cron: "30 11 * * 1-5"
+    - cron: "0 13 * * 1-5"
+    - cron: "15 14 * * 1-5"
   repository_dispatch:
     types:
       - taramabot-auto-scan
