@@ -121,7 +121,7 @@ python main.py scan <ZAMAN_DILIMI> <PAZAR_TIPI>
     python main.py scan 1W kripto
     ```
 
-Desteklenen Zaman Dilimleri: `4H`, `1D`, `1W`
+Desteklenen Zaman Dilimleri: `15m`, `30m`, `45m`, `1H`, `2H`, `4H`, `1D`, `1W`, `1M`
 Desteklenen Pazar Tipleri: `bist`, `emtia`, `kripto`
 
 #### b) Zamanlanmış Çalışma (Otomatik)
