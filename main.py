@@ -23,6 +23,19 @@ logger = logging.getLogger(__name__)
 BIST_OPEN_TIME = time(10, 0)
 BIST_CLOSE_TIME = time(18, 10)
 
+STRATEGY_NAMES = {
+    "full": "S-M-V-2",
+    "smi": "S-M-2",
+    "rsi": "R-V-1",
+    "new": "A-M-V-1",
+    "rsi_macd": "R-M-V-1",
+    "ema": "E-V-1",
+    "macd_cross": "M-1",
+    "h8": "S-M-1",
+    "i9": "S-M-V-1",
+}
+STRATEGY_KEYS = tuple(STRATEGY_NAMES)
+
 
 def _is_bist_market_closed(market_type: str) -> bool:
     if market_type.lower() != "bist":
@@ -38,6 +51,36 @@ def _signal_count(*signal_groups: list[dict]) -> int:
     return sum(len(group or []) for group in signal_groups)
 
 
+def _build_common_signal_map(all_results: list[dict]) -> dict:
+    """Birden fazla strateji/periyotta görülen sembolleri görsel formatına dönüştür."""
+    symbol_map = {}
+
+    for result in all_results:
+        period = result["period"]
+        for strategy_key in STRATEGY_KEYS:
+            for item in result.get(strategy_key, []):
+                symbol = item.get("symbol")
+                if not symbol:
+                    continue
+                symbol_map.setdefault(symbol, {}).setdefault(period, []).append({
+                    "code": STRATEGY_NAMES[strategy_key],
+                    "change": item.get("change"),
+                    "daily_change": item.get("daily_change", item.get("change")),
+                    "current_price": item.get("current_price", item.get("close")),
+                })
+
+    filtered_map = {}
+    for symbol, periods in symbol_map.items():
+        signal_count = sum(
+            len({entry["code"] for entry in entries})
+            for entries in periods.values()
+        )
+        if signal_count > 1:
+            filtered_map[symbol] = periods
+
+    return filtered_map
+
+
 async def main_scan_logic(market_type: str, period: str, use_state: bool = True):
     """
     Ana tarama mantığını çalıştırır.
@@ -49,7 +92,10 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
     # Periyot ismini düzelt (TV formatına uygun hale getir)
     period_map = {
         "15m": "15m", "15M": "15m",
+        "30m": "30m", "30M": "30m",
+        "45m": "45m", "45M": "45m",
         "1h": "1H", "1H": "1H",
+        "2h": "2H", "2H": "2H",
         "4h": "4H", "4H": "4H",
         "1d": "1D", "1D": "1D",
         "1w": "1W", "1W": "1W",
@@ -112,8 +158,7 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
             enabled_strategy_codes=["M-1", "S-M-1", "S-M-V-1", "E-V-1", "R-M-V-1", "A-M-V-1", "S-M-V-2", "S-M-2", "R-V-1"]
         )
         
-        # Sonuçları bir sonraki aşama (toplu özet) için döndür
-        return {
+        result = {
             "period": period,
             "full": full_signals,
             "smi": smi_signals,
@@ -126,6 +171,17 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
             "i9": i9_signals
         }
 
+        # Aynı zaman diliminde birden fazla stratejiden sinyal alanları ayrıca özetle.
+        period_signal_map = _build_common_signal_map([result])
+        if period_signal_map:
+            telegram_sender.send_common_signal_visuals(
+                period_signal_map,
+                title=f"{period} Çoklu Sinyal Özeti",
+            )
+
+        # Sonuçları bir sonraki aşama (zaman dilimleri arası özet) için döndür.
+        return result
+
     except Exception as e:
         logger.error(f"Ana tarama mantığında hata: {str(e)}", exc_info=True)
         telegram_sender.send_error(f"Tarama sırasında bir hata oluştu: {str(e)}")
@@ -134,8 +190,8 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
 
 async def run_multi_scan(market_type: str = "bist", period: str = "1D", use_state: bool = True):
     """Tüm zaman dilimlerini KESİN SIRAYLA (Küçükten Büyüğe) tara."""
-    # Sıralama: 15m -> 1H -> 4H -> 1D -> 1W -> 1M
-    periods = ["15m", "1H", "4H", "1D", "1W", "1M"]
+    # Sıralama: 15m -> 30m -> 45m -> 1H -> 2H -> 4H -> 1D -> 1W -> 1M
+    periods = ["15m", "30m", "45m", "1H", "2H", "4H", "1D", "1W", "1M"]
     logger.info(f"Çoklu tarama başlatılıyor: {periods}, State={use_state}")
     
     all_results = []
@@ -156,48 +212,15 @@ def send_final_summary(all_results: list):
     Tüm taramalar bittikten sonra BİRDEN FAZLA taramada çıkan hisseleri özetler.
     """
     telegram_sender = get_telegram_sender()
-    symbol_map = {} # symbol -> { period -> [signal entries] }
-    
-    strategy_names = {
-        "full": "S-M-V-2",
-        "smi": "S-M-2",
-        "rsi": "R-V-1",
-        "new": "A-M-V-1",
-        "rsi_macd": "R-M-V-1",
-        "ema": "E-V-1",
-        "macd_cross": "M-1",
-        "h8": "S-M-1",
-        "i9": "S-M-V-1"
-    }
-    
-    for res in all_results:
-        p = res["period"]
-        for strat in ["full", "smi", "rsi", "new", "rsi_macd", "ema", "macd_cross", "h8", "i9"]:
-            for item in res[strat]:
-                sym = item["symbol"]
-                if sym not in symbol_map:
-                    symbol_map[sym] = {}
-                if p not in symbol_map[sym]:
-                    symbol_map[sym][p] = []
-                symbol_map[sym][p].append({
-                    "code": strategy_names[strat],
-                    "change": item.get("change"),
-                    "daily_change": item.get("daily_change", item.get("change")),
-                    "current_price": item.get("current_price", item.get("close")),
-                })
-    
-    # Birden fazla sinyal varsa (farklı periyot veya aynı periyot farklı strateji)
-    filtered_map = {}
-    for sym, periods in symbol_map.items():
-        total_signals = sum(len(strats) for strats in periods.values())
-        if total_signals > 1:
-            filtered_map[sym] = periods
+    filtered_map = _build_common_signal_map(all_results)
 
     if not filtered_map:
         return
 
-    telegram_sender.send_common_signal_visuals(filtered_map)
-
+    telegram_sender.send_common_signal_visuals(
+        filtered_map,
+        title="Zaman Dilimleri Arası Çoklu Sinyal Özeti",
+    )
 
 async def run_bot():
     """
