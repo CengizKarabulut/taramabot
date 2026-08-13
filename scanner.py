@@ -350,7 +350,10 @@ class MarketScanner:
         # Zaman dilimini TvDatafeed formatÄ±na Ã§evir
         interval_map = {
             "15m": Interval.in_15_minute, "15M": Interval.in_15_minute,
+            "30m": Interval.in_30_minute, "30M": Interval.in_30_minute,
+            "45m": Interval.in_45_minute, "45M": Interval.in_45_minute,
             "1h": Interval.in_1_hour, "1H": Interval.in_1_hour,
+            "2h": Interval.in_2_hour, "2H": Interval.in_2_hour,
             "4h": Interval.in_4_hour, "4H": Interval.in_4_hour,
             "1d": Interval.in_daily, "1D": Interval.in_daily,
             "1w": Interval.in_weekly, "1W": Interval.in_weekly,
