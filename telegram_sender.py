@@ -644,7 +644,11 @@ class TelegramSender:
         plt.close(fig)
         return path
 
-    def send_common_signal_visuals(self, signal_map: Dict[str, dict]) -> bool:
+    def send_common_signal_visuals(
+        self,
+        signal_map: Dict[str, dict],
+        title: str = "Çoklu Sinyal Özeti",
+    ) -> bool:
         rows = self._common_signal_rows(signal_map)
         chunks = self._balanced_chunks(rows, COMMON_SIGNAL_IMAGE_MAX_ROWS)
 
@@ -664,7 +668,7 @@ class TelegramSender:
 
         ok = True
         for idx, image_path in enumerate(image_paths, start=1):
-            caption = "<b>Çoklu Sinyal Özeti</b>"
+            caption = f"<b>{title}</b>"
             if len(image_paths) > 1:
                 caption += f" — Sayfa {idx}/{len(image_paths)}"
             ok = self.send_photo(image_path, caption=caption) and ok
