@@ -11,7 +11,13 @@ from datetime import datetime, time, timedelta
 from typing import Callable, Optional
 import pytz
 
-from config import SCAN_TIMES, SCAN_WEEKENDS, STATE_FILE
+from config import (
+    SCAN_TIMES,
+    SCAN_WEEKENDS,
+    STATE_FILE,
+    CONTINUOUS_SCAN_START,
+    CONTINUOUS_SCAN_LAST_START,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +51,23 @@ class Scheduler:
         if not SCAN_WEEKENDS and dt.weekday() >= 5:  # 5: Cumartesi, 6: Pazar
             return False
         return True
+
+    @staticmethod
+    def parse_time(value: str) -> time:
+        """HH:MM biçimindeki bir ayarı time nesnesine çevir."""
+        hour, minute = map(int, value.split(':'))
+        return time(hour, minute)
+
+    @staticmethod
+    def is_continuous_window(dt: datetime) -> bool:
+        """Server modunda yeni bir ardışık turun başlayabileceği pencere."""
+        if not Scheduler.is_scan_day(dt):
+            return False
+
+        current = time(dt.hour, dt.minute, dt.second)
+        start = Scheduler.parse_time(CONTINUOUS_SCAN_START)
+        last_start = Scheduler.parse_time(CONTINUOUS_SCAN_LAST_START)
+        return start <= current < last_start
 
     @staticmethod
     def get_last_scan_state() -> dict:
@@ -129,12 +152,33 @@ class Scheduler:
             logger.info("Şu an planlanmış bir tarama vakti değil veya bekleyen tarama yok.")
 
     async def start(self, scan_func: Callable, market_type: str = "bist", period: str = "1D") -> None:
-        """Sürekli çalışan (server) modu için zamanlayıcı."""
+        """Sürekli çalışan server modu için zamanlayıcı."""
         self.is_running = True
-        logger.info("Sürekli zamanlayıcı başlatıldı.")
+        logger.info(
+            "Sürekli zamanlayıcı başlatıldı. Ardışık pencere: %s-%s",
+            CONTINUOUS_SCAN_START,
+            CONTINUOUS_SCAN_LAST_START,
+        )
+
         while self.is_running:
+            now = self.get_current_time()
+
+            if self.is_continuous_window(now):
+                scan_key = f"{now.strftime('%Y-%m-%d')}_continuous_{now.strftime('%H:%M:%S')}"
+                logger.info("Ardışık server taraması başlatılıyor: %s", scan_key)
+                try:
+                    await scan_func(market_type)
+                    self.save_scan_state(scan_key)
+                    logger.info("Ardışık server taraması tamamlandı: %s", scan_key)
+                except Exception:
+                    logger.exception("Ardışık server taraması başarısız oldu.")
+                    await asyncio.sleep(60)
+                # Başarılı turdan sonra beklemeden pencereyi tekrar değerlendir.
+                continue
+
+            # 08:30 açılış öncesi turu gibi sabit saatleri mevcut state mantığıyla çalıştır.
             await self.run_once_if_needed(scan_func, market_type)
-            await asyncio.sleep(60) # Her dakika kontrol et
+            await asyncio.sleep(60)  # Her dakika kontrol et
 
 
 # Global singleton instance
