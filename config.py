@@ -33,7 +33,7 @@ TV_CHART_ID = os.getenv("TV_CHART_ID")
 # ============================================================================
 
 # Zamanlanmış çalışma saatleri (Türkiye saati)
-SCAN_TIMES = ["11:00"]
+SCAN_TIMES = ["08:30", "11:00"]
 
 # Haftasonu tarama yapılsın mı?
 SCAN_WEEKENDS = False
