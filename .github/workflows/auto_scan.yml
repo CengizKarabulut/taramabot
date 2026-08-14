@@ -1,4 +1,5 @@
 name: StockMarketLab Sinyal Botu
+run-name: "StockMarketLab Sinyal Botu - ${{ github.event.schedule || github.event.action || github.event_name }}"
 
 on:
   schedule:
@@ -100,7 +101,10 @@ jobs:
                       [.workflow_runs[]
                         | select(.id != $current)
                         | select(.created_at >= $cutoff)
-                        | select(.event == "schedule" or .event == "repository_dispatch")
+                        | select(
+                            .event == "repository_dispatch"
+                            or (.event == "schedule" and .display_title == "StockMarketLab Sinyal Botu - 0 8 * * 1-5")
+                          )
                         | select(.status == "queued" or .status == "in_progress" or .conclusion == "success")]
                       | length
                     '
