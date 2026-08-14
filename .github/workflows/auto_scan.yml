@@ -2,6 +2,8 @@ name: StockMarketLab Sinyal Botu
 
 on:
   schedule:
+    # Hafta ici Türkiye saatiyle 08:30'da bagimsiz acilis oncesi taramasi.
+    - cron: "30 5 * * 1-5"
     # Hafta ici Türkiye saatiyle 11:00'da zincirin ilk taramasini baslatir.
     - cron: "0 8 * * 1-5"
   repository_dispatch:
@@ -136,7 +138,7 @@ jobs:
           fi
 
       - name: 🔁 Continue continuous scan chain
-        if: success() && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
+        if: success() && (github.event_name == 'repository_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 8 * * 1-5'))
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
