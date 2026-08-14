@@ -153,7 +153,18 @@ jobs:
             exit 0
           fi
 
-          if [[ "${now_tr}" < "${CHAIN_START_TR}" || "${now_tr}" >= "${LAST_DISPATCH_TR}" ]]; then
+          to_minutes() {
+            local value="$1"
+            local hour="${value%%:*}"
+            local minute="${value##*:}"
+            echo $((10#${hour} * 60 + 10#${minute}))
+          }
+
+          now_minutes="$(to_minutes "${now_tr}")"
+          start_minutes="$(to_minutes "${CHAIN_START_TR}")"
+          last_dispatch_minutes="$(to_minutes "${LAST_DISPATCH_TR}")"
+
+          if (( now_minutes < start_minutes || now_minutes >= last_dispatch_minutes )); then
             echo "Saat ${now_tr}; yeni tur icin izin verilen pencere ${CHAIN_START_TR}-${LAST_DISPATCH_TR}. Zincir tamamlandi."
             exit 0
           fi
