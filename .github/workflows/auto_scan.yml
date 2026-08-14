@@ -2,13 +2,11 @@ name: StockMarketLab Sinyal Botu
 
 on:
   schedule:
-    # Her 15 dakikada bir çalışarak tarama saatlerini kollar.
-    # GitHub gecikse bile 45 dakikalık tolerans sayesinde taramayı kaçırmaz.
-    # Türkiye saati ile 09:00 - 19:00 arasını kapsar.
-    - cron: "*/15 6-16 * * 1-5"
+    # Hafta ici Türkiye saatiyle 11:00'da zincirin ilk taramasini baslatir.
+    - cron: "0 8 * * 1-5"
   repository_dispatch:
     types:
-      - taramabot-auto-scan
+      - taramabot-continuous-scan
   workflow_dispatch:
     inputs:
       mode:
@@ -98,8 +96,8 @@ jobs:
           TG_THREAD_ID: ${{ vars.TG_THREAD_ID || secrets.TG_THREAD_ID }}
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            # Planli kosularda bot sadece zamani gelmis taramayi calistirir.
-            python main.py auto bist
+            # Planli zincirde tum zaman dilimlerini sirayla tara.
+            python main.py multi bist
             exit 0
           fi
 
@@ -136,3 +134,42 @@ jobs:
             git commit -m "chore: update state.json [skip ci]"
             git push origin HEAD:${{ github.ref_name }}
           fi
+
+      - name: 🔁 Continue continuous scan chain
+        if: success() && (github.event_name == 'schedule' || github.event_name == 'repository_dispatch')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          CHAIN_START_TR: "11:00"
+          LAST_DISPATCH_TR: "16:25"
+        run: |
+          set -euo pipefail
+
+          day_of_week="$(TZ=Europe/Istanbul date +%u)"
+          now_tr="$(TZ=Europe/Istanbul date +%H:%M)"
+
+          if [ "${day_of_week}" -gt 5 ]; then
+            echo "Hafta sonu; yeni tarama tetiklenmedi."
+            exit 0
+          fi
+
+          to_minutes() {
+            local value="$1"
+            local hour="${value%%:*}"
+            local minute="${value##*:}"
+            echo $((10#${hour} * 60 + 10#${minute}))
+          }
+
+          now_minutes="$(to_minutes "${now_tr}")"
+          start_minutes="$(to_minutes "${CHAIN_START_TR}")"
+          last_dispatch_minutes="$(to_minutes "${LAST_DISPATCH_TR}")"
+
+          if (( now_minutes < start_minutes || now_minutes >= last_dispatch_minutes )); then
+            echo "Saat ${now_tr}; yeni tur icin izin verilen pencere ${CHAIN_START_TR}-${LAST_DISPATCH_TR}. Zincir tamamlandi."
+            exit 0
+          fi
+
+          echo "Saat ${now_tr}; siradaki tarama tetikleniyor."
+          gh api --method POST \
+            "repos/${REPOSITORY}/dispatches" \
+            -f event_type='taramabot-continuous-scan'
