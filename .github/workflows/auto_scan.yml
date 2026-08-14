@@ -6,6 +6,8 @@ on:
     - cron: "30 5 * * 1-5"
     # Hafta ici Türkiye saatiyle 11:00'da zincirin ilk taramasini baslatir.
     - cron: "0 8 * * 1-5"
+    # 11:00 olayi kacarsa 11:15 ve 11:30'da kontrollu watchdog devreye girer.
+    - cron: "15,30 8 * * 1-5"
   repository_dispatch:
     types:
       - taramabot-continuous-scan
@@ -53,6 +55,7 @@ on:
         type: boolean
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -65,22 +68,78 @@ jobs:
     timeout-minutes: 180
 
     steps:
+      - name: 🛡️ Decide whether this run should scan
+        id: scan_gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE_EXPRESSION: ${{ github.event.schedule }}
+        run: |
+          set -euo pipefail
+
+          run_scan=true
+          continue_chain=false
+
+          if [ "${EVENT_NAME}" = "repository_dispatch" ]; then
+            continue_chain=true
+          elif [ "${EVENT_NAME}" = "schedule" ]; then
+            case "${SCHEDULE_EXPRESSION}" in
+              "30 5 * * 1-5")
+                # 08:30 acilis oncesi turu bagimsizdir.
+                ;;
+              "0 8 * * 1-5")
+                continue_chain=true
+                ;;
+              "15,30 8 * * 1-5")
+                continue_chain=true
+                cutoff="$(date -u -d '2 hours ago' +%Y-%m-%dT%H:%M:%SZ)"
+                existing_count="$(
+                  gh api "repos/${REPOSITORY}/actions/workflows/auto_scan.yml/runs?per_page=30" |
+                    jq --argjson current "${GITHUB_RUN_ID}" --arg cutoff "${cutoff}" '
+                      [.workflow_runs[]
+                        | select(.id != $current)
+                        | select(.created_at >= $cutoff)
+                        | select(.event == "schedule" or .event == "repository_dispatch")
+                        | select(.status == "queued" or .status == "in_progress" or .conclusion == "success")]
+                      | length
+                    '
+                )"
+
+                if [ "${existing_count}" -gt 0 ]; then
+                  echo "Yakın zamanda çalışan/başarılı bir otomatik zincir bulundu; watchdog taraması atlandı."
+                  run_scan=false
+                  continue_chain=false
+                else
+                  echo "11:00 zinciri bulunamadı; watchdog yeni zinciri başlatacak."
+                fi
+                ;;
+            esac
+          fi
+
+          echo "run_scan=${run_scan}" >> "${GITHUB_OUTPUT}"
+          echo "continue_chain=${continue_chain}" >> "${GITHUB_OUTPUT}"
+
       - name: 📥 Checkout code
+        if: steps.scan_gate.outputs.run_scan == 'true'
         uses: actions/checkout@v4
 
       - name: 🐍 Setup Python 3.11
+        if: steps.scan_gate.outputs.run_scan == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: 'pip'
 
       - name: 📦 Install dependencies
+        if: steps.scan_gate.outputs.run_scan == 'true'
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
           playwright install --with-deps chromium
 
       - name: 🍪 Setup TradingView cookies
+        if: steps.scan_gate.outputs.run_scan == 'true'
         env:
           TV_COOKIES: ${{ secrets.TV_COOKIES }}
         run: |
@@ -89,6 +148,7 @@ jobs:
           fi
 
       - name: Run Market Scan
+        if: steps.scan_gate.outputs.run_scan == 'true'
         env:
           TV_USERNAME: ${{ secrets.TV_USERNAME }}
           TV_PASSWORD: ${{ secrets.TV_PASSWORD }}
@@ -119,7 +179,7 @@ jobs:
           fi
 
       - name: 💾 Persist state.json
-        if: always()
+        if: always() && steps.scan_gate.outputs.run_scan == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -138,7 +198,7 @@ jobs:
           fi
 
       - name: 🔁 Continue continuous scan chain
-        if: success() && (github.event_name == 'repository_dispatch' || (github.event_name == 'schedule' && github.event.schedule == '0 8 * * 1-5'))
+        if: success() && steps.scan_gate.outputs.continue_chain == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
