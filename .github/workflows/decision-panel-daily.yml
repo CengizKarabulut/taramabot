@@ -60,8 +60,17 @@ jobs:
           TG_THREAD_ID: ${{ vars.TG_THREAD_ID || secrets.TG_THREAD_ID }}
           MIN_SCORE: ${{ inputs.min_score || '70' }}
           CHARTS: ${{ inputs.charts || '0' }}
-        run: |
-          python decision_panel_scan.py +            --universe XUTUM +            --period 2y +            --min-score "$MIN_SCORE" +            --min-turnover-mn 25 +            --batch-size 20 +            --workers 3 +            --charts "$CHARTS" +            --output-dir artifacts/decision-panel +            --telegram
+        run: >-
+          python decision_panel_scan.py
+          --universe XUTUM
+          --period 2y
+          --min-score "$MIN_SCORE"
+          --min-turnover-mn 25
+          --batch-size 20
+          --workers 3
+          --charts "$CHARTS"
+          --output-dir artifacts/decision-panel
+          --telegram
 
       - name: Tarama çıktılarını Actions artifact olarak sakla
         if: always()
