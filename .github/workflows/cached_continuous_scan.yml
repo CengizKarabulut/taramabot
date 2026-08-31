@@ -1,0 +1,316 @@
+name: StockMarketLab 15 Dakika Snapshot Taramasi
+run-name: "Snapshot Tarama · ${{ github.event.schedule || github.event.action || inputs.mode || github.event_name }}"
+
+on:
+  repository_dispatch:
+    types:
+      - taramabot-cache-tick
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Calistirma modu"
+        required: true
+        default: "intraday_chain"
+        type: choice
+        options:
+          - intraday_chain
+          - intraday_once
+          - full_refresh
+          - scan_only
+
+permissions:
+  actions: write
+  contents: write
+
+concurrency:
+  group: cached-market-pipeline
+  cancel-in-progress: false
+
+jobs:
+  refresh-and-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    outputs:
+      continue_chain: ${{ steps.gate.outputs.continue_chain }}
+      run_mode: ${{ steps.gate.outputs.run_mode }}
+      run_pipeline: ${{ steps.gate.outputs.run_pipeline }}
+
+    steps:
+      - name: Calisma modunu ve zaman penceresini belirle
+        id: gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE_EXPRESSION: ${{ github.event.schedule }}
+          MANUAL_MODE: ${{ inputs.mode }}
+        run: |
+          set -euo pipefail
+
+          run_pipeline=true
+          run_mode=intraday
+          continue_chain=false
+
+          day_of_week="$(TZ=Europe/Istanbul date +%u)"
+          now_tr="$(TZ=Europe/Istanbul date +%H:%M)"
+
+          to_minutes() {
+            local value="$1"
+            local hour="${value%%:*}"
+            local minute="${value##*:}"
+            echo $((10#${hour} * 60 + 10#${minute}))
+          }
+
+          now_minutes="$(to_minutes "${now_tr}")"
+          start_minutes="$(to_minutes "10:30")"
+          last_minutes="$(to_minutes "18:15")"
+
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
+            case "${MANUAL_MODE}" in
+              full_refresh)
+                run_mode=full
+                ;;
+              scan_only)
+                run_mode=scan_only
+                ;;
+              intraday_once)
+                run_mode=intraday
+                ;;
+              *)
+                run_mode=intraday
+                continue_chain=true
+                ;;
+            esac
+          elif [ "${EVENT_NAME}" = "repository_dispatch" ]; then
+            if [ "${day_of_week}" -gt 5 ] || (( now_minutes < start_minutes || now_minutes > last_minutes )); then
+              echo "Saat ${now_tr}; 10:30-18:15 tarama penceresi disinda."
+              run_pipeline=false
+            else
+              run_mode=intraday
+              continue_chain=true
+            fi
+          elif [ "${EVENT_NAME}" = "schedule" ]; then
+            case "${SCHEDULE_EXPRESSION}" in
+              "0 16 * * 1-5")
+                run_mode=full
+                ;;
+              "30 7 * * 1-5")
+                run_mode=intraday
+                continue_chain=true
+                ;;
+              "37,45 7 * * 1-5")
+                run_mode=intraday
+                continue_chain=true
+                cutoff="$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ)"
+                existing_count="$(
+                  gh api "repos/${REPOSITORY}/actions/workflows/cached_continuous_scan.yml/runs?per_page=30" |
+                    jq --argjson current "${GITHUB_RUN_ID}" --arg cutoff "${cutoff}" '
+                      [.workflow_runs[]
+                        | select(.id != $current)
+                        | select(.created_at >= $cutoff)
+                        | select(.event == "repository_dispatch" or .event == "schedule")
+                        | select(.status == "queued" or .status == "in_progress" or .conclusion == "success")]
+                      | length
+                    '
+                )"
+                if [ "${existing_count}" -gt 0 ]; then
+                  echo "Aktif veya basarili snapshot zinciri bulundu; watchdog atlandi."
+                  run_pipeline=false
+                  continue_chain=false
+                fi
+                ;;
+            esac
+          fi
+
+          echo "run_pipeline=${run_pipeline}" >> "${GITHUB_OUTPUT}"
+          echo "run_mode=${run_mode}" >> "${GITHUB_OUTPUT}"
+          echo "continue_chain=${continue_chain}" >> "${GITHUB_OUTPUT}"
+          echo "TR saati ${now_tr}; mode=${run_mode}; calis=${run_pipeline}; zincir=${continue_chain}"
+
+      - name: Kodu al
+        if: steps.gate.outputs.run_pipeline == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Python 3.11 kur
+        if: steps.gate.outputs.run_pipeline == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+
+      - name: Hafif tarama bagimliliklarini kur
+        if: steps.gate.outputs.run_pipeline == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+
+      - name: Son saglam veri ve sinyal snapshot'larini geri yukle
+        if: steps.gate.outputs.run_pipeline == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/market-snapshots /tmp/state-snapshot
+
+          download_latest_artifact() {
+            local artifact_name="$1"
+            local zip_path="$2"
+            local destination="$3"
+            local artifact_id
+
+            artifact_id="$(
+              gh api "repos/${REPOSITORY}/actions/artifacts?name=${artifact_name}&per_page=100" |
+                jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty'
+            )"
+
+            if [ -z "${artifact_id}" ]; then
+              echo "${artifact_name} bulunamadi; ilk kurulum davranisi uygulanacak."
+              return 0
+            fi
+
+            gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > "${zip_path}"
+            unzip -q -o "${zip_path}" -d "${destination}"
+            echo "${artifact_name} geri yuklendi (artifact ${artifact_id})."
+          }
+
+          download_latest_artifact market-data-latest /tmp/market-data.zip /tmp/market-snapshots
+          if [ -f /tmp/market-snapshots/data/market_data.sqlite ]; then
+            cp /tmp/market-snapshots/data/market_data.sqlite data/market_data.sqlite
+          elif [ -f /tmp/market-snapshots/market_data.sqlite ]; then
+            cp /tmp/market-snapshots/market_data.sqlite data/market_data.sqlite
+          fi
+
+          download_latest_artifact scanner-state-latest /tmp/scanner-state.zip /tmp/state-snapshot
+          if [ -f /tmp/state-snapshot/state.json ]; then
+            cp /tmp/state-snapshot/state.json state.json
+          fi
+
+      - name: Kapanis state dosyasini repoya isle
+        if: steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode == 'full'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp state.json /tmp/closing_state.json
+          git restore --source=HEAD --worktree -- state.json
+          git pull --rebase origin "${{ github.ref_name }}"
+          python state_merge.py --base state.json --incoming /tmp/closing_state.json --output state.json
+          python -m json.tool state.json > /dev/null
+          git add state.json
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: persist closing scanner state [skip ci]"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi
+
+      - name: Piyasa veri snapshot'ini guncelle
+        id: refresh
+        if: steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'scan_only'
+        env:
+          TV_USERNAME: ${{ secrets.TV_USERNAME }}
+          TV_PASSWORD: ${{ secrets.TV_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mode="${{ steps.gate.outputs.run_mode }}"
+          if [ "${mode}" = "intraday" ] && [ ! -s data/market_data.sqlite ]; then
+            echo "Onceki snapshot yok; kendini onarmak icin tam veri yenilemesi yapilacak."
+            mode=full
+          fi
+          python market_data_refresh.py             --mode "${mode}"             --db data/market_data.sqlite             --manifest data/manifest.json             --recent-bars 64             --retries 3
+          echo "effective_mode=${mode}" >> "${GITHUB_OUTPUT}"
+
+      - name: Guncel piyasa verisini artifact olarak sakla
+        if: steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'scan_only' && steps.refresh.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: market-data-latest
+          path: |
+            data/market_data.sqlite
+            data/manifest.json
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 6
+
+      - name: Snapshot uzerinden tum taramalari calistir
+        if: steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'full'
+        env:
+          MARKET_DATA_DB: ${{ github.workspace }}/data/market_data.sqlite
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ vars.TG_CHAT_ID || secrets.TG_CHAT_ID }}
+          TG_THREAD_ID: ${{ vars.TG_THREAD_ID || secrets.TG_THREAD_ID }}
+        run: |
+          set -euo pipefail
+          test -s "${MARKET_DATA_DB}"
+          python main.py multi bist
+
+      - name: Sinyal state snapshot'ini sakla
+        if: always() && steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'full'
+        uses: actions/upload-artifact@v4
+        with:
+          name: scanner-state-latest
+          path: state.json
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 6
+
+      - name: Eski rolling artifact'lari temizle
+        if: always() && steps.gate.outputs.run_pipeline == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          for artifact_name in market-data-latest scanner-state-latest; do
+            gh api "repos/${REPOSITORY}/actions/artifacts?name=${artifact_name}&per_page=100" |
+              jq -r '.artifacts | sort_by(.created_at) | reverse | .[3:][]?.id' |
+              while read -r artifact_id; do
+                if [ -n "${artifact_id}" ]; then
+                  gh api --method DELETE "repos/${REPOSITORY}/actions/artifacts/${artifact_id}"
+                fi
+              done
+          done
+
+  schedule-next:
+    needs: refresh-and-scan
+    if: always() && needs.refresh-and-scan.outputs.continue_chain == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Bir sonraki sabit 15 dakikalik tick'i tetikle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          day_of_week="$(TZ=Europe/Istanbul date +%u)"
+          now_hour="$(TZ=Europe/Istanbul date +%H)"
+          now_minute="$(TZ=Europe/Istanbul date +%M)"
+          now_second="$(TZ=Europe/Istanbul date +%S)"
+          now_minutes=$((10#${now_hour} * 60 + 10#${now_minute}))
+          last_start=$((18 * 60 + 15))
+
+          if [ "${day_of_week}" -gt 5 ] || (( now_minutes >= last_start )); then
+            echo "Tarama zinciri tamamlandi; yeni tick yok."
+            exit 0
+          fi
+
+          next_minutes=$(( (now_minutes / 15 + 1) * 15 ))
+          if (( next_minutes > last_start )); then
+            echo "Siradaki ceyrek 18:15 sonrasinda; zincir tamamlandi."
+            exit 0
+          fi
+
+          wait_seconds=$(( (next_minutes - now_minutes) * 60 - 10#${now_second} ))
+          if (( wait_seconds < 1 )); then
+            wait_seconds=1
+          fi
+
+          printf 'Siradaki tick icin %s saniye beklenecek.\n' "${wait_seconds}"
+          sleep "${wait_seconds}"
+
+          gh api --method POST             "repos/${REPOSITORY}/dispatches"             -f event_type='taramabot-cache-tick'

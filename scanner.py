@@ -13,6 +13,7 @@ from typing import List, Dict, Optional, Tuple
 from zoneinfo import ZoneInfo
 from tvDatafeed import TvDatafeed, Interval
 
+from market_data_store import MarketDataStore
 from config import (
     TV_USERNAME, TV_PASSWORD, BIST_STOCKS, NASDAQ_100, SP_500, COMMODITIES, CRYPTO,
     BARS_TO_FETCH, STATE_FILE
@@ -150,8 +151,16 @@ class ScannerState:
 class MarketScanner:
     """Pazar tarayÄ±cÄ±."""
     
-    def __init__(self):
-        self.tv = self._create_tv_connection()
+    def __init__(self, data_store_path: Optional[str] = None):
+        selected_store = data_store_path or os.getenv("MARKET_DATA_DB")
+        self.data_store = None
+        if selected_store:
+            try:
+                self.data_store = MarketDataStore(selected_store, read_only=True)
+                logger.info("Piyasa verisi SQLite snapshot'tan okunacak: %s", selected_store)
+            except Exception as e:
+                raise RuntimeError(f"Piyasa veri snapshot'i acilamadi: {selected_store}: {e}") from e
+        self.tv = None if self.data_store else self._create_tv_connection()
         self.state = ScannerState()
         self._daily_limit_cache = {}
     
@@ -195,15 +204,31 @@ class MarketScanner:
             pass
         return fallback
 
+    def _get_hist(self, symbol: str, exchange: str, period: str, interval: Interval, bars: int):
+        if self.data_store:
+            return self.data_store.load_dataframe(
+                symbol,
+                exchange,
+                period,
+                limit=bars,
+            )
+        return self.tv.get_hist(
+            symbol,
+            exchange,
+            interval=interval,
+            n_bars=bars,
+        )
+
     def _get_daily_limit_df(self, symbol: str, exchange: str):
         key = (symbol, exchange)
         if key not in self._daily_limit_cache:
             try:
-                self._daily_limit_cache[key] = self.tv.get_hist(
+                self._daily_limit_cache[key] = self._get_hist(
                     symbol,
                     exchange,
-                    interval=Interval.in_daily,
-                    n_bars=max(BARS_TO_FETCH, 60),
+                    "1D",
+                    Interval.in_daily,
+                    max(BARS_TO_FETCH, 60),
                 )
             except Exception as e:
                 logger.debug("Gunluk tavan verisi alinamadi (%s): %s", symbol, e)
@@ -225,7 +250,13 @@ class MarketScanner:
         
         try:
             # Veri Ã§ek
-            df = self.tv.get_hist(symbol, exchange, interval=interval, n_bars=BARS_TO_FETCH)
+            df = self._get_hist(
+                symbol,
+                exchange,
+                period_str,
+                interval,
+                BARS_TO_FETCH,
+            )
             
             if df is None or df.empty or len(df) < 2:
                 return None
