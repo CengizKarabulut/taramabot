@@ -5,6 +5,7 @@ Botun ana giriş noktasıdır. Tarama işlemlerini başlatır ve yönetir.
 
 import asyncio
 import logging
+import os
 import sys
 from datetime import datetime, time
 
@@ -35,6 +36,9 @@ STRATEGY_NAMES = {
     "i9": "S-M-V-1",
 }
 STRATEGY_KEYS = tuple(STRATEGY_NAMES)
+TELEGRAM_ENABLED = os.getenv("DISABLE_TELEGRAM", "").strip().lower() not in {
+    "1", "true", "yes", "on"
+}
 
 
 def _is_bist_market_closed(market_type: str) -> bool:
@@ -87,7 +91,7 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
     Sembolleri tarar, sinyalleri işler ve Telegram'a rapor gönderir.
     """
     scanner = MarketScanner()
-    telegram_sender = get_telegram_sender()
+    telegram_sender = get_telegram_sender() if TELEGRAM_ENABLED else None
 
     # Periyot ismini düzelt (TV formatına uygun hale getir)
     period_map = {
@@ -142,7 +146,8 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
             full_signals, smi_signals, rsi_signals, new_scan_signals, rsi_macd_signals, ema_signals, macd_cross_signals, h8_signals, i9_signals, total_scanned = scan_results
 
         # 1. Gruplanmış özet listeyi gönder (Sinyal olsun veya olmasın mesaj gönderilir)
-        telegram_sender.send_grouped_summary(
+        if telegram_sender:
+            telegram_sender.send_grouped_summary(
             period=period, 
             full_signals=full_signals, 
             smi_signals=smi_signals, 
@@ -156,7 +161,7 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
             market_type=market_type,
             total_scanned=total_scanned,
             enabled_strategy_codes=["M-1", "S-M-1", "S-M-V-1", "E-V-1", "R-M-V-1", "A-M-V-1", "S-M-V-2", "S-M-2", "R-V-1"]
-        )
+            )
         
         result = {
             "period": period,
@@ -173,7 +178,7 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
 
         # Aynı zaman diliminde birden fazla stratejiden sinyal alanları ayrıca özetle.
         period_signal_map = _build_common_signal_map([result])
-        if period_signal_map:
+        if telegram_sender and period_signal_map:
             telegram_sender.send_common_signal_visuals(
                 period_signal_map,
                 title=f"{period} Çoklu Sinyal Özeti",
@@ -184,7 +189,8 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
 
     except Exception as e:
         logger.error(f"Ana tarama mantığında hata: {str(e)}", exc_info=True)
-        telegram_sender.send_error(f"Tarama sırasında bir hata oluştu: {str(e)}")
+        if telegram_sender:
+            telegram_sender.send_error(f"Tarama sırasında bir hata oluştu: {str(e)}")
         return None
 
 
@@ -211,6 +217,9 @@ def send_final_summary(all_results: list):
     """
     Tüm taramalar bittikten sonra BİRDEN FAZLA taramada çıkan hisseleri özetler.
     """
+    if not TELEGRAM_ENABLED:
+        return
+
     telegram_sender = get_telegram_sender()
     filtered_map = _build_common_signal_map(all_results)
 

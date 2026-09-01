@@ -17,6 +17,11 @@ on:
           - intraday_once
           - full_refresh
           - scan_only
+      send_telegram:
+        description: "Manuel taramada Telegram mesaji gonder"
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   actions: write
@@ -237,6 +242,7 @@ jobs:
       - name: Snapshot uzerinden tum taramalari calistir
         if: steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'full'
         env:
+          DISABLE_TELEGRAM: ${{ github.event_name == 'workflow_dispatch' && inputs.send_telegram != true }}
           MARKET_DATA_DB: ${{ github.workspace }}/data/market_data.sqlite
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ vars.TG_CHAT_ID || secrets.TG_CHAT_ID }}
@@ -244,10 +250,14 @@ jobs:
         run: |
           set -euo pipefail
           test -s "${MARKET_DATA_DB}"
-          python main.py multi bist
+          if [ "$DISABLE_TELEGRAM" = "true" ]; then
+            python main.py multi bist --nostate
+          else
+            python main.py multi bist
+          fi
 
       - name: Sinyal state snapshot'ini sakla
-        if: always() && steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'full'
+        if: always() && steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'full' && (github.event_name != 'workflow_dispatch' || inputs.send_telegram == true)
         uses: actions/upload-artifact@v4
         with:
           name: scanner-state-latest
