@@ -21,10 +21,6 @@ on:
           - "0"
           - "5"
           - "10"
-  schedule:
-    # Hafta içi BIST kapanışından sonra 18:20 Türkiye saati (15:20 UTC).
-    - cron: "20 15 * * 1-5"
-
 permissions:
   contents: read
 

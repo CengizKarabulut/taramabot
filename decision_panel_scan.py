@@ -18,6 +18,8 @@ import numpy as np
 import pandas as pd
 import requests
 
+from market_data_store import MarketDataStore
+
 
 ISTANBUL = ZoneInfo("Europe/Istanbul")
 
@@ -471,6 +473,26 @@ def download_universe(symbols: list[str], period: str, batch_size: int, workers:
     return histories, sorted(set(failures))
 
 
+def load_snapshot_universe(
+    database_path: str,
+    max_symbols: int = 0,
+) -> tuple[list[str], dict[str, pd.DataFrame], list[str]]:
+    """Guncel gunluk veriyi GitHub artifact'indaki SQLite snapshot'tan oku."""
+    histories: dict[str, pd.DataFrame] = {}
+    failures: list[str] = []
+    with MarketDataStore(database_path, read_only=True) as store:
+        symbols = store.list_symbols("BIST", "1D")
+        if max_symbols > 0:
+            symbols = symbols[:max_symbols]
+        for symbol in symbols:
+            frame = store.load_dataframe(symbol, "BIST", "1D", limit=400)
+            if frame is None or frame.empty:
+                failures.append(symbol)
+            else:
+                histories[symbol] = frame
+    return symbols, histories, failures
+
+
 def render_chart(symbol: str, history: pd.DataFrame, result: dict[str, Any], output_path: Path) -> None:
     try:
         import matplotlib.pyplot as plt
@@ -604,6 +626,63 @@ def send_telegram_report(text: str) -> None:
     print("Telegram raporu hedef konuya gönderildi.")
 
 
+def _candidate_symbols(frame: pd.DataFrame) -> list[str]:
+    if frame.empty or "symbol" not in frame:
+        return []
+    return sorted(str(symbol) for symbol in frame["symbol"].dropna().tolist())
+
+
+def send_telegram_if_changed(
+    *,
+    report: str,
+    now: datetime,
+    live_entries: pd.DataFrame,
+    closed_entries: pd.DataFrame,
+    state_file: str,
+    only_on_change: bool,
+) -> bool:
+    """Ayni aday listesi icin 15 dakikada bir tekrar mesaj atilmasini engelle."""
+    live_symbols = _candidate_symbols(live_entries)
+    closed_symbols = _candidate_symbols(closed_entries)
+    signature = {
+        "date": now.date().isoformat(),
+        "live_entries": live_symbols,
+        "closed_entries": closed_symbols,
+    }
+
+    state_path = Path(state_file).resolve() if state_file else None
+    state: dict[str, Any] = {}
+    if state_path and state_path.exists():
+        try:
+            loaded = json.loads(state_path.read_text(encoding="utf-8-sig"))
+            if isinstance(loaded, dict):
+                state = loaded
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"Karar Paneli state okunamadi, yeniden olusturulacak: {exc}", file=sys.stderr)
+
+    previous = state.get("decision_panel", {}).get("last_signature")
+    if only_on_change and previous == signature:
+        print("Karar Paneli aday listesi degismedi; Telegram mesaji atlandi.")
+        return False
+
+    send_telegram_report(report)
+    if state_path:
+        state["decision_panel"] = {
+            "last_signature": signature,
+            "last_sent_at": now.isoformat(timespec="seconds"),
+            "live_entry_count": len(live_symbols),
+            "closed_entry_count": len(closed_symbols),
+        }
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = state_path.with_suffix(state_path.suffix + ".tmp")
+        temporary.write_text(
+            json.dumps(state, ensure_ascii=False, indent=2, default=str) + "\n",
+            encoding="utf-8",
+        )
+        temporary.replace(state_path)
+    return True
+
+
 def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -612,6 +691,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="BorsaPy ile günlük BIST Karar Paneli taraması")
     parser.add_argument("--universe", default="XU100", help="BorsaPy endeks kodu: XU100, XUTUM vb.")
     parser.add_argument("--period", default="2y", help="BorsaPy geçmiş periyodu")
+    parser.add_argument("--snapshot-db", default="", help="BorsaPy yerine okunacak SQLite snapshot")
+    parser.add_argument("--state-file", default="", help="Telegram tekrar kontrolü için ortak state.json")
+    parser.add_argument("--telegram-on-change", action="store_true", help="Aday listesi değişmediyse mesaj gönderme")
     parser.add_argument("--min-score", type=int, default=70)
     parser.add_argument("--min-turnover-mn", type=float, default=25.0)
     parser.add_argument("--batch-size", type=int, default=20)
@@ -623,13 +705,18 @@ def main() -> int:
     args = parser.parse_args()
 
     settings = Settings(min_score=args.min_score, min_turnover_mn=args.min_turnover_mn)
-    symbols = list(bp.Index(args.universe).component_symbols)
-    if args.max_symbols > 0:
-        symbols = symbols[:args.max_symbols]
-    print(f"Evren: {args.universe} · {len(symbols)} hisse · BorsaPy {getattr(bp, '__version__', '?')}")
-    histories, failures = download_universe(symbols, args.period, args.batch_size, args.workers)
+    if args.snapshot_db:
+        symbols, histories, failures = load_snapshot_universe(args.snapshot_db, args.max_symbols)
+        data_source = "SQLite snapshot"
+    else:
+        symbols = list(bp.Index(args.universe).component_symbols)
+        if args.max_symbols > 0:
+            symbols = symbols[:args.max_symbols]
+        histories, failures = download_universe(symbols, args.period, args.batch_size, args.workers)
+        data_source = f"BorsaPy {getattr(bp, '__version__', '?')}"
+    print(f"Evren: {args.universe} · {len(symbols)} hisse · Kaynak: {data_source}")
     if not histories:
-        print("Hiç veri indirilemedi.", file=sys.stderr)
+        print("Hiç piyasa verisi okunamadı.", file=sys.stderr)
         return 2
 
     now = datetime.now(ISTANBUL)
@@ -680,6 +767,7 @@ def main() -> int:
     summary = {
         "created_at": now.isoformat(),
         "borsapy_version": getattr(bp, "__version__", "?"),
+        "data_source": data_source,
         "universe": args.universe,
         "requested_symbols": len(symbols),
         "analyzed_symbols": len(live_df),
@@ -709,7 +797,14 @@ def main() -> int:
             live_df=live_df,
             min_score=settings.min_score,
         )
-        send_telegram_report(report)
+        send_telegram_if_changed(
+            report=report,
+            now=now,
+            live_entries=live_entries,
+            closed_entries=closed_entries,
+            state_file=args.state_file,
+            only_on_change=args.telegram_on_change,
+        )
 
     columns = ["symbol", "status", "score", "entry_score", "rvol", "volume_pace", "adx", "avg_turnover_mn", "close"]
     print("\nBUGÜN AÇIK MUMDA GİRİŞ ADAYLARI")

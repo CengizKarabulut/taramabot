@@ -255,6 +255,44 @@ jobs:
               --state state.json
           fi
 
+      - name: Karar Paneli snapshot taramasini calistir
+        if: steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'full'
+        env:
+          DISABLE_TELEGRAM: ${{ github.event_name == 'workflow_dispatch' && inputs.send_telegram != true }}
+          MARKET_DATA_DB: ${{ github.workspace }}/data/market_data.sqlite
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ vars.TG_CHAT_ID || secrets.TG_CHAT_ID }}
+          TG_THREAD_ID: ${{ vars.TG_THREAD_ID || secrets.TG_THREAD_ID }}
+        run: |
+          set -euo pipefail
+          mkdir -p data/decision-panel
+          panel_args=(
+            --snapshot-db "${MARKET_DATA_DB}"
+            --universe XUTUM
+            --min-score 70
+            --min-turnover-mn 25
+            --charts 0
+            --output-dir data/decision-panel
+          )
+          if [ "$DISABLE_TELEGRAM" = "true" ]; then
+            python decision_panel_scan.py "${panel_args[@]}"
+          else
+            python decision_panel_scan.py "${panel_args[@]}" \
+              --telegram \
+              --telegram-on-change \
+              --state-file state.json
+          fi
+
+      - name: Karar Paneli sonucunu artifact olarak sakla
+        if: always() && steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'full' && hashFiles('data/decision-panel/ozet.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: decision-panel-latest
+          path: data/decision-panel
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 6
+
       - name: Sinyal state snapshot'ini sakla
         if: always() && steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'full' && (github.event_name != 'workflow_dispatch' || inputs.send_telegram == true)
         uses: actions/upload-artifact@v4
@@ -272,7 +310,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
-          for artifact_name in market-data-latest scanner-state-latest; do
+          for artifact_name in market-data-latest scanner-state-latest decision-panel-latest; do
             gh api "repos/${REPOSITORY}/actions/artifacts?name=${artifact_name}&per_page=100" |
               jq -r '.artifacts | sort_by(.created_at) | reverse | .[3:][]?.id' |
               while read -r artifact_id; do

@@ -300,6 +300,18 @@ class MarketDataStore:
         frame = frame.dropna(subset=["candle_time"]).set_index("candle_time")
         return frame.loc[:, OHLCV_COLUMNS]
 
+    def list_symbols(self, exchange: str, period: str) -> list[str]:
+        rows = self.connection.execute(
+            """
+            SELECT DISTINCT symbol
+            FROM candles
+            WHERE exchange = ? AND period = ?
+            ORDER BY symbol
+            """,
+            (exchange, normalize_period(period)),
+        ).fetchall()
+        return [str(row[0]) for row in rows]
+
     def symbol_count(self, exchange: str, period: str) -> int:
         row = self.connection.execute(
             "SELECT COUNT(DISTINCT symbol) FROM candles WHERE exchange = ? AND period = ?",

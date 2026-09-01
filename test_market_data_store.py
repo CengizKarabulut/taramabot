@@ -78,10 +78,13 @@ class MarketDataStoreTests(unittest.TestCase):
     def test_read_only_store(self):
         with MarketDataStore(self.database_path) as store:
             store.upsert_dataframe("TEST", "BIST", "15m", self.sample_intraday())
+            store.upsert_dataframe("ALFA", "BIST", "1D", self.sample_intraday())
+            store.upsert_dataframe("BETA", "BIST", "1D", self.sample_intraday())
 
         with MarketDataStore(self.database_path, read_only=True) as store:
             loaded = store.load_dataframe("TEST", "BIST", "15m", limit=3)
             self.assertEqual(len(loaded), 3)
+            self.assertEqual(store.list_symbols("BIST", "1D"), ["ALFA", "BETA"])
             self.assertTrue(store.integrity_ok())
 
 
