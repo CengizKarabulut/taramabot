@@ -4,10 +4,12 @@ Botun ana giriş noktasıdır. Tarama işlemlerini başlatır ve yönetir.
 """
 
 import asyncio
+import json
 import logging
 import os
 import sys
 from datetime import datetime, time
+from pathlib import Path
 
 from config import (
     LOG_LEVEL, LOG_FORMAT, BIST_STOCKS, COMMODITIES, CRYPTO,
@@ -36,6 +38,7 @@ STRATEGY_NAMES = {
     "i9": "S-M-V-1",
 }
 STRATEGY_KEYS = tuple(STRATEGY_NAMES)
+PERIOD_ORDER = ["15m", "30m", "45m", "1H", "2H", "4H", "1D", "1W", "1M"]
 TELEGRAM_ENABLED = os.getenv("DISABLE_TELEGRAM", "").strip().lower() not in {
     "1", "true", "yes", "on"
 }
@@ -83,6 +86,83 @@ def _build_common_signal_map(all_results: list[dict]) -> dict:
             filtered_map[symbol] = periods
 
     return filtered_map
+
+
+def _write_scan_result(result: dict | None) -> None:
+    """Bir periyot sonucunu paralel tarama birlestiricisi icin kucuk JSON olarak yaz."""
+    output_path = os.getenv("SCAN_RESULT_FILE", "").strip()
+    if not output_path:
+        return
+
+    payload = result or {}
+    compact = {
+        "period": payload.get("period"),
+        "market_type": payload.get("market_type", "bist"),
+        "total_scanned": payload.get("total_scanned", 0),
+    }
+    for strategy_key in STRATEGY_KEYS:
+        compact[strategy_key] = [
+            {
+                "symbol": item.get("symbol"),
+                "change": float(item.get("change", 0) or 0),
+                "daily_change": float(item.get("daily_change", item.get("change", 0)) or 0),
+                "current_price": float(item.get("current_price", item.get("close", 0)) or 0),
+                "close": float(item.get("close", item.get("current_price", 0)) or 0),
+            }
+            for item in payload.get(strategy_key, [])
+        ]
+
+    destination = Path(output_path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(destination.suffix + ".tmp")
+    temporary.write_text(json.dumps(compact, ensure_ascii=False), encoding="utf-8")
+    temporary.replace(destination)
+
+
+def send_saved_results(paths: list[str]) -> None:
+    """Paralel hesaplanan periyot raporlarini kronolojik sirayla Telegram'a gonder."""
+    if not TELEGRAM_ENABLED:
+        return
+
+    results = []
+    for path in paths:
+        try:
+            with open(path, "r", encoding="utf-8") as file:
+                result = json.load(file)
+            if result.get("period"):
+                results.append(result)
+        except (OSError, json.JSONDecodeError) as exc:
+            logger.error("Paralel tarama sonucu okunamadi (%s): %s", path, exc)
+
+    order = {period: index for index, period in enumerate(PERIOD_ORDER)}
+    results.sort(key=lambda item: order.get(item.get("period"), len(order)))
+    telegram_sender = get_telegram_sender()
+    enabled_codes = ["M-1", "S-M-1", "S-M-V-1", "E-V-1", "R-M-V-1", "A-M-V-1", "S-M-V-2", "S-M-2", "R-V-1"]
+
+    for result in results:
+        telegram_sender.send_grouped_summary(
+            period=result["period"],
+            full_signals=result.get("full", []),
+            smi_signals=result.get("smi", []),
+            rsi_signals=result.get("rsi", []),
+            new_scan_signals=result.get("new", []),
+            rsi_macd_signals=result.get("rsi_macd", []),
+            ema_signals=result.get("ema", []),
+            macd_cross_signals=result.get("macd_cross", []),
+            h8_signals=result.get("h8", []),
+            i9_signals=result.get("i9", []),
+            market_type=result.get("market_type", "bist"),
+            total_scanned=result.get("total_scanned"),
+            enabled_strategy_codes=enabled_codes,
+        )
+        period_signal_map = _build_common_signal_map([result])
+        if period_signal_map:
+            telegram_sender.send_common_signal_visuals(
+                period_signal_map,
+                title=f"{result['period']} Çoklu Sinyal Özeti",
+            )
+
+    send_final_summary(results)
 
 
 async def main_scan_logic(market_type: str, period: str, use_state: bool = True):
@@ -165,6 +245,8 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
         
         result = {
             "period": period,
+            "market_type": market_type,
+            "total_scanned": total_scanned,
             "full": full_signals,
             "smi": smi_signals,
             "rsi": rsi_signals,
@@ -175,6 +257,7 @@ async def main_scan_logic(market_type: str, period: str, use_state: bool = True)
             "h8": h8_signals,
             "i9": i9_signals
         }
+        _write_scan_result(result)
 
         # Aynı zaman diliminde birden fazla stratejiden sinyal alanları ayrıca özetle.
         period_signal_map = _build_common_signal_map([result])
@@ -248,6 +331,8 @@ async def run_bot():
         elif command == "multi":
             market_type = sys.argv[2].lower() if len(sys.argv) > 2 else "bist"
             await run_multi_scan(market_type, use_state=(not nostate))
+        elif command == "summary":
+            send_saved_results(sys.argv[2:])
         elif command == "auto":
             from scheduler import get_scheduler
             scheduler = get_scheduler()

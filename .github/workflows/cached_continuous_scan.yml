@@ -251,9 +251,15 @@ jobs:
           set -euo pipefail
           test -s "${MARKET_DATA_DB}"
           if [ "$DISABLE_TELEGRAM" = "true" ]; then
-            python main.py multi bist --nostate
+            python parallel_snapshot_scan.py \
+              --db "${MARKET_DATA_DB}" \
+              --market bist \
+              --no-state
           else
-            python main.py multi bist
+            python parallel_snapshot_scan.py \
+              --db "${MARKET_DATA_DB}" \
+              --market bist \
+              --state state.json
           fi
 
       - name: Sinyal state snapshot'ini sakla

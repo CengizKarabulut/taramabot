@@ -34,8 +34,8 @@ SIGNAL_HISTORY_MAX_ENTRIES = int(os.getenv("SIGNAL_HISTORY_MAX_ENTRIES", "25000"
 class ScannerState:
     """Tarama durumunu yÃ¶netir (son gÃ¶nderilen sinyalleri takip eder)."""
     
-    def __init__(self, state_file: str = STATE_FILE):
-        self.state_file = state_file
+    def __init__(self, state_file: Optional[str] = None):
+        self.state_file = state_file or os.getenv("SCANNER_STATE_FILE", STATE_FILE)
         self.state = self._load_state()
     
     def _load_state(self) -> dict:
