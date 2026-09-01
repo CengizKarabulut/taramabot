@@ -2,6 +2,15 @@ name: StockMarketLab 15 Dakika Snapshot Taramasi
 run-name: "Snapshot Tarama · ${{ github.event.schedule || github.event.action || inputs.mode || github.event_name }}"
 
 on:
+  schedule:
+    # Hafta ici 10:30 ve 10:45 (Turkiye saati, UTC+3).
+    - cron: "30,45 7 * * 1-5"
+    # Hafta ici 11:00-17:45 arasi her 15 dakika.
+    - cron: "0,15,30,45 8-14 * * 1-5"
+    # Hafta ici son iki baslangic: 18:00 ve 18:15.
+    - cron: "0,15 15 * * 1-5"
+    # Kapanis sonrasi tam snapshot yenilemesi: 19:00.
+    - cron: "0 16 * * 1-5"
   repository_dispatch:
     types:
       - taramabot-cache-tick
@@ -99,29 +108,13 @@ jobs:
               "0 16 * * 1-5")
                 run_mode=full
                 ;;
-              "30 7 * * 1-5")
-                run_mode=intraday
-                continue_chain=true
-                ;;
-              "37,45 7 * * 1-5")
-                run_mode=intraday
-                continue_chain=true
-                cutoff="$(date -u -d '30 minutes ago' +%Y-%m-%dT%H:%M:%SZ)"
-                existing_count="$(
-                  gh api "repos/${REPOSITORY}/actions/workflows/cached_continuous_scan.yml/runs?per_page=30" |
-                    jq --argjson current "${GITHUB_RUN_ID}" --arg cutoff "${cutoff}" '
-                      [.workflow_runs[]
-                        | select(.id != $current)
-                        | select(.created_at >= $cutoff)
-                        | select(.event == "repository_dispatch" or .event == "schedule")
-                        | select(.status == "queued" or .status == "in_progress" or .conclusion == "success")]
-                      | length
-                    '
-                )"
-                if [ "${existing_count}" -gt 0 ]; then
-                  echo "Aktif veya basarili snapshot zinciri bulundu; watchdog atlandi."
+              *)
+                if [ "${day_of_week}" -gt 5 ] || (( now_minutes < start_minutes || now_minutes > last_minutes )); then
+                  echo "Gecikmis schedule ${now_tr} saatinde pencere disinda; tarama atlandi."
                   run_pipeline=false
-                  continue_chain=false
+                else
+                  run_mode=intraday
+                  continue_chain=true
                 fi
                 ;;
             esac

@@ -2,16 +2,6 @@ name: StockMarketLab Sinyal Botu
 run-name: "StockMarketLab Sinyal Botu - ${{ github.event.schedule || github.event.action || github.event_name }}"
 
 on:
-  schedule:
-    # Hafta ici Türkiye saatiyle 08:30'da bagimsiz acilis oncesi taramasi.
-    - cron: "30 5 * * 1-5"
-    # Hafta ici Türkiye saatiyle 11:00'da zincirin ilk taramasini baslatir.
-    - cron: "0 8 * * 1-5"
-    # 11:00 olayi kacarsa 11:15 ve 11:30'da kontrollu watchdog devreye girer.
-    - cron: "15,30 8 * * 1-5"
-  repository_dispatch:
-    types:
-      - taramabot-continuous-scan
   workflow_dispatch:
     inputs:
       mode:
