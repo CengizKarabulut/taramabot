@@ -1,0 +1,65 @@
+name: StockMarketLab Recovery Heartbeat
+run-name: "Recovery Heartbeat · ${{ github.event.schedule || github.event_name }}"
+
+on:
+  schedule:
+    - cron: "*/5 10-19 * * 1-5"
+      timezone: "Europe/Istanbul"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: stockmarketlab-recovery-heartbeat
+  cancel-in-progress: true
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Recover missing snapshot scan
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_WORKFLOW: cached_continuous_scan.yml
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          dow="$(TZ=Europe/Istanbul date +%u)"
+          hour="$(TZ=Europe/Istanbul date +%H)"
+          minute="$(TZ=Europe/Istanbul date +%M)"
+          now_min=$((10#${hour} * 60 + 10#${minute}))
+
+          if [ "${dow}" -gt 5 ]; then
+            echo "Hafta sonu; işlem yok."
+            exit 0
+          fi
+
+          cutoff="$(date -u -d '20 minutes ago' +%Y-%m-%dT%H:%M:%SZ)"
+          recent_count="$(
+            gh api "repos/${REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/runs?per_page=30" |
+              jq --arg cutoff "${cutoff}" '[.workflow_runs[] | select(.created_at >= $cutoff) | select(.status == "queued" or .status == "in_progress" or .conclusion == "success")] | length'
+          )"
+
+          if (( now_min >= 630 && now_min <= 1095 )); then
+            if [ "${recent_count}" -eq 0 ]; then
+              echo "Son 20 dakikada snapshot taraması yok; intraday_once kurtarma başlatılıyor."
+              gh workflow run "${TARGET_WORKFLOW}" --repo "${REPOSITORY}" --ref main -f mode=intraday_once -f send_telegram=true
+            else
+              echo "Yakın zamanda snapshot taraması var; yeni koşu yok."
+            fi
+            exit 0
+          fi
+
+          if (( now_min >= 1140 && now_min <= 1170 )); then
+            if [ "${recent_count}" -eq 0 ]; then
+              echo "19:00 kapanış yenilemesi bulunamadı; full_refresh kurtarma başlatılıyor."
+              gh workflow run "${TARGET_WORKFLOW}" --repo "${REPOSITORY}" --ref main -f mode=full_refresh -f send_telegram=false
+            else
+              echo "Kapanış yenilemesine ait yakın koşu var."
+            fi
+          fi
