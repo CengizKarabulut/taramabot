@@ -1,21 +1,7 @@
 name: StockMarketLab Scheduler Watchdog
-run-name: "Snapshot Watchdog · ${{ github.event.schedule || inputs.recovery_mode || github.event_name }}"
+run-name: "Snapshot Watchdog · ${{ inputs.recovery_mode || github.event_name }}"
 
 on:
-  schedule:
-    # Ana turlardan 10 dakika sonra kontrol (Europe/Istanbul).
-    # 10:30 ve 10:45 -> 10:40 ve 10:55
-    - cron: "40,55 10 * * 1-5"
-      timezone: "Europe/Istanbul"
-    # 11:00-17:45 -> 11:10-17:55
-    - cron: "10,25,40,55 11-17 * * 1-5"
-      timezone: "Europe/Istanbul"
-    # 18:00 ve 18:15 -> 18:10 ve 18:25
-    - cron: "10,25 18 * * 1-5"
-      timezone: "Europe/Istanbul"
-    # 19:00 kapanis tam yenilemesi -> 19:10
-    - cron: "10 19 * * 1-5"
-      timezone: "Europe/Istanbul"
   workflow_dispatch:
     inputs:
       recovery_mode:
@@ -33,7 +19,7 @@ permissions:
 
 concurrency:
   group: stockmarketlab-scheduler-watchdog
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   watchdog:
@@ -41,56 +27,31 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Son ana taramayi kontrol et ve gerekiyorsa kurtar
+      - name: Manuel recovery testi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          EVENT_NAME: ${{ github.event_name }}
-          SCHEDULE_EXPRESSION: ${{ github.event.schedule }}
           MANUAL_MODE: ${{ inputs.recovery_mode }}
           TARGET_WORKFLOW: cached_continuous_scan.yml
         shell: bash
         run: |
           set -euo pipefail
 
-          mode="intraday"
-          if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
-            mode="${MANUAL_MODE:-intraday}"
-          elif [ "${SCHEDULE_EXPRESSION}" = "10 19 * * 1-5" ]; then
-            mode="full_refresh"
-          fi
-
-          cutoff="$(date -u -d '12 minutes ago' +%Y-%m-%dT%H:%M:%SZ)"
-          existing_count="$(
-            gh api "repos/${REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/runs?per_page=30" |
-              jq --arg cutoff "${cutoff}" '
-                [.workflow_runs[]
-                  | select(.created_at >= $cutoff)
-                  | select(
-                      .status == "queued"
-                      or .status == "in_progress"
-                      or .conclusion == "success"
-                    )]
-                | length
-              '
-          )"
-
-          echo "Son 12 dakikadaki aktif/basarili ana tarama sayisi: ${existing_count}"
-
-          if [ "${existing_count}" -gt 0 ]; then
-            echo "Ana tarama mevcut; watchdog yeni kosu baslatmadi."
-            exit 0
-          fi
-
-          if [ "${mode}" = "full_refresh" ]; then
-            echo "19:00 tam yenilemesi bulunamadi; full_refresh kurtarma kosusu baslatiliyor."
+          if [ "${MANUAL_MODE:-intraday}" = "full_refresh" ]; then
             gh workflow run "${TARGET_WORKFLOW}" \
               --repo "${REPOSITORY}" \
               --ref main \
               -f mode=full_refresh \
               -f send_telegram=false
           else
-            echo "Beklenen 15 dakikalik tarama bulunamadi; intraday_once kurtarma kosusu baslatiliyor."
+            now_tr="$(TZ=Europe/Istanbul date +%H:%M)"
+            hour="${now_tr%%:*}"
+            minute="${now_tr##*:}"
+            now_min=$((10#${hour} * 60 + 10#${minute}))
+            if (( now_min < 630 || now_min > 1095 )); then
+              echo "Intraday recovery 10:30-18:15 disinda engellendi: ${now_tr}"
+              exit 0
+            fi
             gh workflow run "${TARGET_WORKFLOW}" \
               --repo "${REPOSITORY}" \
               --ref main \
