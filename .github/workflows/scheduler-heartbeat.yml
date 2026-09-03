@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "*/5 10-19 * * 1-5"
       timezone: "Europe/Istanbul"
+  push:
+    paths:
+      - ".github/heartbeat-bootstrap"
   workflow_dispatch:
 
 permissions:
@@ -47,8 +50,8 @@ jobs:
 
           if (( now_min >= 630 && now_min <= 1095 )); then
             if [ "${recent_count}" -eq 0 ]; then
-              echo "Son 20 dakikada snapshot taraması yok; intraday_once kurtarma başlatılıyor."
-              gh workflow run "${TARGET_WORKFLOW}" --repo "${REPOSITORY}" --ref main -f mode=intraday_once -f send_telegram=true
+              echo "Son 20 dakikada snapshot taraması yok; intraday_chain kurtarma başlatılıyor."
+              gh workflow run "${TARGET_WORKFLOW}" --repo "${REPOSITORY}" --ref main -f mode=intraday_chain -f send_telegram=true
             else
               echo "Yakın zamanda snapshot taraması var; yeni koşu yok."
             fi
