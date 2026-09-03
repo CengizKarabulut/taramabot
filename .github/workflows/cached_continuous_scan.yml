@@ -78,6 +78,8 @@ jobs:
           now_minutes="$(to_minutes "${now_tr}")"
           start_minutes="$(to_minutes "10:30")"
           last_minutes="$(to_minutes "18:15")"
+          full_start_minutes="$(to_minutes "18:55")"
+          full_end_minutes="$(to_minutes "19:45")"
 
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
             case "${MANUAL_MODE}" in
@@ -107,6 +109,10 @@ jobs:
             case "${SCHEDULE_EXPRESSION}" in
               "0 16 * * 1-5")
                 run_mode=full
+                if [ "${day_of_week}" -gt 5 ] || (( now_minutes < full_start_minutes || now_minutes > full_end_minutes )); then
+                  echo "Gecikmis 19:00 full schedule ${now_tr} saatinde izinli 18:55-19:45 penceresi disinda; yenileme atlandi."
+                  run_pipeline=false
+                fi
                 ;;
               *)
                 if [ "${day_of_week}" -gt 5 ] || (( now_minutes < start_minutes || now_minutes > last_minutes )); then
