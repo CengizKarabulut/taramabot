@@ -1,0 +1,89 @@
+{
+  "dataset": "historical-daily-latest",
+  "period": "1D",
+  "method": "fixed current-vs-proposed; no parameter search on OOS",
+  "source_run": 33890376063,
+  "pullback": {
+    "entry_rule": "v6.4.4 PULLBACK + RVOL<=2.0 + close>=95% of rolling 20-bar high",
+    "candidate_events": 347,
+    "current_exit_oos": {
+      "trades": 47,
+      "win_rate": 70.2128,
+      "wilson_win_rate": 56.0221,
+      "profit_factor": 2.4187,
+      "expectancy_r": 0.4008,
+      "max_drawdown_r": 3.4000
+    },
+    "proposed_exit_oos": {
+      "trades": 47,
+      "win_rate": 74.4681,
+      "wilson_win_rate": 60.4916,
+      "profit_factor": 2.6018,
+      "expectancy_r": 0.3843,
+      "max_drawdown_r": 3.5200,
+      "profile": {
+        "stop_mode": "hybrid_wide",
+        "atr_mult": 1.25,
+        "atr_buffer": 0.25,
+        "ema_period": 21,
+        "swing_lookback": 8,
+        "min_risk_atr": 0.8,
+        "max_risk_atr": 2.6,
+        "tp1_r": 0.8,
+        "tp2_r": 1.5,
+        "tp3_r": 2.4,
+        "trailing_atr_mult": 1.8
+      }
+    },
+    "validation2_current": {
+      "trades": 50,
+      "win_rate": 48.0,
+      "profit_factor": 1.0820,
+      "expectancy_r": 0.0426,
+      "max_drawdown_r": 8.5863
+    },
+    "validation2_proposed": {
+      "trades": 50,
+      "win_rate": 56.0,
+      "profit_factor": 1.1865,
+      "expectancy_r": 0.0821,
+      "max_drawdown_r": 4.3781
+    },
+    "decision": "PROMOTE_PROPOSED_EXIT",
+    "reason": "User objective prioritizes reliable profitable-trade rate; proposed profile also improves OOS PF/Wilson and later validation robustness while expectancy stays strongly positive."
+  },
+  "trend": {
+    "entry_rule": "unchanged v6.4.4 TREND DEVAMI baseline",
+    "candidate_events": 1328,
+    "current_exit_oos": {
+      "trades": 157,
+      "win_rate": 49.0446,
+      "wilson_win_rate": 41.3415,
+      "profit_factor": 1.1142,
+      "expectancy_r": 0.0582,
+      "max_drawdown_r": 11.4119
+    },
+    "proposed_exit_oos": {
+      "trades": 140,
+      "win_rate": 54.2857,
+      "wilson_win_rate": 46.0294,
+      "profit_factor": 1.0866,
+      "expectancy_r": 0.0394,
+      "max_drawdown_r": 8.6264,
+      "profile": {
+        "stop_mode": "swing",
+        "atr_mult": 1.25,
+        "tp1_r": 0.8,
+        "tp2_r": 1.5,
+        "tp3_r": 2.4,
+        "trailing_atr_mult": 2.2
+      }
+    },
+    "decision": "KEEP_CURRENT_EXIT",
+    "reason": "Proposed profile raises win-rate but falls below the PF>=1.10 quality floor and reduces expectancy in final OOS."
+  },
+  "breakout": {
+    "decision": "KEEP_CURRENT_ENTRY_AND_EXIT",
+    "reason": "1.75 ATR entry-distance candidate remains under-sampled in later validation; no exit profile was promoted."
+  }
+}
