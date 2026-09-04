@@ -1,0 +1,5 @@
+bootstrap 2026-09-04T16:27:00+03:00
+scope=full-bist
+period=1D
+strategies=9
+warmup=240
