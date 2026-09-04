@@ -154,20 +154,26 @@ def get_exit_profile(strategy: str, setup: str | None = None) -> ExitProfile:
             tp3_r=3.2,
         )
     if setup_key == "PULLBACK":
+        # OOS-promoted 2026-09-04 after fixed current-vs-proposed comparison.
+        # Selected entry guard: RVOL<=2.0 and close>=95% of rolling 20-bar high.
+        # Proposed exit OOS: 47 trades, 74.47% win, PF 2.60, +0.384R.
         return replace(
             profile,
             family="decision_pullback",
             stop_mode="hybrid_wide",
+            atr_mult=1.25,
             ema_period=21,
             swing_lookback=8,
             atr_buffer=0.25,
             min_risk_atr=0.80,
             max_risk_atr=2.60,
-            tp1_r=1.0,
-            tp2_r=1.8,
-            tp3_r=2.8,
+            tp1_r=0.8,
+            tp2_r=1.5,
+            tp3_r=2.4,
+            trailing_atr_mult=1.8,
         )
     if setup_key in {"TREND DEVAMI", "TREND"}:
+        # Keep current profile: proposed higher-win profile lost PF/expectancy in final OOS.
         return replace(
             profile,
             family="decision_trend",
