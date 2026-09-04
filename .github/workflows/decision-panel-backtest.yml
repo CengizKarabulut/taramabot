@@ -1,0 +1,88 @@
+name: Decision Panel Historical Backtest
+run-name: "Karar Paneli v6.4.4 · Full BIST · 1D"
+
+on:
+  push:
+    paths:
+      - ".github/decision-panel-backtest-bootstrap"
+  workflow_dispatch:
+    inputs:
+      min_score:
+        description: "Karar Paneli minimum puan"
+        required: true
+        default: "75"
+        type: string
+      max_symbols:
+        description: "0=tüm BIST"
+        required: true
+        default: "0"
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: decision-panel-historical-backtest
+  cancel-in-progress: true
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      MIN_SCORE: ${{ github.event_name == 'workflow_dispatch' && inputs.min_score || '75' }}
+      MAX_SYMBOLS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_symbols || '0' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+      - name: Download latest real market snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/market-snapshot
+          artifact_id="$(
+            gh api "repos/${REPOSITORY}/actions/artifacts?name=market-data-latest&per_page=100" |
+              jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty'
+          )"
+          test -n "${artifact_id}"
+          echo "market-data-latest artifact id: ${artifact_id}"
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/market-data.zip
+          unzip -q -o /tmp/market-data.zip -d /tmp/market-snapshot
+          if [ -f /tmp/market-snapshot/data/market_data.sqlite ]; then
+            cp /tmp/market-snapshot/data/market_data.sqlite data/market_data.sqlite
+          else
+            cp /tmp/market-snapshot/market_data.sqlite data/market_data.sqlite
+          fi
+          test -s data/market_data.sqlite
+      - name: Compile exact Pine replay
+        run: python -m py_compile historical_decision_panel_v644.py
+      - name: Replay Karar Paneli v6.4.4 over full BIST
+        run: |
+          python historical_decision_panel_v644.py \
+            --db data/market_data.sqlite \
+            --min-score "${MIN_SCORE}" \
+            --max-symbols "${MAX_SYMBOLS}" \
+            --output-dir reports/decision_panel_backtest
+      - name: Show metrics
+        if: always()
+        run: |
+          test ! -f reports/decision_panel_backtest/decision_panel_v644_metrics.json || cat reports/decision_panel_backtest/decision_panel_v644_metrics.json
+      - name: Upload Karar Paneli result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: decision-panel-v644-${{ github.run_id }}
+          path: reports/decision_panel_backtest/
+          if-no-files-found: warn
+          retention-days: 30
