@@ -32,7 +32,7 @@ class DecisionPanelV645Tests(unittest.TestCase):
         )
 
     @staticmethod
-    def fake_base(frame: pd.DataFrame) -> pd.DataFrame:
+    def fake_base(frame: pd.DataFrame, **_kwargs) -> pd.DataFrame:
         result = pd.DataFrame(index=frame.index)
         result["score"] = 80
         result["adx"] = 30.0
