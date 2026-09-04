@@ -1,8 +1,8 @@
 """Strategy-specific exit profiles.
 
-Profiles start conservatively and are promoted only after walk-forward/OOS
-validation. Keeping them separate prevents one ATR/TP recipe from being forced
-onto every signal family.
+Profiles are promoted only after chronological walk-forward/OOS validation and
+explicit cost sensitivity. Keeping them separate prevents one ATR/TP recipe
+from being forced onto every signal family.
 """
 
 from __future__ import annotations
@@ -33,15 +33,15 @@ class ExitProfile:
 
 
 BASE_PROFILES: Dict[str, ExitProfile] = {
-    # OOS-promoted 2026-09-04. S-M-2: 54 OOS trades, 66.67% win, PF 2.18.
+    # OOS + moderate-cost promoted. S-M-2: OOS PF 2.18; net PF 1.97.
     "smi_macd": ExitProfile(
         key="smi_macd", family="early_reversal", stop_mode="swing",
-        atr_mult=1.10, atr_buffer=0.25, swing_lookback=6,
+        atr_mult=1.10, atr_buffer=0.25, ema_period=21, swing_lookback=6,
         min_risk_atr=0.75, max_risk_atr=2.25,
         tp1_r=0.8, tp2_r=1.5, tp3_r=2.4,
         tp_allocations=(0.35, 0.30, 0.20), trailing_atr_mult=1.8,
     ),
-    # OOS-promoted 2026-09-04. S-M-V-2: 208 OOS trades, 63.46% win, PF 1.56.
+    # OOS + moderate-cost promoted. S-M-V-2: OOS PF 1.56; net PF 1.41.
     "smi_macd_full": ExitProfile(
         key="smi_macd_full", family="trend_reversal", stop_mode="swing",
         atr_mult=1.25, atr_buffer=0.25, ema_period=21, swing_lookback=7,
@@ -50,17 +50,16 @@ BASE_PROFILES: Dict[str, ExitProfile] = {
         tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=2.2,
     ),
 
-    # Fast momentum: tighter invalidation and earlier partial realization.
+    # OOS + moderate-cost promoted. R-V-1: OOS PF 1.37; net PF 1.21.
     "rsi": ExitProfile(
-        key="rsi", family="fast_momentum", stop_mode="signal_low",
-        atr_mult=1.20, atr_buffer=0.15, swing_lookback=4,
+        key="rsi", family="fast_momentum", stop_mode="hybrid_wide",
+        atr_mult=0.95, atr_buffer=0.15, ema_period=21, swing_lookback=4,
         min_risk_atr=0.65, max_risk_atr=1.90,
         tp1_r=0.8, tp2_r=1.5, tp3_r=2.4,
-        tp_allocations=(0.35, 0.30, 0.20), trailing_atr_mult=1.7,
+        tp_allocations=(0.35, 0.30, 0.20), trailing_atr_mult=1.5,
         max_hold_bars=55,
     ),
-    # OOS-promoted 2026-09-04. R-M-V-1: 1,155 OOS trades,
-    # 61.99% win, PF 1.44, +0.165R expectancy.
+    # OOS + moderate-cost promoted. R-M-V-1: OOS PF 1.44; net PF 1.29.
     "rsi_macd": ExitProfile(
         key="rsi_macd", family="confirmed_momentum", stop_mode="swing",
         atr_mult=1.10, atr_buffer=0.20, ema_period=13, swing_lookback=6,
@@ -69,7 +68,8 @@ BASE_PROFILES: Dict[str, ExitProfile] = {
         tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=1.9,
     ),
 
-    # Trend continuation family.
+    # E-V-1 optimized candidate stayed net-positive but moderate-cost PF=1.14,
+    # below the strict 1.20 promotion gate. Keep the pre-research production profile.
     "ema": ExitProfile(
         key="ema", family="trend", stop_mode="hybrid_tight",
         atr_mult=1.50, atr_buffer=0.20, ema_period=21, swing_lookback=8,
@@ -77,13 +77,16 @@ BASE_PROFILES: Dict[str, ExitProfile] = {
         tp1_r=1.0, tp2_r=2.0, tp3_r=3.2,
         tp_allocations=(0.25, 0.30, 0.20), trailing_atr_mult=2.1,
     ),
+    # OOS + moderate-cost promoted. A-M-V-1: OOS PF 1.32; net PF 1.21.
     "new_scan": ExitProfile(
-        key="new_scan", family="trend", stop_mode="hybrid_tight",
-        atr_mult=1.50, atr_buffer=0.20, ema_period=21, swing_lookback=8,
+        key="new_scan", family="trend", stop_mode="swing",
+        atr_mult=1.25, atr_buffer=0.20, ema_period=21, swing_lookback=8,
         min_risk_atr=0.80, max_risk_atr=2.60,
-        tp1_r=1.0, tp2_r=2.0, tp3_r=3.0,
-        tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=2.0,
+        tp1_r=0.8, tp2_r=1.5, tp3_r=2.4,
+        tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=2.2,
     ),
+    # M-1 optimized candidate stayed net-positive but moderate-cost PF=1.18,
+    # below the strict 1.20 promotion gate. Keep the pre-research production profile.
     "macd_cross": ExitProfile(
         key="macd_cross", family="trend_momentum", stop_mode="hybrid_tight",
         atr_mult=1.40, atr_buffer=0.20, ema_period=21, swing_lookback=7,
@@ -91,19 +94,21 @@ BASE_PROFILES: Dict[str, ExitProfile] = {
         tp1_r=1.0, tp2_r=1.8, tp3_r=2.8,
         tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=1.9,
     ),
+    # OOS + moderate-cost promoted. S-M-1: OOS PF 1.35; net PF 1.22.
     "h8": ExitProfile(
-        key="h8", family="momentum_continuation", stop_mode="hybrid_tight",
-        atr_mult=1.35, atr_buffer=0.20, ema_period=13, swing_lookback=6,
+        key="h8", family="momentum_continuation", stop_mode="swing",
+        atr_mult=1.10, atr_buffer=0.20, ema_period=13, swing_lookback=6,
         min_risk_atr=0.70, max_risk_atr=2.20,
-        tp1_r=1.0, tp2_r=1.8, tp3_r=2.8,
-        tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=1.9,
+        tp1_r=0.8, tp2_r=1.5, tp3_r=2.4,
+        tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=1.7,
     ),
+    # OOS + moderate-cost promoted. S-M-V-1: OOS PF 1.34; net PF 1.22.
     "i9": ExitProfile(
-        key="i9", family="confirmed_momentum", stop_mode="hybrid_tight",
-        atr_mult=1.45, atr_buffer=0.20, ema_period=21, swing_lookback=7,
+        key="i9", family="confirmed_momentum", stop_mode="hybrid_wide",
+        atr_mult=1.20, atr_buffer=0.20, ema_period=21, swing_lookback=7,
         min_risk_atr=0.75, max_risk_atr=2.40,
-        tp1_r=1.0, tp2_r=2.0, tp3_r=3.0,
-        tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=2.0,
+        tp1_r=0.8, tp2_r=1.5, tp3_r=2.4,
+        tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=2.2,
     ),
 
     # Decision panel defaults; setup-specific overrides are applied below.
@@ -142,6 +147,8 @@ def get_exit_profile(strategy: str, setup: str | None = None) -> ExitProfile:
 
     setup_key = str(setup or "").strip().upper()
     if setup_key == "BREAKOUT":
+        # Cost study: final untouched OOS had no completed trades; retain profile
+        # but do not label this setup cost-validated.
         return replace(
             profile,
             family="decision_breakout",
@@ -156,9 +163,8 @@ def get_exit_profile(strategy: str, setup: str | None = None) -> ExitProfile:
             tp3_r=3.2,
         )
     if setup_key == "PULLBACK":
-        # OOS-promoted 2026-09-04 after fixed current-vs-proposed comparison.
+        # OOS + cost validated: 47 OOS trades, gross PF 2.60; moderate-cost PF 2.29.
         # Selected entry guard: RVOL<=2.0 and close>=95% of rolling 20-bar high.
-        # Proposed exit OOS: 47 trades, 74.47% win, PF 2.60, +0.384R.
         return replace(
             profile,
             family="decision_pullback",
@@ -175,7 +181,9 @@ def get_exit_profile(strategy: str, setup: str | None = None) -> ExitProfile:
             trailing_atr_mult=1.8,
         )
     if setup_key in {"TREND DEVAMI", "TREND"}:
-        # Keep current profile: proposed higher-win profile lost PF/expectancy in final OOS.
+        # Moderate-cost OOS PF fell below 1.0 with negative expectancy. Preserve
+        # historical profile for compatibility, but callers/UI should mark the
+        # setup as research/caution rather than cost-validated.
         return replace(
             profile,
             family="decision_trend",
