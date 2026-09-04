@@ -1,9 +1,8 @@
-"""Strategy-specific baseline exit profiles.
+"""Strategy-specific exit profiles.
 
-These are intentionally conservative starting profiles, not optimized results.
-The optimizer/backtester can override every numeric parameter later.  Keeping
-profiles separate prevents one ATR/TP recipe from being forced onto every
-signal family.
+Profiles start conservatively and are promoted only after walk-forward/OOS
+validation. Keeping them separate prevents one ATR/TP recipe from being forced
+onto every signal family.
 """
 
 from __future__ import annotations
@@ -34,20 +33,21 @@ class ExitProfile:
 
 
 BASE_PROFILES: Dict[str, ExitProfile] = {
-    # Early/reversal family: structure matters more than a generic moving average.
+    # OOS-promoted 2026-09-04. S-M-2: 54 OOS trades, 66.67% win, PF 2.18.
     "smi_macd": ExitProfile(
         key="smi_macd", family="early_reversal", stop_mode="swing",
-        atr_mult=1.35, atr_buffer=0.25, swing_lookback=6,
+        atr_mult=1.10, atr_buffer=0.25, swing_lookback=6,
         min_risk_atr=0.75, max_risk_atr=2.25,
-        tp1_r=0.9, tp2_r=1.6, tp3_r=2.6,
+        tp1_r=0.8, tp2_r=1.5, tp3_r=2.4,
         tp_allocations=(0.35, 0.30, 0.20), trailing_atr_mult=1.8,
     ),
+    # OOS-promoted 2026-09-04. S-M-V-2: 208 OOS trades, 63.46% win, PF 1.56.
     "smi_macd_full": ExitProfile(
-        key="smi_macd_full", family="trend_reversal", stop_mode="hybrid_wide",
-        atr_mult=1.50, atr_buffer=0.25, ema_period=21, swing_lookback=7,
+        key="smi_macd_full", family="trend_reversal", stop_mode="swing",
+        atr_mult=1.25, atr_buffer=0.25, ema_period=21, swing_lookback=7,
         min_risk_atr=0.80, max_risk_atr=2.50,
-        tp1_r=1.0, tp2_r=2.0, tp3_r=3.0,
-        tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=2.0,
+        tp1_r=0.8, tp2_r=1.5, tp3_r=2.4,
+        tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=2.2,
     ),
 
     # Fast momentum: tighter invalidation and earlier partial realization.
