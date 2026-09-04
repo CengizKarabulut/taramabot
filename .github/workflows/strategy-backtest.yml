@@ -1,0 +1,103 @@
+name: Strategy Historical Backtest
+run-name: "Backtest · ${{ inputs.strategy }} · ${{ inputs.period }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      strategy:
+        description: "Tarama stratejisi"
+        required: true
+        type: choice
+        default: rsi_macd
+        options:
+          - macd_cross
+          - h8
+          - i9
+          - ema
+          - rsi_macd
+          - new_scan
+          - smi_macd_full
+          - smi_macd
+          - rsi
+      period:
+        description: "İlk doğrulama için 1D önerilir"
+        required: true
+        default: "1D"
+        type: choice
+        options: ["1D"]
+      max_symbols:
+        description: "0=tüm BIST, ilk test için 50 önerilir"
+        required: true
+        default: "50"
+        type: string
+      warmup:
+        description: "Sinyal öncesi minimum geçmiş bar"
+        required: true
+        default: "240"
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: strategy-backtest-${{ inputs.strategy }}-${{ inputs.period }}
+  cancel-in-progress: true
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+      - name: Download latest market snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/market-snapshot
+          artifact_id="$(
+            gh api "repos/${REPOSITORY}/actions/artifacts?name=market-data-latest&per_page=100" |
+              jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty'
+          )"
+          if [ -z "${artifact_id}" ]; then
+            echo "market-data-latest artifact bulunamadı" >&2
+            exit 1
+          fi
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/market-data.zip
+          unzip -q -o /tmp/market-data.zip -d /tmp/market-snapshot
+          if [ -f /tmp/market-snapshot/data/market_data.sqlite ]; then
+            cp /tmp/market-snapshot/data/market_data.sqlite data/market_data.sqlite
+          elif [ -f /tmp/market-snapshot/market_data.sqlite ]; then
+            cp /tmp/market-snapshot/market_data.sqlite data/market_data.sqlite
+          else
+            echo "market_data.sqlite artifact içinde bulunamadı" >&2
+            exit 1
+          fi
+          test -s data/market_data.sqlite
+      - name: Historical replay
+        run: |
+          python historical_replay.py \
+            --db data/market_data.sqlite \
+            --strategy "${{ inputs.strategy }}" \
+            --period "${{ inputs.period }}" \
+            --max-symbols "${{ inputs.max_symbols }}" \
+            --warmup "${{ inputs.warmup }}" \
+            --output-dir reports/backtest
+      - name: Upload backtest result
+        uses: actions/upload-artifact@v4
+        with:
+          name: backtest-${{ inputs.strategy }}-${{ inputs.period }}-${{ github.run_id }}
+          path: reports/backtest/
+          if-no-files-found: error
+          retention-days: 30
