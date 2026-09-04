@@ -1,0 +1,444 @@
+//@version=6
+indicator("BIST 10 Strateji Durum Paneli v1.1", overlay=true, max_bars_back=2500)
+
+// Karar Paneli'nden bağımsız 10-sistem görünümü.
+// 9 klasik tarama + Karar Paneli. Teknik bileşen isimleri kullanıcı arayüzünde gizlidir.
+
+// ============================================================================
+// 1. GENEL
+// ============================================================================
+onlyClosedBar = input.bool(true, "Sadece kapanmış mumda teyit et", group="Genel")
+requireDaily = input.bool(true, "1G grafik zorunlu", group="Genel")
+showPanel = input.bool(true, "Strateji panelini göster", group="Panel")
+panelPosOpt = input.string("Sağ Üst", "Panel konumu", options=["Sağ Üst", "Sağ Orta", "Sol Üst", "Sol Orta"], group="Panel")
+panelSizeOpt = input.string("Küçük", "Panel boyutu", options=["Mini", "Küçük", "Normal"], group="Panel")
+showMarkers = input.bool(true, "Yeni uyum işaretlerini göster", group="Görsel")
+
+panelPosition = panelPosOpt == "Sol Üst" ? position.top_left : panelPosOpt == "Sol Orta" ? position.middle_left : panelPosOpt == "Sağ Orta" ? position.middle_right : position.top_right
+panelTextSize = panelSizeOpt == "Mini" ? size.tiny : panelSizeOpt == "Normal" ? size.normal : size.small
+isDaily = timeframe.isdaily
+closedGate = not onlyClosedBar or barstate.isconfirmed
+timeframeOk = not requireDaily or isDaily
+
+// ============================================================================
+// 2. ORTAK HESAPLAMALAR
+// ============================================================================
+f_rma(float source, int length) =>
+    ta.rma(source, length)
+
+f_rsi(float source, int length) =>
+    float change = ta.change(source)
+    float gain = math.max(change, 0.0)
+    float loss = math.max(-change, 0.0)
+    float avgGain = f_rma(gain, length)
+    float avgLoss = f_rma(loss, length)
+    avgLoss == 0 ? 100.0 : 100.0 - (100.0 / (1.0 + avgGain / avgLoss))
+
+f_double_smooth(float source, int length) =>
+    ta.ema(ta.ema(source, length), length)
+
+sma5 = ta.sma(close, 5)
+sma8 = ta.sma(close, 8)
+sma20 = ta.sma(close, 20)
+sma21 = ta.sma(close, 21)
+sma50 = ta.sma(close, 50)
+sma55 = ta.sma(close, 55)
+sma200 = ta.sma(close, 200)
+
+ema5 = ta.ema(close, 5)
+ema8 = ta.ema(close, 8)
+ema13 = ta.ema(close, 13)
+ema21 = ta.ema(close, 21)
+ema55 = ta.ema(close, 55)
+ema200 = ta.ema(close, 200)
+
+[coreA, coreB, coreHist] = ta.macd(close, 12, 26, 9)
+coreCrossOrRise = (coreA[1] <= coreB[1] and coreA > coreB) or (coreA > coreB and coreA > coreA[1])
+
+rangeHigh = ta.highest(high, 10)
+rangeLow = ta.lowest(low, 10)
+rangeWidth = rangeHigh - rangeLow
+rangeRelative = close - (rangeHigh + rangeLow) / 2.0
+oscMain = rangeWidth != 0 ? 200.0 * f_double_smooth(rangeRelative, 3) / f_double_smooth(rangeWidth, 3) : 0.0
+oscRef = ta.ema(oscMain, 3)
+oscCrossOrRise = (oscMain[1] <= oscRef[1] and oscMain > oscRef) or (oscMain > oscRef and oscMain > oscMain[1])
+
+rsi7 = f_rsi(close, 7)
+rsi14 = f_rsi(close, 14)
+atr14 = ta.atr(14)
+
+vol10 = ta.sma(volume, 10)
+vol20 = ta.sma(volume, 20)
+volRatio10 = vol10 > 0 ? volume / vol10 : 0.0
+volRatio20 = vol20 > 0 ? volume / vol20 : 0.0
+
+prevClose = close[1]
+nearLimit = prevClose > 0 ? ((close - prevClose) / prevClose) * 100.0 >= 9.5 : false
+limitOk = not nearLimit
+
+erDirection = math.abs(close - close[10])
+erNoise = ta.sum(math.abs(ta.change(close)), 10)
+er = erNoise > 0 ? erDirection / erNoise : 0.0
+trendRegime = er >= 0.30
+softTrendRegime = er >= 0.22
+reversalRegime = er <= 0.35
+
+barRange = high - low
+mfMultiplier = barRange != 0 ? ((close - low) - (high - close)) / barRange : 0.0
+mfVolume = mfMultiplier * volume
+cmf20 = ta.sum(mfVolume, 20) / math.max(ta.sum(volume, 20), 1.0)
+directionalVolume = volume > vol20 * 1.5 and close > open and cmf20 > 0
+
+above50 = close > sma50
+above200 = close > sma200
+priorLow5 = ta.lowest(low[1], 5)
+reversalStructure = close > ema8 and close > open and close > close[1] and low >= priorLow5
+emaExtensionOk = (close - ema21 <= atr14 * 2.5) and rsi14 <= 75
+rsiHeatOk = rsi7 <= 85
+
+// ============================================================================
+// 3. 9 KLASİK TARAMA
+// ============================================================================
+smCore = oscCrossOrRise and oscMain < 0 and coreHist < 0 and coreHist > coreHist[1]
+smFullRaw = smCore and above200 and volume > vol20 * 1.5
+smEarlyRaw = smCore and not smFullRaw
+smEarly = timeframeOk and limitOk and smEarlyRaw and reversalRegime and reversalStructure and directionalVolume
+smFull = timeframeOk and limitOk and smFullRaw and directionalVolume
+
+rvCrossOrRise = (rsi7[1] <= 50 and rsi7 > 50) or (rsi7 > 50 and rsi7 > rsi7[1])
+rvRaw = rsi7 > 60 and rvCrossOrRise and volume > vol10 * 1.5
+rv = timeframeOk and limitOk and rvRaw and above50 and trendRegime and directionalVolume and rsiHeatOk
+
+amvRaw = volume > vol20 * 1.5 and close > sma5 and close > sma8 and close > sma21 and close > sma50 and close > sma55 and close > sma200 and coreA > 0 and coreCrossOrRise
+amv = timeframeOk and limitOk and amvRaw
+
+rmvRsi = ((rsi14[1] <= 50 and rsi14 > 50) or (rsi14 > 50 and rsi14 > rsi14[1])) and rsi14 < 70
+rmvRaw = rmvRsi and coreCrossOrRise and volume > vol20 * 1.5
+rmv = timeframeOk and limitOk and rmvRaw and above200 and trendRegime and directionalVolume
+
+evCond4 = (ema8[1] <= ema13[1] and ema8 > ema13) or (ema8 > ema13 and ema8 > ema8[1])
+evCond5 = (ema5[1] <= ema8[1] and ema5 > ema8) or (ema5 > ema8 and ema5 > ema5[1])
+evCond6 = (ema5[1] <= ema13[1] and ema5 > ema13) or (ema5 > ema13 and ema5 > ema5[1])
+evRaw = close > ema200 and close > ema55 and close > ema21 and evCond4 and evCond5 and evCond6 and volRatio20 > 1.5
+ev = timeframeOk and limitOk and evRaw and emaExtensionOk
+
+m1Raw = rsi14 > 30 and coreCrossOrRise and coreA > 0
+m1 = timeframeOk and limitOk and m1Raw and above50 and trendRegime and directionalVolume
+
+sm1Raw = oscCrossOrRise and oscMain > 0 and coreHist > 0 and coreHist > coreHist[1]
+sm1 = timeframeOk and limitOk and sm1Raw and above50 and trendRegime and directionalVolume
+
+smv1Raw = sm1Raw and above200 and volume > vol20 * 1.5
+smv1 = timeframeOk and limitOk and smv1Raw and softTrendRegime and directionalVolume
+
+// ============================================================================
+// 4. KARAR PANELİ v6.4.5 GİRİŞ KATMANI
+// ============================================================================
+kpSma20 = sma20
+kpSma50 = sma50
+kpSma200 = sma200
+kpSlope20 = (kpSma20 / kpSma20[5] - 1.0) * 100.0
+kpSlope50 = (kpSma50 / kpSma50[10] - 1.0) * 100.0
+kpSlope200 = (kpSma200 / kpSma200[20] - 1.0) * 100.0
+kpPrice20 = close > kpSma20
+kp20Above50 = kpSma20 > kpSma50
+kp50Above200 = kpSma50 > kpSma200
+kpSlope20Ok = kpSlope20 >= 0
+kpSlope50Ok = kpSlope50 >= 0
+kpSlope200Ok = kpSlope200 >= -0.5
+kpTrendCore = kpPrice20 and kp20Above50 and kp50Above200 and kpSlope20Ok and kpSlope50Ok and kpSlope200Ok
+
+kpE5Up = ema5 > ema5[1]
+kpE8Up = ema8 > ema8[1]
+kpE13Up = ema13 > ema13[1]
+kpShortAligned = ema5 > ema8 and ema8 > ema13
+kpShortSlope = kpE5Up and kpE8Up and kpE13Up
+kpShortCore = kpShortAligned and kpShortSlope
+kpShortRecovery = ta.crossover(ema5, ema8) or (ema5 > ema8 and kpE5Up and kpE8Up)
+
+kpHistPositive = coreHist > 0
+kpHistNegative = coreHist < 0
+kpHistRising = coreHist > coreHist[1]
+kpHistFalling = coreHist < coreHist[1]
+kpHistCrossUp = kpHistPositive and coreHist[1] <= 0
+kpHistBullStrong = kpHistPositive and kpHistRising
+kpHistBullWeak = kpHistPositive and kpHistFalling
+kpHistBearRecover = kpHistNegative and kpHistRising
+kpCoreAbove = coreA > coreB
+kpCorePositive = coreA > 0
+
+kpRsiTrend = rsi14 >= 55 and rsi14 <= 72
+kpRsiPullback = rsi14 >= 50 and rsi14 <= 72
+kpRsiIdeal = rsi14 >= 55 and rsi14 <= 68
+
+upMove = ta.change(high)
+downMove = -ta.change(low)
+plusDM = upMove > downMove and upMove > 0 ? upMove : 0.0
+minusDM = downMove > upMove and downMove > 0 ? downMove : 0.0
+tr = ta.tr(true)
+atrDI = ta.rma(tr, 14)
+plusDI = atrDI > 0 ? 100.0 * ta.rma(plusDM, 14) / atrDI : 0.0
+minusDI = atrDI > 0 ? 100.0 * ta.rma(minusDM, 14) / atrDI : 0.0
+dxDen = plusDI + minusDI
+kpAdx = dxDen > 0 ? ta.rma(100.0 * math.abs(plusDI - minusDI) / dxDen, 14) : 0.0
+kpStrength = kpAdx > 20 and plusDI > minusDI
+kpAtrPct = close > 0 ? atr14 / close * 100.0 : 0.0
+kpAtrOk = kpAtrPct >= 1.5 and kpAtrPct <= 7.0
+
+kpAvgVolPrior = ta.sma(volume, 10)[1]
+kpRvol = kpAvgVolPrior > 0 ? volume / kpAvgVolPrior : 0.0
+kpTurnover = close * volume
+kpAvgTurnPrior = ta.sma(kpTurnover, 20)[1]
+kpRelativeTurn = kpAvgTurnPrior > 0 ? kpTurnover / kpAvgTurnPrior : 0.0
+kpHigh52 = ta.highest(high, 252)
+kpHigh20 = ta.highest(high, 20)
+kpPrev20 = ta.highest(high, 20)[1]
+kpPct52 = kpHigh52 > 0 ? close / kpHigh52 * 100.0 : 0.0
+kpPct20 = kpHigh20 > 0 ? close / kpHigh20 * 100.0 : 0.0
+kpNear52 = kpPct52 >= 85
+kpNear20 = kpPct20 >= 95
+kpBreak20 = close > kpPrev20
+kpRequiredRvol = kpBreak20 ? 1.50 : 1.20
+kpParticipation = kpRvol > kpRequiredRvol
+
+kpDistPct = kpSma20 > 0 ? (close / kpSma20 - 1.0) * 100.0 : 0.0
+kpDistAtr = atr14 > 0 ? (close - kpSma20) / atr14 : 0.0
+kpDistance = kpDistPct >= 0 and kpDistPct <= 7 and kpDistAtr >= 0 and kpDistAtr <= 1.50
+
+kpBbBasis = ta.sma(close, 20)
+kpBbDev = 2.0 * ta.stdev(close, 20)
+kpBbUpper = kpBbBasis + kpBbDev
+kpBbLower = kpBbBasis - kpBbDev
+kpBbWidth = kpBbBasis > 0 ? (kpBbUpper - kpBbLower) / kpBbBasis * 100.0 : 0.0
+kpBbWidthAvg = ta.sma(kpBbWidth, 20)
+kpBbRising = kpBbWidth > kpBbWidth[1]
+kpBbAbove = kpBbWidth > kpBbWidthAvg
+kpCandleRange = high - low
+kpClv = kpCandleRange > 0 ? (close - low) / kpCandleRange : 0.5
+kpClvOk = kpClv >= 0.60
+kpUpperWick = high - math.max(open, close)
+kpUpperWickAtr = atr14 > 0 ? kpUpperWick / atr14 : 0.0
+kpUpperWickOk = kpUpperWickAtr <= 0.50
+
+kpPriorDist = atr14 > 0 ? (close - kpSma20) / atr14 : 0.0
+kpWasAbove = ta.highest(kpPriorDist[1], 10) >= 0.75
+kpTouched = low <= kpSma20 + 0.25 * atr14 and low >= kpSma20 - 0.50 * atr14
+kpPullbackSetup = not kpBreak20 and kpWasAbove and kpTouched and close > kpSma20 and kpDistAtr <= 1.0 and (close > open or kpClv >= 0.60)
+kpPullbackMomentum = kpCorePositive and kpRsiPullback and (kpHistBearRecover or kpHistCrossUp or kpHistBullStrong)
+kpPullbackShort = kpShortRecovery or kpShortCore
+kpBreakMomentum = kpCoreAbove and kpCorePositive and kpRsiTrend and (kpHistBullStrong or kpHistCrossUp)
+kpBreakQuality = kpBbRising and kpClvOk and kpUpperWickOk
+
+kpTrendScore = (kpPrice20 ? 4 : 0) + (kp20Above50 ? 4 : 0) + (kp50Above200 ? 4 : 0) + (kpSlope20Ok ? 3 : 0) + (kpSlope50Ok ? 3 : 0) + (kpSlope200 > 0 ? 2 : 0) + (kpShortAligned ? 3 : 0) + (kpShortSlope ? 2 : 0)
+kpHistScore = kpHistCrossUp ? 6 : kpHistBullStrong ? 6 : kpHistBearRecover ? 4 : kpHistBullWeak ? 2 : 0
+kpMomentumScore = (kpCorePositive ? 4 : 0) + (kpCoreAbove ? 5 : 0) + kpHistScore + (kpRsiIdeal ? 5 : 0)
+kpRvolScore = kpRvol >= 3 ? 18 : kpRvol >= 2 ? 16 : kpRvol >= 1.5 ? 12 : kpRvol >= 1.2 ? 7 : kpRvol >= 1 ? 3 : 0
+kpVolumeScore = kpRvolScore + (kpRelativeTurn >= 1 ? 2 : 0)
+kpAdxScore = kpAdx >= 40 ? 7 : kpAdx >= 30 ? 6 : kpAdx >= 25 ? 5 : kpAdx > 20 ? 3 : 0
+kpStrengthScore = kpAdxScore + (plusDI > minusDI ? 3 : 0)
+kpHighScore = kpPct52 >= 95 ? 7 : kpPct52 >= 90 ? 5 : kpPct52 >= 85 ? 3 : 0
+kpLocationScore = kpHighScore + (kpNear20 ? 3 : 0)
+kpDistPctScore = kpDistPct >= 0 and kpDistPct <= 3 ? 5 : kpDistPct > 3 and kpDistPct <= 5 ? 4 : kpDistPct > 5 and kpDistPct <= 7 ? 2 : 0
+kpDistAtrScore = kpDistAtr >= 0 and kpDistAtr < 1 ? 5 : kpDistAtr >= 1 and kpDistAtr <= 1.5 ? 4 : kpDistAtr > 1.5 and kpDistAtr <= 2 ? 2 : 0
+kpEntryScore = kpDistPctScore + kpDistAtrScore
+kpVolatilityScore = (kpBbRising ? 2 : 0) + (kpBbAbove ? 1 : 0) + (kpAtrOk ? 2 : 0)
+kpScore = kpTrendScore + kpMomentumScore + kpVolumeScore + kpStrengthScore + kpLocationScore + kpEntryScore + kpVolatilityScore
+kpHistory = bar_index >= 251 and not na(kpSma200[20]) and not na(kpHigh52)
+kpStructure = kpTrendCore and kpStrength and kpNear52
+kpCommon = kpHistory and kpStructure and kpParticipation and kpDistance and kpScore >= 75
+kpBreakout = kpCommon and kpBreak20 and kpShortCore and kpBreakMomentum and kpBreakQuality
+kpPullbackBase = kpHistory and kpStructure and kpParticipation and kpDistance and kpScore >= 75 and kpPullbackSetup and kpPullbackMomentum and kpPullbackShort
+kpPullbackGuard = kpRvol <= 2.0 and kpPct20 >= 95.0
+kpPullback = kpPullbackBase and kpPullbackGuard
+kpTrend = kpCommon and not kpBreak20 and not kpPullbackSetup and kpShortCore and kpBreakMomentum
+kpActive = timeframeOk and (kpBreakout or kpPullback or kpTrend)
+kpSetupText = kpBreakout ? "BRK" : kpPullback ? "PB" : kpTrend ? "TR" : ""
+kpValidationText = kpPullback ? "PB · DOĞRULANMIŞ" : kpTrend ? "TR · MALİYETTE ZAYIF" : kpBreakout ? "BRK · OOS ÖRNEK YOK" : ""
+
+// ============================================================================
+// 5. FRESH DURUMLARI
+// ============================================================================
+f_fresh(bool active) =>
+    active and not active[1]
+
+smEarlyNew = f_fresh(smEarly)
+smFullNew = f_fresh(smFull)
+rvNew = f_fresh(rv)
+amvNew = f_fresh(amv)
+rmvNew = f_fresh(rmv)
+evNew = f_fresh(ev)
+m1New = f_fresh(m1)
+sm1New = f_fresh(sm1)
+smv1New = f_fresh(smv1)
+kpBreakoutNew = f_fresh(kpBreakout)
+kpPullbackNew = f_fresh(kpPullback)
+kpTrendNew = f_fresh(kpTrend)
+kpNew = kpBreakoutNew or kpPullbackNew or kpTrendNew
+
+f_status(bool active, bool fresh) =>
+    string value = "BEKLE"
+    if not timeframeOk
+        value := "1G GEREK"
+    else if active and onlyClosedBar and not barstate.isconfirmed
+        value := "KAPANIŞ"
+    else if active and fresh
+        value := "YENİ"
+    else if active
+        value := "UYGUN"
+    value
+
+f_color(bool active, bool fresh) =>
+    color value = color.new(color.gray, 55)
+    if not timeframeOk
+        value := color.orange
+    else if active and onlyClosedBar and not barstate.isconfirmed
+        value := color.orange
+    else if active and fresh
+        value := color.green
+    else if active
+        value := color.blue
+    value
+
+// ============================================================================
+// 6. PRODUCTION-PARITY STOP / HEDEFLER
+// ============================================================================
+swing4 = ta.lowest(low, 4)
+swing6 = ta.lowest(low, 6)
+swing7 = ta.lowest(low, 7)
+swing8 = ta.lowest(low, 8)
+
+f_plan(float swingLow, float emaValue, int mode, float buffer, float minRiskAtr, float maxRiskAtr, float tp1R, float tp2R, float tp3R) =>
+    float entry = close
+    float swingStop = swingLow - atr14 * buffer
+    float signalStop = low - atr14 * buffer
+    float emaStop = emaValue - atr14 * buffer
+    float fallback = entry - atr14 * minRiskAtr
+    float raw = fallback
+    if mode == 1
+        raw := swingStop
+    else if mode == 2
+        float best = na
+        if swingStop < entry
+            best := swingStop
+        if signalStop < entry
+            best := na(best) ? signalStop : math.min(best, signalStop)
+        if emaStop < entry
+            best := na(best) ? emaStop : math.min(best, emaStop)
+        raw := na(best) ? fallback : best
+    else if mode == 3
+        float best = na
+        if swingStop < entry
+            best := swingStop
+        if signalStop < entry
+            best := na(best) ? signalStop : math.max(best, signalStop)
+        if emaStop < entry
+            best := na(best) ? emaStop : math.max(best, emaStop)
+        raw := na(best) ? fallback : best
+    float risk = math.max(entry - raw, 0.0)
+    float minRisk = atr14 * minRiskAtr
+    float maxRisk = atr14 * maxRiskAtr
+    if risk < minRisk
+        risk := minRisk
+        raw := entry - risk
+    else if risk > maxRisk
+        risk := maxRisk
+        raw := entry - risk
+    float tp1 = entry + risk * tp1R
+    float tp2 = entry + risk * tp2R
+    float tp3 = entry + risk * tp3R
+    [raw, tp1, tp2, tp3]
+
+// mode: 1=swing, 2=wide, 3=tight
+[smEarlyStop, smEarlyTp1, smEarlyTp2, smEarlyTp3] = f_plan(swing6, ema21, 1, 0.25, 0.75, 2.25, 0.8, 1.5, 2.4)
+[smFullStop, smFullTp1, smFullTp2, smFullTp3] = f_plan(swing7, ema21, 1, 0.25, 0.80, 2.50, 0.8, 1.5, 2.4)
+[rvStop, rvTp1, rvTp2, rvTp3] = f_plan(swing4, ema21, 2, 0.15, 0.65, 1.90, 0.8, 1.5, 2.4)
+[amvStop, amvTp1, amvTp2, amvTp3] = f_plan(swing8, ema21, 1, 0.20, 0.80, 2.60, 0.8, 1.5, 2.4)
+[rmvStop, rmvTp1, rmvTp2, rmvTp3] = f_plan(swing6, ema13, 1, 0.20, 0.70, 2.20, 0.8, 1.5, 2.4)
+// E-V-1 ve M-1: maliyet sonrası strict PF>=1.20 kapısını geçmeyen optimize adaylar promotion almadı; baseline korunur.
+[evStop, evTp1, evTp2, evTp3] = f_plan(swing8, ema21, 3, 0.20, 0.80, 2.50, 1.0, 2.0, 3.2)
+[m1Stop, m1Tp1, m1Tp2, m1Tp3] = f_plan(swing7, ema21, 3, 0.20, 0.75, 2.35, 1.0, 1.8, 2.8)
+[sm1Stop, sm1Tp1, sm1Tp2, sm1Tp3] = f_plan(swing6, ema13, 1, 0.20, 0.70, 2.20, 0.8, 1.5, 2.4)
+[smv1Stop, smv1Tp1, smv1Tp2, smv1Tp3] = f_plan(swing7, ema21, 2, 0.20, 0.75, 2.40, 0.8, 1.5, 2.4)
+
+float kpStop = na
+float kpTp1 = na
+float kpTp2 = na
+float kpTp3 = na
+if kpPullback
+    [s, t1, t2, t3] = f_plan(swing8, ema21, 2, 0.25, 0.80, 2.60, 0.8, 1.5, 2.4)
+    kpStop := s
+    kpTp1 := t1
+    kpTp2 := t2
+    kpTp3 := t3
+else if kpBreakout
+    [s, t1, t2, t3] = f_plan(swing6, ema13, 3, 0.20, 0.75, 2.20, 1.0, 2.0, 3.2)
+    kpStop := s
+    kpTp1 := t1
+    kpTp2 := t2
+    kpTp3 := t3
+else if kpTrend
+    [s, t1, t2, t3] = f_plan(swing7, ema21, 3, 0.25, 0.80, 2.50, 1.0, 2.0, 3.0)
+    kpStop := s
+    kpTp1 := t1
+    kpTp2 := t2
+    kpTp3 := t3
+
+// ============================================================================
+// 7. PANEL
+// ============================================================================
+f_price(float value) =>
+    na(value) ? "-" : str.tostring(value, format.mintick)
+
+f_row(table t, int row, string code, bool active, bool fresh, string extra, float stop, float tp1, float tp2, float tp3) =>
+    string status = f_status(active, fresh)
+    if extra != "" and active
+        status += " · " + extra
+    color c = f_color(active, fresh)
+    if code == "KARAR" and active and kpTrend
+        c := color.orange
+    else if code == "KARAR" and active and kpBreakout
+        c := color.yellow
+    table.cell(t, 0, row, code, text_color=color.white, bgcolor=color.new(color.black, 5), text_size=panelTextSize)
+    table.cell(t, 1, row, status, text_color=color.white, bgcolor=color.new(c, 25), text_size=panelTextSize)
+    table.cell(t, 2, row, active ? f_price(stop) : "-", text_color=color.white, bgcolor=color.new(color.orange, 55), text_size=panelTextSize)
+    table.cell(t, 3, row, active ? f_price(tp1) : "-", text_color=color.white, bgcolor=color.new(color.blue, 60), text_size=panelTextSize)
+    table.cell(t, 4, row, active ? f_price(tp2) : "-", text_color=color.white, bgcolor=color.new(color.green, 60), text_size=panelTextSize)
+    table.cell(t, 5, row, active ? f_price(tp3) : "-", text_color=color.white, bgcolor=color.new(color.green, 45), text_size=panelTextSize)
+
+activeCount = (smEarly ? 1 : 0) + (smFull ? 1 : 0) + (rv ? 1 : 0) + (amv ? 1 : 0) + (rmv ? 1 : 0) + (ev ? 1 : 0) + (m1 ? 1 : 0) + (sm1 ? 1 : 0) + (smv1 ? 1 : 0) + (kpActive ? 1 : 0)
+consensusText = not timeframeOk ? "1G GRAFİK KULLAN" : str.tostring(activeCount) + "/10 SİSTEM UYUMLU"
+consensusColor = activeCount >= 5 ? color.green : activeCount >= 3 ? color.blue : activeCount >= 1 ? color.orange : color.gray
+
+var table panel = table.new(panelPosition, 6, 12, border_width=1, frame_width=1)
+if barstate.islast and showPanel
+    table.cell(panel, 0, 0, "10 STRATEJİ DURUMU", text_color=color.white, bgcolor=color.new(consensusColor, 10), text_size=panelTextSize)
+    table.merge_cells(panel, 0, 0, 5, 0)
+    table.cell(panel, 0, 1, "SİSTEM", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+    table.cell(panel, 1, 1, consensusText, text_color=color.white, bgcolor=color.new(consensusColor, 25), text_size=panelTextSize)
+    table.cell(panel, 2, 1, "STOP", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+    table.cell(panel, 3, 1, "TP1", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+    table.cell(panel, 4, 1, "TP2", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+    table.cell(panel, 5, 1, "TP3", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+    f_row(panel, 2, "S-M-2", smEarly, smEarlyNew, "", smEarlyStop, smEarlyTp1, smEarlyTp2, smEarlyTp3)
+    f_row(panel, 3, "S-M-V-2", smFull, smFullNew, "", smFullStop, smFullTp1, smFullTp2, smFullTp3)
+    f_row(panel, 4, "R-M-V-1", rmv, rmvNew, "", rmvStop, rmvTp1, rmvTp2, rmvTp3)
+    f_row(panel, 5, "S-M-V-1", smv1, smv1New, "", smv1Stop, smv1Tp1, smv1Tp2, smv1Tp3)
+    f_row(panel, 6, "R-V-1", rv, rvNew, "", rvStop, rvTp1, rvTp2, rvTp3)
+    f_row(panel, 7, "S-M-1", sm1, sm1New, "", sm1Stop, sm1Tp1, sm1Tp2, sm1Tp3)
+    f_row(panel, 8, "M-1", m1, m1New, "", m1Stop, m1Tp1, m1Tp2, m1Tp3)
+    f_row(panel, 9, "E-V-1", ev, evNew, "", evStop, evTp1, evTp2, evTp3)
+    f_row(panel, 10, "A-M-V-1", amv, amvNew, "", amvStop, amvTp1, amvTp2, amvTp3)
+    f_row(panel, 11, "KARAR", kpActive, kpNew, kpValidationText, kpStop, kpTp1, kpTp2, kpTp3)
+else if barstate.islast
+    table.clear(panel, 0, 0, 5, 11)
+
+// ============================================================================
+// 8. İŞARETLER / ALARMLAR
+// ============================================================================
+anyNew = smEarlyNew or smFullNew or rvNew or amvNew or rmvNew or evNew or m1New or sm1New or smv1New or kpNew
+plotshape(showMarkers and closedGate and anyNew, title="Yeni strateji uyumu", text="10S", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+alertcondition(closedGate and anyNew, title="10 Strateji Paneli: Yeni Uyum", message="{{ticker}} üzerinde 10 Strateji Paneli yeni uyum tespit etti.")
+alertcondition(closedGate and activeCount >= 3 and activeCount[1] < 3, title="10 Strateji Paneli: 3+ Uyum", message="{{ticker}} üzerinde en az 3 sistem aynı anda uyumlu.")
+
+// v1.1: setup-specific fresh parity, Python wide/tight structural-stop parity,
+// cost-gated production exits, and Karar Paneli cost-validation labels.
