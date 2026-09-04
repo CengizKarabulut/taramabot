@@ -1,6 +1,7 @@
-bootstrap 2026-09-04T17:18:00+03:00
+bootstrap 2026-09-04T17:22:00+03:00
 scope=full-bist
 period=1D
 pine=v6.4.4
 setups=BREAKOUT,PULLBACK,TREND DEVAMI
 mode=outcome-contained-walk-forward
+breakout_diagnostic=gate-funnel
