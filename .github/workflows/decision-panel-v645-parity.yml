@@ -1,0 +1,85 @@
+name: Karar Paneli v6.4.5 · Historical Parity
+run-name: "Karar Paneli v6.4.5 · Pine↔Live Parity · Long History"
+
+on:
+  push:
+    paths:
+      - ".github/decision-panel-v645-parity-bootstrap"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: decision-panel-v645-parity
+  cancel-in-progress: true
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+
+      - name: Download long-history daily snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/historical-daily
+          artifact_id="$(
+            gh api "repos/${REPOSITORY}/actions/artifacts?name=historical-daily-latest&per_page=100" |
+              jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty'
+          )"
+          test -n "${artifact_id}"
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/historical-daily.zip
+          unzip -q -o /tmp/historical-daily.zip -d /tmp/historical-daily
+          if [ -f /tmp/historical-daily/historical_daily.sqlite ]; then
+            cp /tmp/historical-daily/historical_daily.sqlite data/historical_daily.sqlite
+          elif [ -f /tmp/historical-daily/data/historical_daily.sqlite ]; then
+            cp /tmp/historical-daily/data/historical_daily.sqlite data/historical_daily.sqlite
+          else
+            echo "historical_daily.sqlite bulunamadı" >&2
+            exit 1
+          fi
+          test -s data/historical_daily.sqlite
+
+      - name: Compile parity stack
+        run: |
+          python -m py_compile \
+            decision_panel_v645_parity_check.py decision_panel_v645_signal.py \
+            decision_panel_v645_live.py historical_decision_panel_v644.py \
+            decision_panel_v2.py exit_engine.py strategy_exit_profiles.py
+
+      - name: Find real historical signals and verify parity
+        run: |
+          mkdir -p reports/parity
+          python decision_panel_v645_parity_check.py \
+            --db data/historical_daily.sqlite \
+            --min-score 75 \
+            --output reports/parity/decision_panel_v645_parity.json
+
+      - name: Show parity result
+        if: always()
+        run: cat reports/parity/decision_panel_v645_parity.json || true
+
+      - name: Upload parity result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: decision-panel-v645-parity-${{ github.run_id }}
+          path: reports/parity/decision_panel_v645_parity.json
+          if-no-files-found: warn
+          retention-days: 30
