@@ -1,0 +1,111 @@
+name: StockMarketLab Market Loop
+run-name: "StockMarketLab Market Loop · ${{ github.event_name }}"
+
+# Bu workflow GitHub schedule'a bagimli degildir.
+# Bir kez baslatildiginda 5 saatlik bloklarla kendini yeniden dispatch eder.
+on:
+  push:
+    paths:
+      - ".github/stockmarketlab-loop-bootstrap"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: stockmarketlab-market-loop
+  cancel-in-progress: true
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - name: Keep StockMarketLab scheduler alive
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          TARGET_WORKFLOW: cached_continuous_scan.yml
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          started_epoch="$(date +%s)"
+          handoff_after=$((300 * 60))
+
+          while true; do
+            dow="$(TZ=Europe/Istanbul date +%u)"
+            hour="$(TZ=Europe/Istanbul date +%H)"
+            minute="$(TZ=Europe/Istanbul date +%M)"
+            second="$(TZ=Europe/Istanbul date +%S)"
+            now_min=$((10#${hour} * 60 + 10#${minute}))
+            echo "TR saati: $(TZ=Europe/Istanbul date '+%F %T %Z')"
+
+            if [ "${dow}" -le 5 ]; then
+              active_count="$(
+                gh api "repos/${REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/runs?per_page=50" |
+                  jq '[.workflow_runs[] | select(.status == "queued" or .status == "in_progress")] | length'
+              )"
+
+              # 10:30-18:15: ana zincir calismiyorsa veya kopmussa yeniden baslat.
+              if (( now_min >= 630 && now_min <= 1095 )); then
+                cutoff="$(date -u -d '20 minutes ago' +%Y-%m-%dT%H:%M:%SZ)"
+                recent_count="$(
+                  gh api "repos/${REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/runs?per_page=50" |
+                    jq --arg cutoff "${cutoff}" '[.workflow_runs[] | select(.created_at >= $cutoff) | select(.status == "queued" or .status == "in_progress" or .conclusion == "success")] | length'
+                )"
+
+                if [ "${active_count}" -gt 0 ]; then
+                  echo "Snapshot taramasi aktif; yeni kosu yok."
+                elif [ "${recent_count}" -eq 0 ]; then
+                  echo "Son 20 dakikada saglam snapshot taramasi yok; intraday zinciri kurtariliyor."
+                  gh workflow run "${TARGET_WORKFLOW}" --repo "${REPOSITORY}" --ref main \
+                    -f mode=intraday_chain -f send_telegram=true
+                else
+                  echo "Snapshot zinciri yakin zamanda calisti; bekleniyor."
+                fi
+              fi
+
+              # 19:00-19:45: o gun kapanis full refresh yoksa bir kez baslat.
+              if (( now_min >= 1140 && now_min <= 1185 )); then
+                today="$(TZ=Europe/Istanbul date +%F)"
+                close_cutoff_local="${today}T18:55:00+03:00"
+                close_cutoff_utc="$(date -u -d "${close_cutoff_local}" +%Y-%m-%dT%H:%M:%SZ)"
+                full_count="$(
+                  gh api "repos/${REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/runs?per_page=50" |
+                    jq --arg cutoff "${close_cutoff_utc}" '[.workflow_runs[] | select(.created_at >= $cutoff) | select((.display_title // "") | contains("full_refresh")) | select(.status == "queued" or .status == "in_progress" or .conclusion == "success")] | length'
+                )"
+
+                if [ "${active_count}" -gt 0 ]; then
+                  echo "Ana tarama halen aktif; kapanis full refresh bekliyor."
+                elif [ "${full_count}" -eq 0 ]; then
+                  echo "Bugunun kapanis full refresh'i yok; baslatiliyor."
+                  gh workflow run "${TARGET_WORKFLOW}" --repo "${REPOSITORY}" --ref main \
+                    -f mode=full_refresh -f send_telegram=false
+                else
+                  echo "Bugunun kapanis full refresh'i mevcut."
+                fi
+              fi
+            else
+              echo "Hafta sonu; tarama tetiklenmiyor."
+            fi
+
+            elapsed=$(( $(date +%s) - started_epoch ))
+            if (( elapsed >= handoff_after )); then
+              echo "5 saatlik scheduler blogu tamamlandi; yeni Market Loop dispatch ediliyor."
+              gh workflow run stockmarketlab-market-loop.yml --repo "${REPOSITORY}" --ref main
+              exit 0
+            fi
+
+            # Sonraki 5 dakikalik duz sinira hizalan.
+            minute="$(TZ=Europe/Istanbul date +%M)"
+            second="$(TZ=Europe/Istanbul date +%S)"
+            into_slot=$(( (10#${minute} % 5) * 60 + 10#${second} ))
+            sleep_for=$((300 - into_slot))
+            if (( sleep_for < 5 )); then
+              sleep_for=5
+            fi
+            echo "Sonraki kontrol ${sleep_for} saniye sonra."
+            sleep "${sleep_for}"
+          done
