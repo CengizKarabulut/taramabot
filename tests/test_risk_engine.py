@@ -41,7 +41,6 @@ class RiskEngineTests(unittest.TestCase):
         history = frame.iloc[: signal_index + 1]
         next_open = float(frame.iloc[signal_index + 1]["open"])
         plan = build_exit_plan(history, "rsi_macd", entry_price=next_open)
-        # Make execution bar touch both stop and TP3. Conservative simulator must stop first.
         frame.iloc[signal_index + 1, frame.columns.get_loc("low")] = plan["stop"] - 0.1
         frame.iloc[signal_index + 1, frame.columns.get_loc("high")] = plan["tp3"] + 0.1
         result = simulate_trade(frame, signal_index, "rsi_macd")
@@ -56,7 +55,6 @@ class RiskEngineTests(unittest.TestCase):
         history = frame.iloc[: signal_index + 1]
         entry = float(frame.iloc[signal_index + 1]["open"])
         plan = build_exit_plan(history, "rsi_macd", entry_price=entry)
-        # First execution bar reaches only TP1, next bar comes back through break-even.
         frame.iloc[40, frame.columns.get_loc("low")] = min(entry + 0.01, float(frame.iloc[40]["low"]))
         frame.iloc[40, frame.columns.get_loc("high")] = plan["tp1"] + 0.01
         frame.iloc[40, frame.columns.get_loc("close")] = plan["tp1"]
@@ -65,8 +63,8 @@ class RiskEngineTests(unittest.TestCase):
         result = simulate_trade(frame, signal_index, "rsi_macd")
         self.assertTrue(result["tp1_hit"])
         self.assertEqual(result["exit_reason"], "BREAKEVEN")
-        self.assertGreater(result["realized_r"], 0.0)  # partial TP1 is correctly included
-        self.assertLess(result["realized_r"], plan["tp1_r"])  # but it is not counted as a full 1R win
+        self.assertGreater(result["realized_r"], 0.0)
+        self.assertLess(result["realized_r"], plan["tp1_r"])
 
     def test_wilson_penalizes_tiny_samples(self):
         tiny = wilson_lower_bound(5, 5)
@@ -87,14 +85,12 @@ class RiskEngineTests(unittest.TestCase):
     def test_oos_validated_smi_profiles_are_locked(self):
         early = get_exit_profile("S-M-2")
         full = get_exit_profile("S-M-V-2")
-
         self.assertEqual(early.stop_mode, "swing")
         self.assertAlmostEqual(early.atr_mult, 1.10)
         self.assertAlmostEqual(early.tp1_r, 0.8)
         self.assertAlmostEqual(early.tp2_r, 1.5)
         self.assertAlmostEqual(early.tp3_r, 2.4)
         self.assertAlmostEqual(early.trailing_atr_mult, 1.8)
-
         self.assertEqual(full.stop_mode, "swing")
         self.assertAlmostEqual(full.atr_mult, 1.25)
         self.assertAlmostEqual(full.tp1_r, 0.8)
@@ -114,6 +110,46 @@ class RiskEngineTests(unittest.TestCase):
         self.assertAlmostEqual(profile.tp2_r, 1.5)
         self.assertAlmostEqual(profile.tp3_r, 2.4)
         self.assertAlmostEqual(profile.trailing_atr_mult, 1.9)
+
+    def test_cost_robust_promotions_are_locked(self):
+        expected = {
+            "R-V-1": ("hybrid_wide", 4, 0.15, 1.5),
+            "S-M-1": ("swing", 6, 0.20, 1.7),
+            "S-M-V-1": ("hybrid_wide", 7, 0.20, 2.2),
+            "A-M-V-1": ("swing", 8, 0.20, 2.2),
+        }
+        for strategy, (mode, lookback, buffer, trail) in expected.items():
+            profile = get_exit_profile(strategy)
+            self.assertEqual(profile.stop_mode, mode)
+            self.assertEqual(profile.swing_lookback, lookback)
+            self.assertAlmostEqual(profile.atr_buffer, buffer)
+            self.assertAlmostEqual(profile.tp1_r, 0.8)
+            self.assertAlmostEqual(profile.tp2_r, 1.5)
+            self.assertAlmostEqual(profile.tp3_r, 2.4)
+            self.assertAlmostEqual(profile.trailing_atr_mult, trail)
+
+    def test_strict_cost_gate_keeps_m1_and_ev_baselines(self):
+        m1 = get_exit_profile("M-1")
+        ev = get_exit_profile("E-V-1")
+        self.assertEqual(m1.stop_mode, "hybrid_tight")
+        self.assertAlmostEqual(m1.tp1_r, 1.0)
+        self.assertAlmostEqual(m1.tp2_r, 1.8)
+        self.assertAlmostEqual(m1.tp3_r, 2.8)
+        self.assertEqual(ev.stop_mode, "hybrid_tight")
+        self.assertAlmostEqual(ev.tp1_r, 1.0)
+        self.assertAlmostEqual(ev.tp2_r, 2.0)
+        self.assertAlmostEqual(ev.tp3_r, 3.2)
+
+    def test_decision_panel_cost_status_profiles_remain_compatible(self):
+        pullback = get_exit_profile("decision_panel", setup="PULLBACK")
+        trend = get_exit_profile("decision_panel", setup="TREND DEVAMI")
+        breakout = get_exit_profile("decision_panel", setup="BREAKOUT")
+        self.assertEqual(pullback.stop_mode, "hybrid_wide")
+        self.assertAlmostEqual(pullback.tp1_r, 0.8)
+        self.assertEqual(trend.stop_mode, "hybrid_tight")
+        self.assertAlmostEqual(trend.tp1_r, 1.0)
+        self.assertEqual(breakout.stop_mode, "hybrid_tight")
+        self.assertAlmostEqual(breakout.tp3_r, 3.2)
 
 
 if __name__ == "__main__":
