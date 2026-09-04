@@ -1,0 +1,93 @@
+name: Walk Forward Exit Optimization
+run-name: "Exit Optimize · Full BIST · 8 Strategies · 1D"
+
+on:
+  push:
+    paths:
+      - ".github/exit-optimization-bootstrap"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: walk-forward-exit-optimization
+  cancel-in-progress: true
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        scanner:
+          - macd_cross
+          - h8
+          - i9
+          - ema
+          - rsi_macd
+          - new_scan
+          - smi_macd_full
+          - rsi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+
+      - name: Download latest real market snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/market-snapshot
+          artifact_id="$(
+            gh api "repos/${REPOSITORY}/actions/artifacts?name=market-data-latest&per_page=100" |
+              jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty'
+          )"
+          test -n "${artifact_id}"
+          echo "Market snapshot artifact: ${artifact_id}"
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/market-data.zip
+          unzip -q -o /tmp/market-data.zip -d /tmp/market-snapshot
+          if [ -f /tmp/market-snapshot/data/market_data.sqlite ]; then
+            cp /tmp/market-snapshot/data/market_data.sqlite data/market_data.sqlite
+          else
+            cp /tmp/market-snapshot/market_data.sqlite data/market_data.sqlite
+          fi
+          test -s data/market_data.sqlite
+
+      - name: Compile optimizer
+        run: python -m py_compile historical_exit_optimize.py strategy_optimizer.py trade_backtester.py strategy_exit_profiles.py
+
+      - name: Purged walk-forward optimize ${{ matrix.scanner }}
+        run: |
+          mkdir -p reports/optimization
+          python historical_exit_optimize.py \
+            --db data/market_data.sqlite \
+            --strategy "${{ matrix.scanner }}" \
+            --period 1D \
+            --max-symbols 0 \
+            --warmup 240 \
+            --purge-bars 80 \
+            --top-train 20 \
+            --output "reports/optimization/${{ matrix.scanner }}_1D_walk_forward.json"
+
+      - name: Upload optimization result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exit-opt-${{ matrix.scanner }}-1D-${{ github.run_id }}
+          path: reports/optimization/
+          if-no-files-found: warn
+          retention-days: 30
