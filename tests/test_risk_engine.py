@@ -102,6 +102,19 @@ class RiskEngineTests(unittest.TestCase):
         self.assertAlmostEqual(full.tp3_r, 2.4)
         self.assertAlmostEqual(full.trailing_atr_mult, 2.2)
 
+    def test_oos_validated_rsi_macd_profile_is_locked(self):
+        profile = get_exit_profile("R-M-V-1")
+        self.assertEqual(profile.stop_mode, "swing")
+        self.assertAlmostEqual(profile.atr_mult, 1.10)
+        self.assertAlmostEqual(profile.atr_buffer, 0.20)
+        self.assertEqual(profile.swing_lookback, 6)
+        self.assertAlmostEqual(profile.min_risk_atr, 0.70)
+        self.assertAlmostEqual(profile.max_risk_atr, 2.20)
+        self.assertAlmostEqual(profile.tp1_r, 0.8)
+        self.assertAlmostEqual(profile.tp2_r, 1.5)
+        self.assertAlmostEqual(profile.tp3_r, 2.4)
+        self.assertAlmostEqual(profile.trailing_atr_mult, 1.9)
+
 
 if __name__ == "__main__":
     unittest.main()
