@@ -1,0 +1,70 @@
+name: Risk Engine CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "exit_engine.py"
+      - "strategy_exit_profiles.py"
+      - "trade_backtester.py"
+      - "trade_ledger.py"
+      - "strategy_optimizer.py"
+      - "historical_replay.py"
+      - "decision_panel_v2.py"
+      - "decision_panel_scan.py"
+      - "scanner.py"
+      - "scanner_enhanced.py"
+      - "scanner_legacy.py"
+      - "main.py"
+      - "main_enhanced.py"
+      - "main_legacy.py"
+      - "telegram_sender.py"
+      - "telegram_sender_enhanced.py"
+      - "telegram_sender_legacy.py"
+      - "tests/test_risk_engine.py"
+      - ".github/workflows/risk-engine-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: risk-engine-ci
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+      - name: Compile changed modules
+        run: |
+          python -m py_compile \
+            strategy_exit_profiles.py exit_engine.py trade_backtester.py trade_ledger.py \
+            strategy_optimizer.py historical_replay.py decision_panel_v2.py decision_panel_scan.py \
+            scanner_legacy.py scanner_enhanced.py scanner.py \
+            main_legacy.py main_enhanced.py main.py \
+            telegram_sender_legacy.py telegram_sender_enhanced.py telegram_sender.py
+      - name: Run risk-engine unit tests
+        run: python -m unittest -v tests.test_risk_engine
+      - name: Import compatibility entry points
+        env:
+          DISABLE_TELEGRAM: "true"
+        run: |
+          python - <<'PY'
+          import scanner
+          import main
+          import telegram_sender
+          import decision_panel_scan
+          print("compatibility imports OK")
+          PY
