@@ -10,7 +10,10 @@ on:
       - "trade_ledger.py"
       - "strategy_optimizer.py"
       - "historical_replay.py"
+      - "historical_decision_panel_v644.py"
       - "decision_panel_v2.py"
+      - "decision_panel_v645_signal.py"
+      - "decision_panel_v645_live.py"
       - "decision_panel_scan.py"
       - "scanner.py"
       - "scanner_enhanced.py"
@@ -22,6 +25,7 @@ on:
       - "telegram_sender_enhanced.py"
       - "telegram_sender_legacy.py"
       - "tests/test_risk_engine.py"
+      - "tests/test_decision_panel_v645.py"
       - ".github/workflows/risk-engine-ci.yml"
   workflow_dispatch:
 
@@ -51,12 +55,13 @@ jobs:
         run: |
           python -m py_compile \
             strategy_exit_profiles.py exit_engine.py trade_backtester.py trade_ledger.py \
-            strategy_optimizer.py historical_replay.py decision_panel_v2.py decision_panel_scan.py \
+            strategy_optimizer.py historical_replay.py historical_decision_panel_v644.py \
+            decision_panel_v2.py decision_panel_v645_signal.py decision_panel_v645_live.py decision_panel_scan.py \
             scanner_legacy.py scanner_enhanced.py scanner.py \
             main_legacy.py main_enhanced.py main.py \
             telegram_sender_legacy.py telegram_sender_enhanced.py telegram_sender.py
       - name: Run risk-engine unit tests
-        run: python -m unittest -v tests.test_risk_engine
+        run: python -m unittest -v tests.test_risk_engine tests.test_decision_panel_v645
       - name: Import compatibility entry points
         env:
           DISABLE_TELEGRAM: "true"
@@ -66,5 +71,7 @@ jobs:
           import main
           import telegram_sender
           import decision_panel_scan
+          import decision_panel_v645_signal
+          import decision_panel_v645_live
           print("compatibility imports OK")
           PY
