@@ -1,6 +1,6 @@
-"""Compatibility entry point for the enhanced Karar Paneli engine."""
+"""Compatibility entry point for Karar Paneli v6.4.5."""
 
-from decision_panel_v2 import *  # noqa: F401,F403
+from decision_panel_v645_live import *  # noqa: F401,F403
 
 
 if __name__ == "__main__":
