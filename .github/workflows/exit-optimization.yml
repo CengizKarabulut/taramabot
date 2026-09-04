@@ -1,5 +1,5 @@
 name: Walk Forward Exit Optimization
-run-name: "Exit Optimize · Full BIST · 8 Strategies · 1D"
+run-name: "Exit Optimize · Full BIST · 8 Strategies · 1D · Outcome Contained"
 
 on:
   push:
@@ -70,7 +70,7 @@ jobs:
       - name: Compile optimizer
         run: python -m py_compile historical_exit_optimize.py strategy_optimizer.py trade_backtester.py strategy_exit_profiles.py
 
-      - name: Purged walk-forward optimize ${{ matrix.scanner }}
+      - name: Outcome-contained walk-forward optimize ${{ matrix.scanner }}
         run: |
           mkdir -p reports/optimization
           python historical_exit_optimize.py \
@@ -79,7 +79,7 @@ jobs:
             --period 1D \
             --max-symbols 0 \
             --warmup 240 \
-            --purge-bars 80 \
+            --purge-bars 0 \
             --top-train 20 \
             --output "reports/optimization/${{ matrix.scanner }}_1D_walk_forward.json"
 
