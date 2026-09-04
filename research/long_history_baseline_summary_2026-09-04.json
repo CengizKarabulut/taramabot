@@ -1,0 +1,17 @@
+{
+  "dataset": "historical-daily-latest",
+  "period": "1D",
+  "scope": "Full BIST long history",
+  "generated_from_run": 33886063067,
+  "strategies": {
+    "macd_cross": {"code":"M-1","trades":11571,"win_rate":56.56,"wilson_win_rate":55.66,"profit_factor":1.576,"expectancy_r":0.250,"max_drawdown_r":19.29},
+    "h8": {"code":"S-M-1","trades":10646,"win_rate":56.35,"wilson_win_rate":55.41,"profit_factor":1.554,"expectancy_r":0.242,"max_drawdown_r":23.60},
+    "i9": {"code":"S-M-V-1","trades":9717,"win_rate":56.72,"wilson_win_rate":55.73,"profit_factor":1.635,"expectancy_r":0.275,"max_drawdown_r":17.85},
+    "ema": {"code":"E-V-1","trades":21242,"win_rate":54.85,"wilson_win_rate":54.18,"profit_factor":1.568,"expectancy_r":0.256,"max_drawdown_r":26.81},
+    "rsi_macd": {"code":"R-M-V-1","trades":5903,"win_rate":56.63,"wilson_win_rate":55.36,"profit_factor":1.605,"expectancy_r":0.262,"max_drawdown_r":20.42},
+    "new_scan": {"code":"A-M-V-1","trades":19782,"win_rate":55.20,"wilson_win_rate":54.50,"profit_factor":1.549,"expectancy_r":0.246,"max_drawdown_r":18.43},
+    "smi_macd_full": {"code":"S-M-V-2","trades":1018,"win_rate":59.53,"wilson_win_rate":56.48,"profit_factor":1.769,"expectancy_r":0.308,"max_drawdown_r":8.25},
+    "smi_macd": {"code":"S-M-2","trades":271,"win_rate":63.47,"wilson_win_rate":57.58,"profit_factor":1.940,"expectancy_r":0.343,"max_drawdown_r":7.44},
+    "rsi": {"code":"R-V-1","trades":9019,"win_rate":60.33,"wilson_win_rate":59.31,"profit_factor":1.462,"expectancy_r":0.183,"max_drawdown_r":17.52}
+  }
+}
