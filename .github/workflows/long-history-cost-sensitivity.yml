@@ -1,0 +1,88 @@
+name: 9 Strategies · OOS Cost Sensitivity
+run-name: "9 Strategies · OOS Costs · Full BIST · 1D"
+
+on:
+  push:
+    paths:
+      - ".github/long-history-cost-sensitivity-bootstrap"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: long-history-cost-sensitivity
+  cancel-in-progress: true
+
+jobs:
+  costs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 9
+      matrix:
+        scanner:
+          - macd_cross
+          - h8
+          - i9
+          - ema
+          - rsi_macd
+          - new_scan
+          - smi_macd_full
+          - smi_macd
+          - rsi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+
+      - name: Download long-history daily snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/historical-daily
+          artifact_id="$(
+            gh api "repos/${REPOSITORY}/actions/artifacts?name=historical-daily-latest&per_page=100" |
+              jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty'
+          )"
+          test -n "${artifact_id}"
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/historical-daily.zip
+          unzip -q -o /tmp/historical-daily.zip -d /tmp/historical-daily
+          if [ -f /tmp/historical-daily/historical_daily.sqlite ]; then
+            cp /tmp/historical-daily/historical_daily.sqlite data/historical_daily.sqlite
+          else
+            cp /tmp/historical-daily/data/historical_daily.sqlite data/historical_daily.sqlite
+          fi
+          test -s data/historical_daily.sqlite
+
+      - name: Compile
+        run: python -m py_compile long_history_cost_sensitivity.py
+
+      - name: Replay fixed OOS profile with costs
+        run: |
+          mkdir -p reports/costs
+          python long_history_cost_sensitivity.py \
+            --db data/historical_daily.sqlite \
+            --strategy "${{ matrix.scanner }}" \
+            --output "reports/costs/${{ matrix.scanner }}_oos_costs.json"
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oos-cost-${{ matrix.scanner }}-${{ github.run_id }}
+          path: reports/costs/${{ matrix.scanner }}_oos_costs.json
+          if-no-files-found: warn
+          retention-days: 30
