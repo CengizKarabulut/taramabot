@@ -1,0 +1,93 @@
+name: Karar Paneli v6.4.5 · Real Snapshot Smoke
+run-name: "Karar Paneli v6.4.5 · Smoke · 100 Symbols · 1D"
+
+on:
+  push:
+    paths:
+      - ".github/decision-panel-v645-smoke-bootstrap"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: decision-panel-v645-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+
+      - name: Download latest market snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/market-snapshot
+          artifact_id="$(
+            gh api "repos/${REPOSITORY}/actions/artifacts?name=market-data-latest&per_page=100" |
+              jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty'
+          )"
+          test -n "${artifact_id}"
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/market-data.zip
+          unzip -q -o /tmp/market-data.zip -d /tmp/market-snapshot
+          if [ -f /tmp/market-snapshot/data/market_data.sqlite ]; then
+            cp /tmp/market-snapshot/data/market_data.sqlite data/market_data.sqlite
+          else
+            cp /tmp/market-snapshot/market_data.sqlite data/market_data.sqlite
+          fi
+          test -s data/market_data.sqlite
+
+      - name: Compile v6.4.5 live stack
+        run: |
+          python -m py_compile \
+            decision_panel_v645_signal.py decision_panel_v645_live.py \
+            historical_decision_panel_v644.py decision_panel_v2.py \
+            decision_panel_scan.py exit_engine.py strategy_exit_profiles.py
+
+      - name: Run real-snapshot smoke without Telegram
+        run: |
+          mkdir -p artifacts/decision-panel-v645-smoke
+          python decision_panel_scan.py \
+            --snapshot-db data/market_data.sqlite \
+            --universe XUTUM \
+            --min-score 75 \
+            --min-turnover-mn 25 \
+            --max-symbols 100 \
+            --charts 0 \
+            --output-dir artifacts/decision-panel-v645-smoke
+
+      - name: Show output files
+        if: always()
+        run: |
+          find artifacts/decision-panel-v645-smoke -maxdepth 2 -type f -print || true
+          if compgen -G "artifacts/decision-panel-v645-smoke/*.csv" > /dev/null; then
+            for f in artifacts/decision-panel-v645-smoke/*.csv; do
+              echo "===== $f ====="
+              head -n 15 "$f"
+            done
+          fi
+
+      - name: Upload smoke result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: decision-panel-v645-smoke-${{ github.run_id }}
+          path: artifacts/decision-panel-v645-smoke/
+          if-no-files-found: warn
+          retention-days: 14
