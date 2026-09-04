@@ -1,0 +1,5 @@
+bootstrap 2026-09-04T16:19:00+03:00
+strategy=rsi_macd
+period=1D
+max_symbols=50
+warmup=240
