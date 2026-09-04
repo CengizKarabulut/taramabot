@@ -1,0 +1,87 @@
+name: Strategies · Long History Baseline · Full BIST · 1D
+run-name: "9 Strategies · Long History Baseline · Full BIST · 1D"
+
+on:
+  push:
+    paths:
+      - ".github/strategy-long-history-bootstrap"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  backtest:
+    strategy:
+      fail-fast: false
+      matrix:
+        strategy:
+          - macd_cross
+          - h8
+          - i9
+          - ema
+          - rsi_macd
+          - new_scan
+          - smi_macd_full
+          - smi_macd
+          - rsi
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+      - name: Download long-history daily snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/hist
+          artifact_id="$(gh api "repos/${REPOSITORY}/actions/artifacts?name=historical-daily-latest&per_page=100" | jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty')"
+          test -n "${artifact_id}"
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/hist.zip
+          unzip -q -o /tmp/hist.zip -d /tmp/hist
+          if [ -f /tmp/hist/historical_daily.sqlite ]; then
+            cp /tmp/hist/historical_daily.sqlite data/historical_daily.sqlite
+          elif [ -f /tmp/hist/data/historical_daily.sqlite ]; then
+            cp /tmp/hist/data/historical_daily.sqlite data/historical_daily.sqlite
+          else
+            echo "historical_daily.sqlite bulunamadı" >&2
+            exit 1
+          fi
+          test -s data/historical_daily.sqlite
+      - name: Compile replay engine
+        run: python -m py_compile historical_replay.py scanner.py scanner_legacy.py trade_backtester.py
+      - name: Historical replay ${{ matrix.strategy }}
+        run: |
+          mkdir -p reports/long-baseline/${{ matrix.strategy }}
+          python historical_replay.py \
+            --db data/historical_daily.sqlite \
+            --strategy "${{ matrix.strategy }}" \
+            --period 1D \
+            --max-symbols 0 \
+            --warmup 240 \
+            --output-dir reports/long-baseline/${{ matrix.strategy }}
+      - name: Show metrics
+        if: always()
+        run: |
+          if compgen -G "reports/long-baseline/${{ matrix.strategy }}/*_metrics.json" > /dev/null; then
+            cat reports/long-baseline/${{ matrix.strategy }}/*_metrics.json
+          fi
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: long-baseline-${{ matrix.strategy }}-${{ github.run_id }}
+          path: reports/long-baseline/${{ matrix.strategy }}/
+          if-no-files-found: error
+          retention-days: 30
