@@ -1,7 +1,10 @@
 name: Strategy Historical Backtest
-run-name: "Backtest · ${{ inputs.strategy }} · ${{ inputs.period }}"
+run-name: "Backtest · ${{ github.event_name == 'workflow_dispatch' && inputs.strategy || 'rsi_macd' }} · ${{ github.event_name == 'workflow_dispatch' && inputs.period || '1D' }}"
 
 on:
+  push:
+    paths:
+      - ".github/strategy-backtest-bootstrap"
   workflow_dispatch:
     inputs:
       strategy:
@@ -41,13 +44,18 @@ permissions:
   contents: read
 
 concurrency:
-  group: strategy-backtest-${{ inputs.strategy }}-${{ inputs.period }}
+  group: strategy-backtest-${{ github.event_name == 'workflow_dispatch' && inputs.strategy || 'rsi_macd' }}-${{ github.event_name == 'workflow_dispatch' && inputs.period || '1D' }}
   cancel-in-progress: true
 
 jobs:
   backtest:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    env:
+      BACKTEST_STRATEGY: ${{ github.event_name == 'workflow_dispatch' && inputs.strategy || 'rsi_macd' }}
+      BACKTEST_PERIOD: ${{ github.event_name == 'workflow_dispatch' && inputs.period || '1D' }}
+      BACKTEST_MAX_SYMBOLS: ${{ github.event_name == 'workflow_dispatch' && inputs.max_symbols || '50' }}
+      BACKTEST_WARMUP: ${{ github.event_name == 'workflow_dispatch' && inputs.warmup || '240' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -74,6 +82,7 @@ jobs:
             echo "market-data-latest artifact bulunamadı" >&2
             exit 1
           fi
+          echo "Kullanılan market-data-latest artifact id: ${artifact_id}"
           gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/market-data.zip
           unzip -q -o /tmp/market-data.zip -d /tmp/market-snapshot
           if [ -f /tmp/market-snapshot/data/market_data.sqlite ]; then
@@ -85,19 +94,37 @@ jobs:
             exit 1
           fi
           test -s data/market_data.sqlite
+      - name: Snapshot sanity check
+        run: |
+          python - <<'PY'
+          from market_data_store import MarketDataStore
+          with MarketDataStore('data/market_data.sqlite', read_only=True) as store:
+              symbols = store.list_symbols('BIST', '${{ env.BACKTEST_PERIOD }}')
+              print('Snapshot BIST sembol sayısı:', len(symbols))
+              print('İlk 10 sembol:', symbols[:10])
+              if not symbols:
+                  raise SystemExit('Seçilen periyotta BIST verisi yok')
+          PY
       - name: Historical replay
         run: |
           python historical_replay.py \
             --db data/market_data.sqlite \
-            --strategy "${{ inputs.strategy }}" \
-            --period "${{ inputs.period }}" \
-            --max-symbols "${{ inputs.max_symbols }}" \
-            --warmup "${{ inputs.warmup }}" \
+            --strategy "${BACKTEST_STRATEGY}" \
+            --period "${BACKTEST_PERIOD}" \
+            --max-symbols "${BACKTEST_MAX_SYMBOLS}" \
+            --warmup "${BACKTEST_WARMUP}" \
             --output-dir reports/backtest
+      - name: Show metrics
+        if: always()
+        run: |
+          if compgen -G "reports/backtest/*_metrics.json" > /dev/null; then
+            cat reports/backtest/*_metrics.json
+          fi
       - name: Upload backtest result
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: backtest-${{ inputs.strategy }}-${{ inputs.period }}-${{ github.run_id }}
+          name: backtest-${{ env.BACKTEST_STRATEGY }}-${{ env.BACKTEST_PERIOD }}-${{ github.run_id }}
           path: reports/backtest/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
