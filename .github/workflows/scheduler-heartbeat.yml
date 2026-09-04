@@ -1,10 +1,9 @@
 name: StockMarketLab Recovery Heartbeat
-run-name: "Recovery Heartbeat · ${{ github.event.schedule || github.event_name }}"
+run-name: "Recovery Heartbeat · ${{ github.event_name }}"
 
+# Otomatik zamanlama artik stockmarketlab-market-loop.yml tarafindan yonetilir.
+# Bu workflow yalniz manuel/bootstrap kurtarma icin tutulur.
 on:
-  schedule:
-    - cron: "*/5 10-19 * * 1-5"
-      timezone: "Europe/Istanbul"
   push:
     paths:
       - ".github/heartbeat-bootstrap"
@@ -58,7 +57,7 @@ jobs:
             exit 0
           fi
 
-          if (( now_min >= 1140 && now_min <= 1170 )); then
+          if (( now_min >= 1140 && now_min <= 1185 )); then
             if [ "${recent_count}" -eq 0 ]; then
               echo "19:00 kapanış yenilemesi bulunamadı; full_refresh kurtarma başlatılıyor."
               gh workflow run "${TARGET_WORKFLOW}" --repo "${REPOSITORY}" --ref main -f mode=full_refresh -f send_telegram=false
