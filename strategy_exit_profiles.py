@@ -59,11 +59,13 @@ BASE_PROFILES: Dict[str, ExitProfile] = {
         tp_allocations=(0.35, 0.30, 0.20), trailing_atr_mult=1.7,
         max_hold_bars=55,
     ),
+    # OOS-promoted 2026-09-04. R-M-V-1: 1,155 OOS trades,
+    # 61.99% win, PF 1.44, +0.165R expectancy.
     "rsi_macd": ExitProfile(
-        key="rsi_macd", family="confirmed_momentum", stop_mode="hybrid_tight",
-        atr_mult=1.35, atr_buffer=0.20, ema_period=13, swing_lookback=6,
+        key="rsi_macd", family="confirmed_momentum", stop_mode="swing",
+        atr_mult=1.10, atr_buffer=0.20, ema_period=13, swing_lookback=6,
         min_risk_atr=0.70, max_risk_atr=2.20,
-        tp1_r=1.0, tp2_r=1.8, tp3_r=2.8,
+        tp1_r=0.8, tp2_r=1.5, tp3_r=2.4,
         tp_allocations=(0.30, 0.30, 0.20), trailing_atr_mult=1.9,
     ),
 
