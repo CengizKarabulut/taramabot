@@ -1,0 +1,30 @@
+{
+  "as_of": "2026-09-05",
+  "cost_scenarios": {
+    "gross": {"commission_bps_per_side": 0, "slippage_bps_per_side": 0},
+    "moderate": {"commission_bps_per_side": 10, "slippage_bps_per_side": 10},
+    "stress": {"commission_bps_per_side": 20, "slippage_bps_per_side": 10}
+  },
+  "strict_production_gate": "moderate PF >= 1.20, expectancy > 0, adequate OOS sample",
+  "classic_scanners": {
+    "S-M-2": {"oos_trades": 54, "gross_pf": 2.181799, "gross_expectancy_r": 0.393933, "moderate_pf": 1.972155, "moderate_expectancy_r": 0.340070, "stress_pf": 1.874569, "stress_expectancy_r": 0.313139, "decision": "PROMOTE"},
+    "S-M-V-2": {"oos_trades": 208, "gross_pf": 1.557899, "gross_expectancy_r": 0.202505, "moderate_pf": 1.411151, "moderate_expectancy_r": 0.156204, "stress_pf": 1.342578, "stress_expectancy_r": 0.133054, "decision": "PROMOTE"},
+    "R-M-V-1": {"oos_trades": 1155, "gross_pf": 1.436590, "gross_expectancy_r": 0.164782, "moderate_pf": 1.290736, "moderate_expectancy_r": 0.114831, "stress_pf": 1.222537, "stress_expectancy_r": 0.089856, "decision": "PROMOTE"},
+    "R-V-1": {"oos_trades": 1756, "gross_pf": 1.374077, "gross_expectancy_r": 0.145887, "moderate_pf": 1.214541, "moderate_expectancy_r": 0.088268, "stress_pf": 1.140841, "stress_expectancy_r": 0.059458, "decision": "PROMOTE"},
+    "S-M-1": {"oos_trades": 2073, "gross_pf": 1.352072, "gross_expectancy_r": 0.139188, "moderate_pf": 1.217813, "moderate_expectancy_r": 0.090084, "stress_pf": 1.155027, "stress_expectancy_r": 0.065532, "decision": "PROMOTE"},
+    "S-M-V-1": {"oos_trades": 1838, "gross_pf": 1.339045, "gross_expectancy_r": 0.136241, "moderate_pf": 1.220563, "moderate_expectancy_r": 0.092279, "stress_pf": 1.164763, "stress_expectancy_r": 0.070297, "decision": "PROMOTE"},
+    "A-M-V-1": {"oos_trades": 3316, "gross_pf": 1.317672, "gross_expectancy_r": 0.129555, "moderate_pf": 1.210960, "moderate_expectancy_r": 0.089350, "stress_pf": 1.160519, "stress_expectancy_r": 0.069247, "decision": "PROMOTE"},
+    "M-1": {"oos_trades": 2234, "gross_pf": 1.301912, "gross_expectancy_r": 0.122671, "moderate_pf": 1.182025, "moderate_expectancy_r": 0.077081, "stress_pf": 1.125649, "stress_expectancy_r": 0.054286, "decision": "HOLD_BASELINE"},
+    "E-V-1": {"oos_trades": 3587, "gross_pf": 1.246143, "gross_expectancy_r": 0.102215, "moderate_pf": 1.137752, "moderate_expectancy_r": 0.059524, "stress_pf": 1.086661, "stress_expectancy_r": 0.038179, "decision": "HOLD_BASELINE"}
+  },
+  "decision_panel": {
+    "PULLBACK": {"oos_trades": 47, "gross_pf": 2.601846, "gross_expectancy_r": 0.384349, "moderate_pf": 2.294029, "moderate_expectancy_r": 0.328656, "stress_pf": 2.152538, "stress_expectancy_r": 0.300811, "decision": "VALIDATED"},
+    "TREND DEVAMI": {"oos_trades": 157, "gross_pf": 1.114229, "gross_expectancy_r": 0.058206, "moderate_pf": 0.929315, "moderate_expectancy_r": -0.039460, "stress_pf": 0.848468, "stress_expectancy_r": -0.088293, "decision": "CAUTION_RESEARCH"},
+    "BREAKOUT": {"oos_trades": 0, "gross_pf": 0.0, "gross_expectancy_r": 0.0, "moderate_pf": 0.0, "moderate_expectancy_r": 0.0, "stress_pf": 0.0, "stress_expectancy_r": 0.0, "decision": "INSUFFICIENT_OOS_SAMPLE"}
+  },
+  "notes": [
+    "Classic scanner cost replays preserve the selected OOS profiles and do not re-optimize on OOS.",
+    "M-1 and E-V-1 optimized candidates remain net-positive but fail the stricter moderate PF >= 1.20 promotion gate, so production baselines are retained.",
+    "Karar Paneli Pullback survives costs strongly; Trend Devami turns negative after moderate costs; Breakout has no completed final-OOS trades in the fixed test window."
+  ]
+}
