@@ -1,12 +1,13 @@
-"""Purged walk-forward exit optimization on historical scanner signals.
+"""Outcome-contained walk-forward exit optimization on historical signals.
 
-Signals are generated once with the production scanner/filter logic.  Exit
-profiles are optimized only on the training slice, checked on validation, and
-reported one final time on the untouched out-of-sample slice.
+Signals are generated once with production scanner/filter logic. Candidate exit
+profiles are optimized on the training slice, checked on validation and then
+reported once on the untouched out-of-sample slice.
 
-To reduce boundary leakage, signals in the final `purge_bars` before the train
-and validation cutoffs are excluded.  The longest baseline holding horizon is
-80 bars, so the default embargo is 80 daily bars.
+Leakage protection is based on completed-trade containment: a trade belongs to
+a chronological split only when its entry and exit are both inside that split.
+This is stricter and more data-efficient than blindly removing 80 bars from the
+end of every symbol's train/validation window.
 """
 
 from __future__ import annotations
@@ -17,31 +18,21 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
 from historical_replay import STRATEGIES, signal_indexes
 from market_data_store import MarketDataStore
-from strategy_exit_profiles import ExitProfile
+from strategy_exit_profiles import ExitProfile, get_exit_profile
 from strategy_optimizer import (
     eligible,
     evaluate_profile,
-    optimize_profiles,
+    parameter_grid,
     ranking_score,
     robust_metrics,
 )
 
 
-def _aggregate_profile(
-    datasets: list[tuple[pd.DataFrame, list[int]]],
-    strategy: str,
-    profile: ExitProfile,
-) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    trades: list[dict[str, Any]] = []
-    for frame, indexes in datasets:
-        symbol_trades, _ = evaluate_profile(frame, indexes, strategy, profile)
-        trades.extend(symbol_trades)
-    return trades, robust_metrics(trades)
+SplitDataset = tuple[pd.DataFrame, list[int], pd.Timestamp | None, pd.Timestamp | None]
 
 
 def _profile_from_dict(data: dict[str, Any]) -> ExitProfile:
@@ -51,6 +42,60 @@ def _profile_from_dict(data: dict[str, Any]) -> ExitProfile:
     return ExitProfile(**normalized)
 
 
+def _trade_in_split(
+    trade: dict[str, Any],
+    start_exclusive: pd.Timestamp | None,
+    end_inclusive: pd.Timestamp | None,
+) -> bool:
+    entry_time = pd.Timestamp(trade["entry_time"])
+    exit_time = pd.Timestamp(trade["exit_time"])
+    if start_exclusive is not None and entry_time <= start_exclusive:
+        return False
+    if end_inclusive is not None and (entry_time > end_inclusive or exit_time > end_inclusive):
+        return False
+    return True
+
+
+def _aggregate_profile(
+    datasets: list[SplitDataset],
+    strategy: str,
+    profile: ExitProfile,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    trades: list[dict[str, Any]] = []
+    for frame, indexes, start_exclusive, end_inclusive in datasets:
+        symbol_trades, _ = evaluate_profile(frame, indexes, strategy, profile)
+        trades.extend(
+            trade
+            for trade in symbol_trades
+            if _trade_in_split(trade, start_exclusive, end_inclusive)
+        )
+    return trades, robust_metrics(trades)
+
+
+def _optimize_profiles_contained(
+    datasets: list[SplitDataset],
+    strategy: str,
+    *,
+    min_trades: int,
+    min_pf: float,
+    top_n: int,
+) -> list[dict[str, Any]]:
+    base = get_exit_profile(strategy)
+    ranked: list[dict[str, Any]] = []
+    for profile in parameter_grid(base):
+        _, metrics = _aggregate_profile(datasets, strategy, profile)
+        ranked.append(
+            {
+                "score": ranking_score(metrics, min_trades=min_trades, min_pf=min_pf),
+                "eligible": eligible(metrics, min_trades=min_trades, min_pf=min_pf),
+                "profile": asdict(profile),
+                "metrics": metrics,
+            }
+        )
+    ranked.sort(key=lambda row: row["score"], reverse=True)
+    return ranked[:top_n]
+
+
 def prepare_walk_forward(
     database: str,
     strategy: str,
@@ -58,8 +103,14 @@ def prepare_walk_forward(
     period: str = "1D",
     warmup: int = 240,
     max_symbols: int = 0,
-    purge_bars: int = 80,
-) -> tuple[dict[str, list[tuple[pd.DataFrame, list[int]]]], dict[str, Any]]:
+    purge_bars: int = 0,
+) -> tuple[dict[str, list[SplitDataset]], dict[str, Any]]:
+    """Create chronological signal slices.
+
+    `purge_bars` is retained only for CLI compatibility with older workflow
+    invocations. Outcome containment is now the leakage guard, so no fixed bar
+    deletion is applied.
+    """
     raw: list[tuple[str, pd.DataFrame, list[int]]] = []
     event_times: list[pd.Timestamp] = []
 
@@ -77,6 +128,7 @@ def prepare_walk_forward(
             except Exception as exc:
                 print(f"[{number}/{len(symbols)}] {symbol}: signal HATA {exc}")
                 continue
+            indexes = [i for i in indexes if i < len(frame) - 1]
             if not indexes:
                 continue
             raw.append((symbol, frame, indexes))
@@ -94,36 +146,34 @@ def prepare_walk_forward(
     train_cut = pd.Timestamp(ordered.iloc[max(0, int(len(ordered) * 0.60) - 1)])
     validation_cut = pd.Timestamp(ordered.iloc[max(0, int(len(ordered) * 0.80) - 1)])
 
-    result: dict[str, list[tuple[pd.DataFrame, list[int]]]] = {
+    result: dict[str, list[SplitDataset]] = {
         "train": [], "validation": [], "test": []
     }
     counts = {"train": 0, "validation": 0, "test": 0}
 
-    for symbol, frame, indexes in raw:
+    for _symbol, frame, indexes in raw:
         timestamps = pd.to_datetime(frame.index)
-        train_boundary = int(np.searchsorted(timestamps.values, train_cut.to_datetime64(), side="right")) - 1
-        validation_boundary = int(np.searchsorted(timestamps.values, validation_cut.to_datetime64(), side="right")) - 1
-
-        # Purge the end of train/validation so an 80-bar trade cannot consume
-        # outcome information from the next chronological split.
-        train_last_signal = train_boundary - purge_bars
-        validation_last_signal = validation_boundary - purge_bars
-
-        train_idx = [i for i in indexes if i <= train_last_signal]
+        train_idx = [
+            i for i in indexes
+            if pd.Timestamp(timestamps[i]) <= train_cut
+        ]
         validation_idx = [
             i for i in indexes
-            if i > train_boundary and i <= validation_last_signal
+            if train_cut < pd.Timestamp(timestamps[i]) <= validation_cut
         ]
-        test_idx = [i for i in indexes if i > validation_boundary and i < len(frame) - 1]
+        test_idx = [
+            i for i in indexes
+            if pd.Timestamp(timestamps[i]) > validation_cut
+        ]
 
         if train_idx:
-            result["train"].append((frame, train_idx))
+            result["train"].append((frame, train_idx, None, train_cut))
             counts["train"] += len(train_idx)
         if validation_idx:
-            result["validation"].append((frame, validation_idx))
+            result["validation"].append((frame, validation_idx, train_cut, validation_cut))
             counts["validation"] += len(validation_idx)
         if test_idx:
-            result["test"].append((frame, test_idx))
+            result["test"].append((frame, test_idx, validation_cut, None))
             counts["test"] += len(test_idx)
 
     metadata = {
@@ -133,7 +183,9 @@ def prepare_walk_forward(
         "signal_events": len(event_times),
         "train_cut": train_cut.isoformat(),
         "validation_cut": validation_cut.isoformat(),
-        "purge_bars": purge_bars,
+        "split_rule": "60/20/20 chronological signal events",
+        "leakage_guard": "entry_and_exit_must_both_stay_inside_split",
+        "legacy_purge_bars_ignored": int(purge_bars),
         "candidate_signal_counts": counts,
     }
     return result, metadata
@@ -146,7 +198,7 @@ def optimize_walk_forward(
     period: str = "1D",
     warmup: int = 240,
     max_symbols: int = 0,
-    purge_bars: int = 80,
+    purge_bars: int = 0,
     top_train: int = 20,
 ) -> dict[str, Any]:
     datasets, metadata = prepare_walk_forward(
@@ -158,7 +210,7 @@ def optimize_walk_forward(
         purge_bars=purge_bars,
     )
 
-    train_ranked = optimize_profiles(
+    train_ranked = _optimize_profiles_contained(
         datasets["train"],
         strategy,
         min_trades=30,
@@ -170,14 +222,16 @@ def optimize_walk_forward(
     for row in train_ranked:
         profile = _profile_from_dict(row["profile"])
         _, validation_metrics = _aggregate_profile(datasets["validation"], strategy, profile)
-        validation_rows.append({
-            "profile": asdict(profile),
-            "train": row["metrics"],
-            "train_score": row["score"],
-            "validation": validation_metrics,
-            "validation_eligible": eligible(validation_metrics, min_trades=15, min_pf=1.10),
-            "validation_score": ranking_score(validation_metrics, min_trades=15, min_pf=1.10),
-        })
+        validation_rows.append(
+            {
+                "profile": asdict(profile),
+                "train": row["metrics"],
+                "train_score": row["score"],
+                "validation": validation_metrics,
+                "validation_eligible": eligible(validation_metrics, min_trades=15, min_pf=1.10),
+                "validation_score": ranking_score(validation_metrics, min_trades=15, min_pf=1.10),
+            }
+        )
 
     validation_rows.sort(key=lambda item: item["validation_score"], reverse=True)
     selected = next((row for row in validation_rows if row["validation_eligible"]), None)
@@ -197,13 +251,13 @@ def optimize_walk_forward(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Purged walk-forward exit optimizer")
+    parser = argparse.ArgumentParser(description="Outcome-contained walk-forward exit optimizer")
     parser.add_argument("--db", required=True)
     parser.add_argument("--strategy", choices=STRATEGIES, required=True)
     parser.add_argument("--period", default="1D")
     parser.add_argument("--max-symbols", type=int, default=0)
     parser.add_argument("--warmup", type=int, default=240)
-    parser.add_argument("--purge-bars", type=int, default=80)
+    parser.add_argument("--purge-bars", type=int, default=0, help="Deprecated; containment now protects split boundaries")
     parser.add_argument("--top-train", type=int, default=20)
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
