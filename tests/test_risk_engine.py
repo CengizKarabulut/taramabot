@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from exit_engine import build_exit_plan
+from strategy_exit_profiles import get_exit_profile
 from strategy_optimizer import wilson_lower_bound, robust_metrics
 from trade_backtester import simulate_trade
 
@@ -82,6 +83,24 @@ class RiskEngineTests(unittest.TestCase):
         self.assertAlmostEqual(metrics["win_rate"], 50.0)
         self.assertGreater(metrics["expectancy_r"], 0.0)
         self.assertGreater(metrics["profit_factor"], 1.0)
+
+    def test_oos_validated_smi_profiles_are_locked(self):
+        early = get_exit_profile("S-M-2")
+        full = get_exit_profile("S-M-V-2")
+
+        self.assertEqual(early.stop_mode, "swing")
+        self.assertAlmostEqual(early.atr_mult, 1.10)
+        self.assertAlmostEqual(early.tp1_r, 0.8)
+        self.assertAlmostEqual(early.tp2_r, 1.5)
+        self.assertAlmostEqual(early.tp3_r, 2.4)
+        self.assertAlmostEqual(early.trailing_atr_mult, 1.8)
+
+        self.assertEqual(full.stop_mode, "swing")
+        self.assertAlmostEqual(full.atr_mult, 1.25)
+        self.assertAlmostEqual(full.tp1_r, 0.8)
+        self.assertAlmostEqual(full.tp2_r, 1.5)
+        self.assertAlmostEqual(full.tp3_r, 2.4)
+        self.assertAlmostEqual(full.trailing_atr_mult, 2.2)
 
 
 if __name__ == "__main__":
