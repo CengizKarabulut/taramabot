@@ -1,5 +1,5 @@
 name: Karar Paneli Exit Optimization
-run-name: "Karar Paneli v6.4.4 · Setup Exit Optimize · Full BIST · 1D"
+run-name: "Karar Paneli v6.4.4 · Setup Exit Optimize + Breakout Diagnostic · Full BIST · 1D"
 
 on:
   push:
@@ -81,5 +81,49 @@ jobs:
         with:
           name: decision-panel-exit-${{ strategy.job-index }}-${{ github.run_id }}
           path: reports/decision_panel_optimization/
+          if-no-files-found: warn
+          retention-days: 30
+
+  breakout-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+      - name: Download latest real market snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/market-snapshot
+          artifact_id="$(gh api "repos/${REPOSITORY}/actions/artifacts?name=market-data-latest&per_page=100" | jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty')"
+          test -n "${artifact_id}"
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/market-data.zip
+          unzip -q -o /tmp/market-data.zip -d /tmp/market-snapshot
+          if [ -f /tmp/market-snapshot/data/market_data.sqlite ]; then cp /tmp/market-snapshot/data/market_data.sqlite data/market_data.sqlite; else cp /tmp/market-snapshot/market_data.sqlite data/market_data.sqlite; fi
+          test -s data/market_data.sqlite
+      - name: Diagnose exact v6.4.4 breakout gates
+        run: |
+          python -m py_compile decision_panel_breakout_diagnostic.py
+          mkdir -p reports/decision_panel_diagnostic
+          python decision_panel_breakout_diagnostic.py \
+            --db data/market_data.sqlite \
+            --min-score 75 \
+            --output reports/decision_panel_diagnostic/breakout_gate_funnel.json
+      - name: Upload diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: decision-panel-breakout-diagnostic-${{ github.run_id }}
+          path: reports/decision_panel_diagnostic/
           if-no-files-found: warn
           retention-days: 30
