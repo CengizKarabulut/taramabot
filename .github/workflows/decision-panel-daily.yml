@@ -1,5 +1,5 @@
 name: Karar Paneli Günlük BIST Tüm
-run-name: "Karar Paneli · ${{ github.event_name }} · Eşik ${{ inputs.min_score || '70' }}"
+run-name: "Karar Paneli v6.4.5 · ${{ github.event_name }} · Eşik ${{ inputs.min_score || '75' }}"
 
 on:
   workflow_dispatch:
@@ -7,11 +7,11 @@ on:
       min_score:
         description: "Minimum toplam puan"
         required: true
-        default: "70"
+        default: "75"
         type: choice
         options:
-          - "70"
           - "75"
+          - "70"
       charts:
         description: "Actions çıktısında üretilecek grafik sayısı"
         required: true
@@ -54,7 +54,7 @@ jobs:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ vars.TG_CHAT_ID || secrets.TG_CHAT_ID }}
           TG_THREAD_ID: ${{ vars.TG_THREAD_ID || secrets.TG_THREAD_ID }}
-          MIN_SCORE: ${{ inputs.min_score || '70' }}
+          MIN_SCORE: ${{ inputs.min_score || '75' }}
           CHARTS: ${{ inputs.charts || '0' }}
         run: >-
           python decision_panel_scan.py
@@ -72,7 +72,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: decision-panel-${{ github.run_number }}
+          name: decision-panel-v645-${{ github.run_number }}
           path: artifacts/decision-panel
           if-no-files-found: warn
           retention-days: 14
