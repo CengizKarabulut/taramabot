@@ -1,0 +1,104 @@
+name: 9 Strategies · Long History Exit Optimization
+run-name: "9 Strategies · Long History · Walk Forward Exit Optimization · Full BIST · 1D"
+
+on:
+  push:
+    paths:
+      - ".github/strategy-long-history-exit-opt-bootstrap"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: strategy-long-history-exit-optimization
+  cancel-in-progress: true
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 9
+      matrix:
+        scanner:
+          - macd_cross
+          - h8
+          - i9
+          - ema
+          - rsi_macd
+          - new_scan
+          - smi_macd_full
+          - smi_macd
+          - rsi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+
+      - name: Download long-history daily snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/historical-daily
+          artifact_id="$(
+            gh api "repos/${REPOSITORY}/actions/artifacts?name=historical-daily-latest&per_page=100" |
+              jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty'
+          )"
+          test -n "${artifact_id}"
+          echo "Historical daily artifact: ${artifact_id}"
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/historical-daily.zip
+          unzip -q -o /tmp/historical-daily.zip -d /tmp/historical-daily
+          if [ -f /tmp/historical-daily/historical_daily.sqlite ]; then
+            cp /tmp/historical-daily/historical_daily.sqlite data/historical_daily.sqlite
+          elif [ -f /tmp/historical-daily/data/historical_daily.sqlite ]; then
+            cp /tmp/historical-daily/data/historical_daily.sqlite data/historical_daily.sqlite
+          else
+            echo "historical_daily.sqlite bulunamadı" >&2
+            exit 1
+          fi
+          test -s data/historical_daily.sqlite
+
+      - name: Compile optimizer
+        run: python -m py_compile historical_exit_optimize.py historical_replay.py strategy_optimizer.py trade_backtester.py strategy_exit_profiles.py
+
+      - name: Long-history walk-forward optimize ${{ matrix.scanner }}
+        run: |
+          mkdir -p reports/long-optimization
+          python historical_exit_optimize.py \
+            --db data/historical_daily.sqlite \
+            --strategy "${{ matrix.scanner }}" \
+            --period 1D \
+            --max-symbols 0 \
+            --warmup 240 \
+            --purge-bars 0 \
+            --top-train 20 \
+            --output "reports/long-optimization/${{ matrix.scanner }}_1D_walk_forward.json"
+
+      - name: Show result
+        if: always()
+        run: |
+          if [ -f "reports/long-optimization/${{ matrix.scanner }}_1D_walk_forward.json" ]; then
+            cat "reports/long-optimization/${{ matrix.scanner }}_1D_walk_forward.json"
+          fi
+
+      - name: Upload optimization result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: long-exit-opt-${{ matrix.scanner }}-1D-${{ github.run_id }}
+          path: reports/long-optimization/${{ matrix.scanner }}_1D_walk_forward.json
+          if-no-files-found: warn
+          retention-days: 30
