@@ -8,8 +8,10 @@ scanner and TradingView indicator to silently use different entry logic.
 
 from __future__ import annotations
 
+import json
 import math
-from dataclasses import replace
+import sys
+from pathlib import Path
 from typing import Any
 
 import decision_panel_v2 as _v2
@@ -21,27 +23,13 @@ from strategy_exit_profiles import get_exit_profile
 
 
 _legacy_analyze_symbol = _v2.analyze_symbol
-
-
-def _pullback_profile():
-    """OOS-validated Pullback exit profile promoted for v6.4.5."""
-    base = get_exit_profile("decision_panel", setup="PULLBACK")
-    return replace(
-        base,
-        stop_mode="hybrid_wide",
-        atr_mult=1.25,
-        tp1_r=0.8,
-        tp2_r=1.5,
-        tp3_r=2.4,
-        trailing_atr_mult=1.8,
-    )
+_legacy_build_telegram_report = _v2.build_telegram_report
 
 
 def _profile_for_setup(setup: str):
-    if setup == "PULLBACK":
-        return _pullback_profile()
-    # TREND DEVAMI keeps the existing profile.  The proposed swing/0.8-1.5-2.4
-    # profile improved win-rate but failed our PF quality floor in final OOS.
+    # Pullback is promoted globally in strategy_exit_profiles after the fixed
+    # current-vs-proposed OOS comparison. Trend/Breakout deliberately remain on
+    # their current profiles until stronger evidence exists.
     return get_exit_profile("decision_panel", setup=setup)
 
 
@@ -103,11 +91,53 @@ def analyze_symbol(symbol: str, history, settings, live_bar: bool) -> dict[str, 
     return result
 
 
+def build_telegram_report(*args, **kwargs):
+    text = _legacy_build_telegram_report(*args, **kwargs)
+    text = text.replace("KARAR PANELİ v2 · GÜNLÜK TARAMA", "KARAR PANELİ v6.4.5 · GÜNLÜK TARAMA")
+    return text
+
+
+def _output_dir_from_argv() -> Path | None:
+    try:
+        pos = sys.argv.index("--output-dir")
+        if pos + 1 < len(sys.argv) and sys.argv[pos + 1].strip():
+            return Path(sys.argv[pos + 1])
+    except ValueError:
+        return None
+    return None
+
+
+def _rewrite_summary_metadata(output_dir: Path | None) -> None:
+    if output_dir is None:
+        return
+    path = output_dir / "ozet.json"
+    if not path.exists():
+        return
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8-sig"))
+    except Exception:
+        return
+    payload["engine"] = "decision_panel_v6.4.5"
+    payload["signal_model"] = "pine-compatible-v6.4.5"
+    payload["risk_model"] = "setup-specific shared exit_engine"
+    payload["notes"] = [
+        "Sinyal/puan/setup katmanı TradingView v6.4.5 ile aynı no-lookahead v6.4.4 çekirdeğinden gelir.",
+        "Pullback v6.4.5 filtresi RVOL<=2.0 ve fiyatın 20-bar tepesinin en az %95'inde olmasını ister.",
+        "Pullback çıkışı uzun-tarih walk-forward/OOS doğrulamasıyla promote edilmiştir; Trend ve Breakout mevcut profillerini korur.",
+        "Relatif güç, XU100 benchmark serisi snapshot'a ayrı eklenene kadar bilgi amaçlı beklemededir.",
+    ]
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=str) + "\n", encoding="utf-8")
+
+
 def main() -> int:
-    # decision_panel_v2.main resolves analyze_symbol from its own module globals,
-    # so patch that single hook before invoking the existing reporting CLI.
+    # decision_panel_v2.main resolves these functions from its own module globals,
+    # so patch only the live hooks before invoking the existing reporting CLI.
     _v2.analyze_symbol = analyze_symbol
-    return _v2.main()
+    _v2.build_telegram_report = build_telegram_report
+    output_dir = _output_dir_from_argv()
+    code = _v2.main()
+    _rewrite_summary_metadata(output_dir)
+    return code
 
 
 if __name__ == "__main__":
