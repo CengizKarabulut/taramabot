@@ -1,0 +1,38 @@
+{
+  "dataset": "historical-daily-latest",
+  "period": "1D",
+  "pullback": {
+    "selected_entry": "v6.4.4 pullback + RVOL<=2.0 + pct20>=95",
+    "candidate_events": 347,
+    "selected_exit": {
+      "stop_mode": "hybrid_wide",
+      "atr_mult": 1.25,
+      "tp1_r": 0.8,
+      "tp2_r": 1.5,
+      "tp3_r": 2.4,
+      "trailing_atr_mult": 1.8
+    },
+    "validation2": {"trades":50,"win_rate":56.00,"profit_factor":1.186,"expectancy_r":0.082},
+    "oos": {"trades":47,"win_rate":74.47,"wilson_win_rate":60.49,"profit_factor":2.602,"expectancy_r":0.384,"max_drawdown_r":3.52}
+  },
+  "trend": {
+    "selected_entry": "unchanged v6.4.4 baseline",
+    "candidate_events": 1328,
+    "selected_exit": {
+      "stop_mode": "swing",
+      "atr_mult": 1.25,
+      "tp1_r": 0.8,
+      "tp2_r": 1.5,
+      "tp3_r": 2.4,
+      "trailing_atr_mult": 2.2
+    },
+    "validation2": {"trades":117,"win_rate":59.83,"profit_factor":1.461,"expectancy_r":0.185},
+    "oos": {"trades":140,"win_rate":54.29,"wilson_win_rate":46.03,"profit_factor":1.087,"expectancy_r":0.039,"max_drawdown_r":8.63},
+    "promotion_status": "HOLD_FOR_FIXED_PROFILE_COMPARISON"
+  },
+  "breakout": {
+    "selected_entry_candidate": "max SMA20 distance 1.75 ATR",
+    "selected_exit": null,
+    "promotion_status": "INSUFFICIENT_VALIDATION_SAMPLE"
+  }
+}
