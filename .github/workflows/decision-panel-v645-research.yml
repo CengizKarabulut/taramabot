@@ -1,0 +1,70 @@
+name: Karar Paneli v6.4.5 · Candidate Research · Long History
+run-name: "Karar Paneli v6.4.5 · Candidate Research · Long History"
+
+on:
+  push:
+    paths:
+      - ".github/decision-panel-v645-bootstrap"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  research:
+    strategy:
+      fail-fast: false
+      matrix:
+        setup: ["BREAKOUT", "TREND DEVAMI"]
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+      - name: Download long-history snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/hist
+          artifact_id="$(gh api "repos/${REPOSITORY}/actions/artifacts?name=historical-daily-latest&per_page=100" | jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty')"
+          test -n "${artifact_id}"
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/hist.zip
+          unzip -q -o /tmp/hist.zip -d /tmp/hist
+          if [ -f /tmp/hist/historical_daily.sqlite ]; then
+            cp /tmp/hist/historical_daily.sqlite data/historical_daily.sqlite
+          elif [ -f /tmp/hist/data/historical_daily.sqlite ]; then
+            cp /tmp/hist/data/historical_daily.sqlite data/historical_daily.sqlite
+          else
+            echo "historical_daily.sqlite bulunamadı" >&2
+            exit 1
+          fi
+          test -s data/historical_daily.sqlite
+      - name: Compile research engine
+        run: python -m py_compile decision_panel_v645_research.py historical_decision_panel_v644.py decision_panel_breakout_diagnostic.py trade_backtester.py
+      - name: Research ${{ matrix.setup }}
+        run: |
+          mkdir -p reports/v645
+          safe_name="$(echo '${{ matrix.setup }}' | tr ' ' '_' | tr -cd '[:alnum:]_-')"
+          python decision_panel_v645_research.py \
+            --db data/historical_daily.sqlite \
+            --setup "${{ matrix.setup }}" \
+            --min-score 75 \
+            --output "reports/v645/${safe_name}.json"
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: decision-panel-v645-${{ strategy.job-index }}-${{ github.run_id }}
+          path: reports/v645/
+          if-no-files-found: error
+          retention-days: 30
