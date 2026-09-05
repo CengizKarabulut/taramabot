@@ -68,6 +68,11 @@ jobs:
             --market bist \
             --no-state \
             --summary data/incremental-scan-summary.json
+      - name: Require full snapshot coverage on every timeframe
+        run: |
+          python validate_scan_coverage.py \
+            --db data/market_data.sqlite \
+            --summary data/incremental-scan-summary.json
       - name: Publish verified refreshed snapshot
         uses: actions/upload-artifact@v4
         with:
