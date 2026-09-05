@@ -45,9 +45,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p data/timeframe /tmp/tf15
+          artifact_name="historical-15m-${SOURCE_RUN_ID}"
           artifact_id="$(
-            gh api --paginate "repos/${REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/artifacts?per_page=100" |
-              jq -r '.artifacts[] | select(.name == "historical-15m-'"${SOURCE_RUN_ID}"'" and .expired == false) | .id' |
+            gh api --paginate "repos/${REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/artifacts?per_page=100" \
+              --jq ".artifacts[] | select(.name == \"${artifact_name}\" and .expired == false) | .id" |
               tail -n1
           )"
           test -n "${artifact_id}"
