@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 from state_merge import load_state, merge_states, write_state
@@ -16,8 +17,9 @@ from state_merge import load_state, merge_states, write_state
 
 PERIODS = ("15m", "30m", "45m", "1H", "2H", "4H", "1D", "1W", "1M")
 FALSE_VALUES = {"", "0", "false", "no", "off"}
-RESULT_GROUPS = ("full", "smi", "rsi", "new", "rsi_macd", "ema", "macd_cross", "h8", "i9")
+RESULT_GROUPS = ("full", "smi", "rsi", "new", "rsi_macd", "ema", "macd_cross", "h8", "i9", "decision")
 MIN_TRUSTED_BIST_UNIVERSE = 400
+INTEGRATED_DECISION_FLAG = Path("data/decision-integrated.flag")
 
 
 def telegram_enabled() -> bool:
@@ -119,6 +121,37 @@ def _send_historical_profiles(repository: Path, result_paths: list[str]) -> None
     subprocess.run(command, cwd=repository, env=os.environ.copy(), check=True)
 
 
+def _mark_integrated_decision(repository: Path, result_paths: list[str]) -> None:
+    """Tell the legacy separate panel step that KARAR already went with A-I."""
+    has_group = False
+    total = 0
+    for path in result_paths:
+        try:
+            payload = json.loads(Path(path).read_text(encoding="utf-8"))
+            if "decision" in payload:
+                has_group = True
+                total += len(payload.get("decision") or [])
+        except Exception:
+            continue
+    if not has_group:
+        return
+    flag = (repository / INTEGRATED_DECISION_FLAG).resolve()
+    flag.parent.mkdir(parents=True, exist_ok=True)
+    flag.write_text(
+        json.dumps(
+            {
+                "integrated": True,
+                "decision_signals": total,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            },
+            ensure_ascii=False,
+            indent=2,
+        ) + "\n",
+        encoding="utf-8",
+    )
+    print(f"KARAR A-I paketine entegre edildi; ayri Telegram paneli bastirilacak. sinyal={total}")
+
+
 def run_parallel(args: argparse.Namespace) -> None:
     database = args.db.resolve()
     if not database.is_file() or database.stat().st_size == 0:
@@ -128,6 +161,10 @@ def run_parallel(args: argparse.Namespace) -> None:
     base_state = args.state.resolve()
     send_telegram = telegram_enabled()
     use_state = not args.no_state
+
+    # A previous command in the same workspace must never suppress a new run.
+    integrated_flag = (repository / INTEGRATED_DECISION_FLAG).resolve()
+    integrated_flag.unlink(missing_ok=True)
 
     with tempfile.TemporaryDirectory(prefix="taramabot-parallel-") as temp_name:
         temp_dir = Path(temp_name)
@@ -212,16 +249,15 @@ def run_parallel(args: argparse.Namespace) -> None:
         )
 
         if send_telegram:
-            # 1) Mevcut tarama sonucu ve ortak sinyal ozeti.
+            # 1) A-I + KARAR tek tarama paketi ve ortak sinyal ozeti.
             subprocess.run(
                 [sys.executable, "main.py", "summary", *result_paths],
                 cwd=repository,
                 env=os.environ.copy(),
                 check=True,
             )
-            # 2) Ayni turda cikan hisselerin tarihsel profili.
-            # Karar Paneli workflow'un sonraki adiminda calistigi icin mesaj sirasi:
-            # Tarama sonucu -> Tarihsel profil -> Karar Paneli.
+            _mark_integrated_decision(repository, result_paths)
+            # 2) Ayni turda cikan A-I hisselerinin tarihsel profili.
             _send_historical_profiles(repository, result_paths)
 
 
