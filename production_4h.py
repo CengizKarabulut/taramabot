@@ -30,6 +30,7 @@ from market_data_store import MarketDataStore
 ISTANBUL = ZoneInfo("Europe/Istanbul")
 PERIOD = "4H"
 MIN_BARS = 200
+VALIDATED_MIN_SCORE = 75
 
 
 def _to_istanbul(ts: pd.Timestamp) -> pd.Timestamp:
@@ -110,7 +111,7 @@ def evaluate_symbol(
     frame: pd.DataFrame,
     *,
     daily_frame: pd.DataFrame | None = None,
-    min_score: int = 70,
+    min_score: int = VALIDATED_MIN_SCORE,
 ) -> dict[str, Any] | None:
     frame = closed_4h_frame(frame)
     if frame is None or len(frame) < MIN_BARS:
@@ -163,7 +164,13 @@ def evaluate_symbol(
     return result
 
 
-def build_report(database: str, *, exchange: str = "BIST", min_score: int = 70, max_symbols: int = 0) -> dict[str, Any]:
+def build_report(
+    database: str,
+    *,
+    exchange: str = "BIST",
+    min_score: int = VALIDATED_MIN_SCORE,
+    max_symbols: int = 0,
+) -> dict[str, Any]:
     db = Path(database)
     if not db.is_file() or db.stat().st_size == 0:
         raise RuntimeError(f"4H production snapshot bulunamadi: {db}")
@@ -204,6 +211,7 @@ def build_report(database: str, *, exchange: str = "BIST", min_score: int = 70, 
         "period": PERIOD,
         "generated_at": datetime.now(ISTANBUL).isoformat(timespec="seconds"),
         "policy": "analysis-only; promoted models only; closed 4H bars; no timeframe fallback",
+        "validated_min_score": min_score,
         "counts": {
             "symbols": len(symbols),
             "candidates": len(candidates),
@@ -222,6 +230,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         "# 4H Production Aday Raporu",
         "",
         f"Uretilme: `{report['generated_at']}`",
+        f"System J dogrulama esigi: **{report.get('validated_min_score', VALIDATED_MIN_SCORE)}**",
         f"Kapsam: **{counts['symbols']}** sembol | Aday: **{counts['candidates']}** | A: **{counts['tier_a']}** | B+: **{counts['tier_b_plus']}** | B: **{counts['tier_b']}**",
         "",
         "> Bu rapor emir/AL-SAT motoru degildir. Yalnizca OOS ve maliyet testinden gecerek promote edilen 4H modelleri siralar.",
@@ -252,7 +261,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--db", default="data/market_data.sqlite")
     parser.add_argument("--exchange", default="BIST")
-    parser.add_argument("--min-score", type=int, default=70)
+    parser.add_argument("--min-score", type=int, default=VALIDATED_MIN_SCORE)
     parser.add_argument("--max-symbols", type=int, default=0)
     parser.add_argument("--output-dir", default="data/production-4h")
     args = parser.parse_args()
