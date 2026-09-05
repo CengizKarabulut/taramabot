@@ -9,11 +9,13 @@ on:
     - cron: "0,15,30,45 8-14 * * 1-5"
     # Hafta ici son iki baslangic: 18:00 ve 18:15.
     - cron: "0,15 15 * * 1-5"
-    # Kapanis sonrasi tam snapshot yenilemesi: 19:00.
+    # Kapanis sonrasi artimli snapshot yenilemesi: 19:00.
     - cron: "0 16 * * 1-5"
+
   repository_dispatch:
     types:
       - taramabot-cache-tick
+
   workflow_dispatch:
     inputs:
       mode:
@@ -48,13 +50,12 @@ jobs:
       continue_chain: ${{ steps.gate.outputs.continue_chain }}
       run_mode: ${{ steps.gate.outputs.run_mode }}
       run_pipeline: ${{ steps.gate.outputs.run_pipeline }}
+      closing_run: ${{ steps.gate.outputs.closing_run }}
 
     steps:
       - name: Calisma modunu ve zaman penceresini belirle
         id: gate
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
           EVENT_NAME: ${{ github.event_name }}
           SCHEDULE_EXPRESSION: ${{ github.event.schedule }}
           MANUAL_MODE: ${{ inputs.mode }}
@@ -64,6 +65,7 @@ jobs:
           run_pipeline=true
           run_mode=intraday
           continue_chain=false
+          closing_run=false
 
           day_of_week="$(TZ=Europe/Istanbul date +%u)"
           now_tr="$(TZ=Europe/Istanbul date +%H:%M)"
@@ -78,12 +80,13 @@ jobs:
           now_minutes="$(to_minutes "${now_tr}")"
           start_minutes="$(to_minutes "10:30")"
           last_minutes="$(to_minutes "18:15")"
-          full_start_minutes="$(to_minutes "18:55")"
-          full_end_minutes="$(to_minutes "19:45")"
+          closing_start_minutes="$(to_minutes "18:55")"
+          closing_end_minutes="$(to_minutes "19:45")"
 
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
             case "${MANUAL_MODE}" in
               full_refresh)
+                # Yalniz ilk kurulum / kurtarma icin.
                 run_mode=full
                 ;;
               scan_only)
@@ -108,9 +111,11 @@ jobs:
           elif [ "${EVENT_NAME}" = "schedule" ]; then
             case "${SCHEDULE_EXPRESSION}" in
               "0 16 * * 1-5")
-                run_mode=full
-                if [ "${day_of_week}" -gt 5 ] || (( now_minutes < full_start_minutes || now_minutes > full_end_minutes )); then
-                  echo "Gecikmis 19:00 full schedule ${now_tr} saatinde izinli 18:55-19:45 penceresi disinda; yenileme atlandi."
+                # 19:00'da da tam gecmis cekilmez; son snapshot artimli guncellenir.
+                run_mode=intraday
+                closing_run=true
+                if [ "${day_of_week}" -gt 5 ] || (( now_minutes < closing_start_minutes || now_minutes > closing_end_minutes )); then
+                  echo "Gecikmis 19:00 kapanis guncellemesi ${now_tr} saatinde izinli 18:55-19:45 penceresi disinda; atlandi."
                   run_pipeline=false
                 fi
                 ;;
@@ -129,7 +134,8 @@ jobs:
           echo "run_pipeline=${run_pipeline}" >> "${GITHUB_OUTPUT}"
           echo "run_mode=${run_mode}" >> "${GITHUB_OUTPUT}"
           echo "continue_chain=${continue_chain}" >> "${GITHUB_OUTPUT}"
-          echo "TR saati ${now_tr}; mode=${run_mode}; calis=${run_pipeline}; zincir=${continue_chain}"
+          echo "closing_run=${closing_run}" >> "${GITHUB_OUTPUT}"
+          echo "TR saati ${now_tr}; mode=${run_mode}; calis=${run_pipeline}; zincir=${continue_chain}; kapanis=${closing_run}"
 
       - name: Kodu al
         if: steps.gate.outputs.run_pipeline == 'true'
@@ -193,24 +199,7 @@ jobs:
             cp /tmp/state-snapshot/state.json state.json
           fi
 
-      - name: Kapanis state dosyasini repoya isle
-        if: steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode == 'full'
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          cp state.json /tmp/closing_state.json
-          git restore --source=HEAD --worktree -- state.json
-          git pull --rebase origin "${{ github.ref_name }}"
-          python state_merge.py --base state.json --incoming /tmp/closing_state.json --output state.json
-          python -m json.tool state.json > /dev/null
-          git add state.json
-          if ! git diff --staged --quiet; then
-            git commit -m "chore: persist closing scanner state [skip ci]"
-            git push origin "HEAD:${{ github.ref_name }}"
-          fi
-
-      - name: Piyasa veri snapshot'ini guncelle
+      - name: Piyasa veri snapshot'ini artimli guncelle
         id: refresh
         if: steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'scan_only'
         env:
@@ -219,11 +208,19 @@ jobs:
         run: |
           set -euo pipefail
           mode="${{ steps.gate.outputs.run_mode }}"
+
           if [ "${mode}" = "intraday" ] && [ ! -s data/market_data.sqlite ]; then
-            echo "Onceki snapshot yok; kendini onarmak icin tam veri yenilemesi yapilacak."
+            echo "Onceki snapshot yok; yalnizca ilk kurulum/kurtarma icin bir defalik tam veri yenilemesi yapilacak."
             mode=full
           fi
-          python market_data_refresh.py             --mode "${mode}"             --db data/market_data.sqlite             --manifest data/manifest.json             --recent-bars 64             --retries 3
+
+          python market_data_refresh.py \
+            --mode "${mode}" \
+            --db data/market_data.sqlite \
+            --manifest data/manifest.json \
+            --recent-bars 64 \
+            --retries 3
+
           echo "effective_mode=${mode}" >> "${GITHUB_OUTPUT}"
 
       - name: Guncel piyasa verisini artifact olarak sakla
@@ -235,7 +232,7 @@ jobs:
             data/market_data.sqlite
             data/manifest.json
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 30
           compression-level: 6
 
       - name: Snapshot uzerinden tum taramalari calistir
@@ -249,6 +246,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s "${MARKET_DATA_DB}"
+
           if [ "$DISABLE_TELEGRAM" = "true" ]; then
             python parallel_snapshot_scan.py \
               --db "${MARKET_DATA_DB}" \
@@ -272,6 +270,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p data/decision-panel
+
           panel_args=(
             --snapshot-db "${MARKET_DATA_DB}"
             --universe XUTUM
@@ -280,6 +279,7 @@ jobs:
             --charts 0
             --output-dir data/decision-panel
           )
+
           if [ "$DISABLE_TELEGRAM" = "true" ]; then
             python decision_panel_scan.py "${panel_args[@]}"
           else
@@ -296,7 +296,7 @@ jobs:
           name: decision-panel-latest
           path: data/decision-panel
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 30
           compression-level: 6
 
       - name: Sinyal state snapshot'ini sakla
@@ -306,8 +306,30 @@ jobs:
           name: scanner-state-latest
           path: state.json
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 30
           compression-level: 6
+
+      - name: Kapanis state dosyasini repoya isle
+        if: always() && steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.closing_run == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          cp state.json /tmp/closing_state.json
+          git restore --source=HEAD --worktree -- state.json
+          git pull --rebase origin "${{ github.ref_name }}"
+          python state_merge.py \
+            --base state.json \
+            --incoming /tmp/closing_state.json \
+            --output state.json
+          python -m json.tool state.json > /dev/null
+          git add state.json
+
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: persist closing scanner state [skip ci]"
+            git push origin "HEAD:${{ github.ref_name }}"
+          fi
 
       - name: Eski rolling artifact'lari temizle
         if: always() && steps.gate.outputs.run_pipeline == 'true'
@@ -316,6 +338,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
+
           for artifact_name in market-data-latest scanner-state-latest decision-panel-latest; do
             gh api "repos/${REPOSITORY}/actions/artifacts?name=${artifact_name}&per_page=100" |
               jq -r '.artifacts | sort_by(.created_at) | reverse | .[3:][]?.id' |
@@ -366,4 +389,6 @@ jobs:
           printf 'Siradaki tick icin %s saniye beklenecek.\n' "${wait_seconds}"
           sleep "${wait_seconds}"
 
-          gh api --method POST             "repos/${REPOSITORY}/dispatches"             -f event_type='taramabot-cache-tick'
+          gh api --method POST \
+            "repos/${REPOSITORY}/dispatches" \
+            -f event_type='taramabot-cache-tick'
