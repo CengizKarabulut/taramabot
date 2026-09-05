@@ -8,8 +8,8 @@ A=macd_cross, B=h8, C=i9, D=ema, E=rsi_macd, F=new_scan,
 G=smi_macd_full, H=smi_macd (early), I=rsi.
 
 For BIST intraday periods the production limit-up gate uses the current session
-price against the previous DAILY close.  ``previous_daily_close`` reproduces
-that rule without look-ahead.
+price against the previous DAILY close. Daily/weekly/monthly production scans
+compare with the previous bar of their own timeframe.
 """
 
 from __future__ import annotations
@@ -33,6 +33,7 @@ CODE_TO_STRATEGY: Mapping[str, str] = {
 }
 STRATEGY_TO_CODE = {value: key for key, value in CODE_TO_STRATEGY.items()}
 STRATEGIES = tuple(CODE_TO_STRATEGY.values())
+INTRADAY_PERIODS = {"15m", "30m", "45m", "1h", "2h", "4h"}
 
 
 def _ema(series: pd.Series, span: int) -> pd.Series:
@@ -94,19 +95,13 @@ def previous_daily_close(
     intraday: pd.DataFrame,
     daily: pd.DataFrame | None = None,
 ) -> pd.Series:
-    """Return the confirmed previous-session close aligned to every intraday bar.
-
-    When a daily frame is supplied, only daily rows strictly before the current
-    intraday session are used.  The fallback derives session closes from the
-    intraday frame itself, which is useful for fixtures/tests.
-    """
+    """Return confirmed previous-session close aligned to every intraday bar."""
     target_index = intraday.index
     intraday_dates = pd.to_datetime(target_index).normalize()
 
     if daily is not None and not daily.empty:
         daily_close = pd.to_numeric(daily["close"], errors="coerce")
         daily_dates = pd.to_datetime(daily.index).normalize()
-        # Keep the last record if a source contains duplicate session dates.
         by_date = pd.Series(daily_close.to_numpy(), index=daily_dates).groupby(level=0).last().sort_index()
     else:
         close = pd.to_numeric(intraday["close"], errors="coerce")
@@ -123,6 +118,7 @@ def build_signal_frame(
     *,
     daily: pd.DataFrame | None = None,
     warmup: int = 240,
+    period: str = "15m",
 ) -> pd.DataFrame:
     """Calculate final production-equivalent A-I states for every bar."""
     if frame is None or frame.empty:
@@ -203,18 +199,20 @@ def build_signal_frame(
     ema_extension_ok = ((close - ema21) <= atr14 * 2.5) & (filter_rsi14.isna() | (filter_rsi14 <= 75))
     rsi_heat_ok = filter_rsi7.isna() | (filter_rsi7 <= 85)
 
-    prev_daily = previous_daily_close(data, daily=daily)
-    near_limit = prev_daily.gt(0) & (((close - prev_daily) / prev_daily) * 100.0 >= 9.5)
+    period_key = str(period).strip().lower()
+    if period_key in INTRADAY_PERIODS:
+        previous_limit_close = previous_daily_close(data, daily=daily)
+    else:
+        previous_limit_close = close.shift(1)
+    near_limit = previous_limit_close.gt(0) & (((close - previous_limit_close) / previous_limit_close) * 100.0 >= 9.5)
     limit_ok = ~near_limit.fillna(False)
 
-    # H / G: SMI-MACD negative-region early/full pair.
     sm_core = smi_cross_or_rise & (smi < 0) & (hist < 0) & (hist > hist.shift(1))
     sm_full_raw = sm_core & (close > sma200) & (volume > vol20 * 1.5)
     sm_early_raw = sm_core & ~sm_full_raw
     sm_early = sm_early_raw & reversal_regime & reversal_structure & directional_volume
     sm_full = sm_full_raw & directional_volume
 
-    # I: RSI + volume.
     rsi_cross_or_rise = (
         ((rsi7.shift(1) <= 50) & (rsi7 > 50))
         | ((rsi7 > 50) & (rsi7 > rsi7.shift(1)))
@@ -222,7 +220,6 @@ def build_signal_frame(
     rsi_raw = (rsi7 > 60) & rsi_cross_or_rise & (volume > vol10 * 1.5)
     rsi_final = rsi_raw & (close > sma50) & trend_regime & directional_volume & rsi_heat_ok
 
-    # F: SMA stack + MACD + volume.
     new_raw = (
         (volume > vol20 * 1.5)
         & (close > sma5)
@@ -236,7 +233,6 @@ def build_signal_frame(
     )
     new_final = new_raw
 
-    # E: RSI14 + MACD + directional confirmation.
     rsi14_up = (
         ((rsi14.shift(1) <= 50) & (rsi14 > 50))
         | ((rsi14 > 50) & (rsi14 > rsi14.shift(1)))
@@ -244,7 +240,6 @@ def build_signal_frame(
     rsi_macd_raw = rsi14_up & (rsi14 < 70) & macd_cross_or_rise & (volume > vol20 * 1.5)
     rsi_macd_final = rsi_macd_raw & (close > sma200) & trend_regime & directional_volume
 
-    # D: EMA trend stack.
     ev4 = (
         ((ema8.shift(1) <= ema13.shift(1)) & (ema8 > ema13))
         | ((ema8 > ema13) & (ema8 > ema8.shift(1)))
@@ -266,11 +261,9 @@ def build_signal_frame(
     )
     ema_final = ema_raw & ema_extension_ok
 
-    # A: positive MACD cross/rise.
     macd_raw = (rsi14 > 30) & macd_cross_or_rise & (macd > 0)
     macd_final = macd_raw & (close > sma50) & trend_regime & directional_volume
 
-    # B / C: positive SMI-MACD continuation / full confirmation.
     h8_raw = smi_cross_or_rise & (smi > 0) & (hist > 0) & (hist > hist.shift(1))
     h8_final = h8_raw & (close > sma50) & trend_regime & directional_volume
     i9_raw = h8_raw & (close > sma200) & (volume > vol20 * 1.5)
@@ -298,7 +291,8 @@ def build_signal_frame(
         output[STRATEGY_TO_CODE[strategy]] = active
         output[f"fresh_{STRATEGY_TO_CODE[strategy]}"] = output[f"fresh_{strategy}"]
 
-    output["previous_daily_close"] = prev_daily
+    output["previous_daily_close"] = previous_limit_close
+    output["previous_limit_close"] = previous_limit_close
     output["near_limit"] = near_limit.fillna(False)
     return output
 
@@ -308,7 +302,6 @@ def fresh_signal_indexes(signal_frame: pd.DataFrame, strategy: str) -> list[int]
         raise ValueError(f"Bilinmeyen strateji: {strategy}")
     column = f"fresh_{strategy}"
     values = signal_frame[column].to_numpy(dtype=bool, copy=True)
-    # Last bar cannot open a next-bar trade in historical simulation.
     if len(values):
         values[-1] = False
     return np.flatnonzero(values).astype(int).tolist()
