@@ -8,6 +8,7 @@ on:
       - "institutional_stock_report.py"
       - "fundamental_score.py"
       - "fundamental_data_pipeline.py"
+      - "fundamental_peer_refresh.py"
       - "tests/test_production_4h.py"
       - "tests/test_production_4h_visual.py"
       - "tests/test_institutional_stock_report.py"
@@ -28,6 +29,7 @@ on:
       - "institutional_stock_report.py"
       - "fundamental_score.py"
       - "fundamental_data_pipeline.py"
+      - "fundamental_peer_refresh.py"
       - "tests/test_production_4h.py"
       - "tests/test_production_4h_visual.py"
       - "tests/test_institutional_stock_report.py"
@@ -66,7 +68,7 @@ jobs:
           pip install -r requirements-cached-scan.txt
       - name: Compile
         run: |
-          python -m py_compile production_4h.py production_4h_visual.py fundamental_score.py fundamental_data_pipeline.py institutional_stock_report.py \
+          python -m py_compile production_4h.py production_4h_visual.py fundamental_score.py fundamental_data_pipeline.py fundamental_peer_refresh.py institutional_stock_report.py \
             tests/test_production_4h.py tests/test_production_4h_visual.py tests/test_institutional_stock_report.py tests/test_fundamental_data_pipeline.py
       - name: Unit tests
         env:
