@@ -2,9 +2,6 @@ name: Timeframe 15m Targeted Retry
 run-name: "15m retry · EMA + new_scan"
 
 on:
-  push:
-    paths:
-      - ".github/workflows/timeframe-15m-retry.yml"
   workflow_dispatch:
     inputs:
       source_run_id:
@@ -15,6 +12,10 @@ on:
 permissions:
   actions: read
   contents: read
+
+concurrency:
+  group: timeframe-15m-targeted-retry
+  cancel-in-progress: false
 
 jobs:
   retry:
@@ -43,7 +44,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          SOURCE_RUN_ID: ${{ inputs.source_run_id || '33934764128' }}
+          SOURCE_RUN_ID: ${{ inputs.source_run_id }}
         shell: bash
         run: |
           set -euo pipefail
