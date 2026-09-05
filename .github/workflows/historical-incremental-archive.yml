@@ -1,0 +1,186 @@
+name: Long History Incremental Archive
+run-name: "Long History Archive · ${{ github.event_name }} · ${{ github.run_id }}"
+
+on:
+  schedule:
+    # Hafta ici 20:15 Turkiye saati (UTC+3).
+    - cron: "15 17 * * 1-5"
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/historical-incremental-bootstrap"
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: long-history-incremental-archive
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - period: "15m"
+            bootstrap: 5000
+            recent: 256
+          - period: "30m"
+            bootstrap: 5000
+            recent: 128
+          - period: "45m"
+            bootstrap: 5000
+            recent: 96
+          - period: "1H"
+            bootstrap: 2500
+            recent: 64
+          - period: "2H"
+            bootstrap: 5000
+            recent: 32
+          - period: "4H"
+            bootstrap: 2500
+            recent: 16
+          - period: "1D"
+            bootstrap: 2500
+            recent: 15
+          - period: "1W"
+            bootstrap: 1500
+            recent: 6
+          - period: "1M"
+            bootstrap: 600
+            recent: 3
+
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+
+      - name: Bagimliliklari kur
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+
+      - name: Artimli arsiv kodunu kontrol et
+        run: |
+          python -m py_compile \
+            historical_incremental_refresh.py \
+            market_data_refresh.py \
+            market_data_store.py
+
+      - name: Son uzun-gecmis arsivini geri yukle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          PERIOD: ${{ matrix.period }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p data/history /tmp/history-seed
+          stable_name="historical-live-${PERIOD}"
+          legacy_prefix="historical-${PERIOD}-"
+
+          collect_artifacts() {
+            for page in 1 2 3 4 5; do
+              gh api "repos/${REPOSITORY}/actions/artifacts?per_page=100&page=${page}"
+            done
+          }
+
+          artifact_id="$(
+            collect_artifacts |
+              jq -s -r --arg stable "${stable_name}" '
+                [.[] | .artifacts[] | select(.expired == false and .name == $stable)]
+                | sort_by(.created_at) | last | .id // empty
+              '
+          )"
+
+          if [ -z "${artifact_id}" ] && [ "${PERIOD}" = "1D" ]; then
+            artifact_id="$(
+              collect_artifacts |
+                jq -s -r '
+                  [.[] | .artifacts[] | select(.expired == false and .name == "historical-daily-latest")]
+                  | sort_by(.created_at) | last | .id // empty
+                '
+            )"
+          fi
+
+          if [ -z "${artifact_id}" ]; then
+            artifact_id="$(
+              collect_artifacts |
+                jq -s -r --arg prefix "${legacy_prefix}" '
+                  [.[] | .artifacts[] | select(.expired == false and (.name | startswith($prefix)))]
+                  | sort_by(.created_at) | last | .id // empty
+                '
+            )"
+          fi
+
+          if [ -z "${artifact_id}" ]; then
+            echo "${PERIOD}: mevcut uzun-gecmis artifact bulunamadi; script bir defalik bootstrap yapacak."
+            exit 0
+          fi
+
+          echo "${PERIOD}: seed artifact ${artifact_id} indiriliyor."
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/history-seed.zip
+          unzip -q -o /tmp/history-seed.zip -d /tmp/history-seed
+
+          sqlite_path="$(find /tmp/history-seed -type f -name '*.sqlite' | head -n1 || true)"
+          if [ -n "${sqlite_path}" ]; then
+            cp "${sqlite_path}" "data/history/historical_${PERIOD}.sqlite"
+            echo "${PERIOD}: mevcut SQLite arsivi seed olarak kullanildi."
+          else
+            echo "${PERIOD}: artifact icinde SQLite bulunamadi; bir defalik bootstrap yapilacak."
+          fi
+
+      - name: Yalniz yeni/yakin mumlari arsive ekle
+        env:
+          TV_USERNAME: ${{ secrets.TV_USERNAME }}
+          TV_PASSWORD: ${{ secrets.TV_PASSWORD }}
+        run: |
+          set -euo pipefail
+          mkdir -p data/history
+
+          python historical_incremental_refresh.py \
+            --period "${{ matrix.period }}" \
+            --bootstrap-bars "${{ matrix.bootstrap }}" \
+            --recent-bars "${{ matrix.recent }}" \
+            --retries 3 \
+            --db "data/history/historical_${{ matrix.period }}.sqlite" \
+            --manifest "data/history/historical_${{ matrix.period }}_manifest.json"
+
+      - name: Guncel uzun-gecmis arsivini sakla
+        uses: actions/upload-artifact@v4
+        with:
+          name: historical-live-${{ matrix.period }}
+          path: |
+            data/history/historical_${{ matrix.period }}.sqlite
+            data/history/historical_${{ matrix.period }}_manifest.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Ayni periyodun eski arsiv artifactlarini temizle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          PERIOD: ${{ matrix.period }}
+        run: |
+          set -euo pipefail
+          artifact_name="historical-live-${PERIOD}"
+
+          gh api "repos/${REPOSITORY}/actions/artifacts?name=${artifact_name}&per_page=100" |
+            jq -r '.artifacts | sort_by(.created_at) | reverse | .[1:][]?.id' |
+            while read -r artifact_id; do
+              if [ -n "${artifact_id}" ]; then
+                gh api --method DELETE "repos/${REPOSITORY}/actions/artifacts/${artifact_id}"
+              fi
+            done
