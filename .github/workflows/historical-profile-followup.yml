@@ -59,41 +59,49 @@ jobs:
           echo "PROFILE_READY=true" >> "${GITHUB_ENV}"
           echo "Profil artifact ${id} kullaniliyor."
 
-      - name: Kaynak run sonucunu/state'ini indir
+      - name: Kaynak run sonucunu veya state'ini indir
         if: env.PROFILE_READY == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
           SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
-          SOURCE_WORKFLOW: ${{ github.event.workflow_run.name }}
         run: |
           set -euo pipefail
           mkdir -p data/source /tmp/source
 
           artifacts="$(gh api "repos/${REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/artifacts?per_page=100")"
 
-          if [ "${SOURCE_WORKFLOW}" = "Manual Telegram Snapshot Scan" ]; then
-            id="$(printf '%s' "${artifacts}" | jq -r --arg prefix "manual-telegram-snapshot-${SOURCE_RUN_ID}" '[.artifacts[] | select(.expired == false and .name == $prefix)] | last | .id // empty')"
-            if [ -n "${id}" ]; then
-              gh api "repos/${REPOSITORY}/actions/artifacts/${id}/zip" > /tmp/source.zip
-              unzip -q -o /tmp/source.zip -d /tmp/source
-              result="$(find /tmp/source -type f -name 'manual_telegram_scan_results.json' | head -n1 || true)"
-              if [ -n "${result}" ]; then
-                cp "${result}" data/source/scan_results.json
-                echo "SOURCE_MODE=results" >> "${GITHUB_ENV}"
-              fi
+          # Önce kaynak run'ın doğrudan scan-result artifact'ını ara. Run-name ile
+          # workflow-name aynı olmak zorunda değildir; bu yüzden isim kontrolü
+          # yapmadan artifact içeriğine göre karar veriyoruz.
+          while read -r id; do
+            [ -n "${id}" ] || continue
+            rm -rf /tmp/source-candidate
+            mkdir -p /tmp/source-candidate
+            gh api "repos/${REPOSITORY}/actions/artifacts/${id}/zip" > /tmp/source-candidate.zip
+            unzip -q -o /tmp/source-candidate.zip -d /tmp/source-candidate || true
+            result="$(find /tmp/source-candidate -type f \( -name 'manual_telegram_scan_results.json' -o -name 'latest_scan_results.json' \) | head -n1 || true)"
+            if [ -n "${result}" ] && [ -s "${result}" ]; then
+              cp "${result}" data/source/scan_results.json
+              echo "SOURCE_MODE=results" >> "${GITHUB_ENV}"
+              echo "Kaynak scan-result artifact ${id} kullaniliyor."
+              break
             fi
-          fi
+          done < <(printf '%s' "${artifacts}" | jq -r '.artifacts[] | select(.expired == false) | .id')
 
+          # Scan-result yoksa canlı scheduled akış için scanner state geçmişini kullan.
           if [ ! -s data/source/scan_results.json ]; then
             id="$(printf '%s' "${artifacts}" | jq -r '[.artifacts[] | select(.expired == false and .name == "scanner-state-latest")] | last | .id // empty')"
             if [ -n "${id}" ]; then
+              rm -rf /tmp/source-state
+              mkdir -p /tmp/source-state
               gh api "repos/${REPOSITORY}/actions/artifacts/${id}/zip" > /tmp/state.zip
-              unzip -q -o /tmp/state.zip -d /tmp/source
-              state="$(find /tmp/source -type f -name 'state.json' | head -n1 || true)"
-              if [ -n "${state}" ]; then
+              unzip -q -o /tmp/state.zip -d /tmp/source-state
+              state="$(find /tmp/source-state -type f -name 'state.json' | head -n1 || true)"
+              if [ -n "${state}" ] && [ -s "${state}" ]; then
                 cp "${state}" data/source/state.json
                 echo "SOURCE_MODE=state" >> "${GITHUB_ENV}"
+                echo "Kaynak scanner state artifact ${id} kullaniliyor."
               fi
             fi
           fi
