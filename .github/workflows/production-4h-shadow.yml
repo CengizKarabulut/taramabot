@@ -24,7 +24,7 @@ jobs:
   production:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -65,11 +65,44 @@ jobs:
         env:
           MPLBACKEND: Agg
         run: python production_4h_visual.py --db data/market_data.sqlite --candidates data/production-4h/candidates.json --output-dir data/production-4h
+      - name: Load latest BIST peer fundamentals
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data/fundamentals /tmp/fundamental-data
+          artifact_id="$(gh api "repos/${REPOSITORY}/actions/artifacts?name=fundamental-data-latest&per_page=100" --jq '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty')"
+          if [ -n "${artifact_id}" ]; then
+            gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/fundamental-data.zip
+            unzip -q -o /tmp/fundamental-data.zip -d /tmp/fundamental-data
+            if [ -f /tmp/fundamental-data/data/fundamentals/latest.csv ]; then
+              cp -r /tmp/fundamental-data/data/fundamentals/. data/fundamentals/
+            elif [ -f /tmp/fundamental-data/latest.csv ]; then
+              cp -r /tmp/fundamental-data/. data/fundamentals/
+            fi
+          fi
+          if [ ! -s data/fundamentals/latest.csv ]; then
+            echo "No cached peer snapshot; refreshing now."
+            python fundamental_data_pipeline.py peer --output-dir data/fundamentals
+          fi
+          test -s data/fundamentals/latest.csv
+      - name: Fetch 8-quarter statements for current candidates
+        run: |
+          python fundamental_data_pipeline.py candidates \
+            --visual-json data/production-4h/visual_candidates.json \
+            --peer-csv data/fundamentals/latest.csv \
+            --output-dir data/fundamentals/quarterly
       - name: Build concise institutional reports
         env:
           MPLBACKEND: Agg
         run: |
-          python institutional_stock_report.py --visual-json data/production-4h/visual_candidates.json --fundamentals-csv data/fundamentals/latest.csv --output-dir data/production-4h/reports
+          python institutional_stock_report.py \
+            --visual-json data/production-4h/visual_candidates.json \
+            --fundamentals-csv data/fundamentals/latest.csv \
+            --fundamental-trends-dir data/fundamentals/quarterly \
+            --output-dir data/production-4h/reports
           cat data/production-4h/visual_report.md >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "## Kurumsal kısa raporlar" >> "$GITHUB_STEP_SUMMARY"
@@ -78,7 +111,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: production-4h-latest
-          path: data/production-4h
+          path: |
+            data/production-4h
+            data/fundamentals/quarterly
+            data/fundamentals/manifest.json
           if-no-files-found: error
           retention-days: 14
           compression-level: 6
