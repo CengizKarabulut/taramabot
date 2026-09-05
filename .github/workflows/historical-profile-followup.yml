@@ -1,0 +1,134 @@
+name: Historical Profile Follow-up
+run-name: "Historical Profile Follow-up · source ${{ github.event.workflow_run.id }}"
+
+on:
+  workflow_run:
+    workflows:
+      - "StockMarketLab 15 Dakika Snapshot Taramasi"
+      - "Manual Telegram Snapshot Scan"
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: historical-profile-followup-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  send:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+
+      - name: Bagimliliklari kur
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+
+      - name: Tarihsel profil artifactini indir
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data/profiles /tmp/profiles
+          id="$(gh api "repos/${REPOSITORY}/actions/artifacts?name=historical-symbol-profiles-latest&per_page=100" | jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty')"
+          if [ -z "${id}" ]; then
+            echo "Profil artifact'i henuz yok; follow-up atlandi."
+            echo "PROFILE_READY=false" >> "${GITHUB_ENV}"
+            exit 0
+          fi
+          gh api "repos/${REPOSITORY}/actions/artifacts/${id}/zip" > /tmp/profiles.zip
+          unzip -q -o /tmp/profiles.zip -d /tmp/profiles
+          src="$(find /tmp/profiles -type f -name 'historical_symbol_profiles.json' | head -n1 || true)"
+          test -s "${src}"
+          cp "${src}" data/profiles/historical_symbol_profiles.json
+          echo "PROFILE_READY=true" >> "${GITHUB_ENV}"
+          echo "Profil artifact ${id} kullaniliyor."
+
+      - name: Kaynak run sonucunu/state'ini indir
+        if: env.PROFILE_READY == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+          SOURCE_WORKFLOW: ${{ github.event.workflow_run.name }}
+        run: |
+          set -euo pipefail
+          mkdir -p data/source /tmp/source
+
+          artifacts="$(gh api "repos/${REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/artifacts?per_page=100")"
+
+          if [ "${SOURCE_WORKFLOW}" = "Manual Telegram Snapshot Scan" ]; then
+            id="$(printf '%s' "${artifacts}" | jq -r --arg prefix "manual-telegram-snapshot-${SOURCE_RUN_ID}" '[.artifacts[] | select(.expired == false and .name == $prefix)] | last | .id // empty')"
+            if [ -n "${id}" ]; then
+              gh api "repos/${REPOSITORY}/actions/artifacts/${id}/zip" > /tmp/source.zip
+              unzip -q -o /tmp/source.zip -d /tmp/source
+              result="$(find /tmp/source -type f -name 'manual_telegram_scan_results.json' | head -n1 || true)"
+              if [ -n "${result}" ]; then
+                cp "${result}" data/source/scan_results.json
+                echo "SOURCE_MODE=results" >> "${GITHUB_ENV}"
+              fi
+            fi
+          fi
+
+          if [ ! -s data/source/scan_results.json ]; then
+            id="$(printf '%s' "${artifacts}" | jq -r '[.artifacts[] | select(.expired == false and .name == "scanner-state-latest")] | last | .id // empty')"
+            if [ -n "${id}" ]; then
+              gh api "repos/${REPOSITORY}/actions/artifacts/${id}/zip" > /tmp/state.zip
+              unzip -q -o /tmp/state.zip -d /tmp/source
+              state="$(find /tmp/source -type f -name 'state.json' | head -n1 || true)"
+              if [ -n "${state}" ]; then
+                cp "${state}" data/source/state.json
+                echo "SOURCE_MODE=state" >> "${GITHUB_ENV}"
+              fi
+            fi
+          fi
+
+          if [ ! -s data/source/scan_results.json ] && [ ! -s data/source/state.json ]; then
+            echo "Kaynak run icin sonuc/state bulunamadi; profil mesaji yok."
+            echo "SOURCE_MODE=none" >> "${GITHUB_ENV}"
+          fi
+
+      - name: Tarihsel profil mesajlarini gonder
+        if: env.PROFILE_READY == 'true' && env.SOURCE_MODE != 'none'
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ vars.TG_CHAT_ID || secrets.TG_CHAT_ID }}
+          TG_THREAD_ID: ${{ vars.TG_THREAD_ID || secrets.TG_THREAD_ID }}
+          SOURCE_START: ${{ github.event.workflow_run.run_started_at }}
+          SOURCE_END: ${{ github.event.workflow_run.updated_at }}
+        run: |
+          set -euo pipefail
+          args=(
+            --profiles data/profiles/historical_symbol_profiles.json
+            --output data/source/profile-followup-audit.json
+          )
+          if [ "${SOURCE_MODE}" = "results" ]; then
+            args+=(--scan-results data/source/scan_results.json)
+          else
+            args+=(--state data/source/state.json --run-start "${SOURCE_START}" --run-end "${SOURCE_END}")
+          fi
+          python historical_profile_sender.py "${args[@]}"
+
+      - name: Follow-up audit artifact
+        if: always() && env.PROFILE_READY == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: historical-profile-followup-${{ github.event.workflow_run.id }}
+          path: data/source/profile-followup-audit.json
+          if-no-files-found: warn
+          retention-days: 14
