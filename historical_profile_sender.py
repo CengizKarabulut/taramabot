@@ -1,8 +1,7 @@
 """Send compact per-stock historical profile messages for scan hits.
 
-The sender accepts either scan-result JSON files or scanner state events from a
-specified run window.  Only external A-I codes are shown; internal strategy
-names never appear in Telegram.
+Only external A-I codes are shown.  Profiles are descriptive fixed-horizon
+history, not recommendations; 15m is explicitly treated as early warning.
 """
 
 from __future__ import annotations
@@ -17,27 +16,17 @@ from typing import Any
 from telegram_sender import get_telegram_sender
 
 
-PERIOD_ORDER = {period: index for index, period in enumerate(("15m", "30m", "45m", "1H", "2H", "4H", "1D", "1W", "1M"))}
+PERIODS = ("15m", "30m", "45m", "1H", "2H", "4H", "1D", "1W", "1M")
+PERIOD_ORDER = {period: index for index, period in enumerate(PERIODS)}
 GROUP_TO_CODE = {
-    "macd_cross": "A",
-    "h8": "B",
-    "i9": "C",
-    "ema": "D",
-    "rsi_macd": "E",
-    "new": "F",
-    "full": "G",
-    "smi": "H",
-    "rsi": "I",
+    "macd_cross": "A", "h8": "B", "i9": "C", "ema": "D",
+    "rsi_macd": "E", "new": "F", "full": "G", "smi": "H", "rsi": "I",
 }
 STRATEGY_TO_CODE = {
-    "macd_cross": "A",
-    "h8": "B",
-    "i9": "C",
-    "ema": "D",
-    "rsi_macd": "E",
-    "new_scan": "F",
-    "rsi": "I",
+    "macd_cross": "A", "h8": "B", "i9": "C", "ema": "D",
+    "rsi_macd": "E", "new_scan": "F", "rsi": "I",
 }
+MIN_RANK_EVENTS = 8
 
 
 def _parse_time(value: str | None) -> datetime | None:
@@ -56,7 +45,6 @@ def _hits_from_results(paths: list[str]) -> list[dict[str, str]]:
     hits = []
     for path in paths:
         payload = json.loads(Path(path).read_text(encoding="utf-8"))
-        # parallel_snapshot_scan summary is a list; worker result is a dict.
         result_list = payload if isinstance(payload, list) else [payload]
         for result in result_list:
             period = result.get("period")
@@ -116,6 +104,33 @@ def _signed(value: Any, digits: int = 2) -> str:
     return f"{number:+.{digits}f}%"
 
 
+def _stock_rank(profiles: dict[str, Any], symbol: str, period: str, code: str) -> tuple[int | None, int]:
+    rows = []
+    for candidate_period in PERIODS:
+        if candidate_period == "15m":
+            continue
+        codes = (((profiles.get("periods") or {}).get(candidate_period) or {}).get(symbol) or {})
+        for candidate_code, profile in codes.items():
+            events = int(profile.get("events", 0) or 0)
+            if events < MIN_RANK_EVENTS:
+                continue
+            rows.append(
+                (
+                    float(profile.get("quality_score", 0) or 0),
+                    events,
+                    candidate_period,
+                    candidate_code,
+                )
+            )
+    rows.sort(key=lambda row: (row[0], row[1], -PERIOD_ORDER.get(row[2], 99)), reverse=True)
+    if period == "15m":
+        return None, len(rows)
+    for index, row in enumerate(rows, start=1):
+        if row[2] == period and row[3] == code:
+            return index, len(rows)
+    return None, len(rows)
+
+
 def _profile_lines(hit: dict[str, str], profiles: dict[str, Any]) -> list[str]:
     symbol, period, code = hit["symbol"], hit["period"], hit["code"]
     profile = (((profiles.get("periods") or {}).get(period) or {}).get(symbol) or {}).get(code)
@@ -139,6 +154,7 @@ def _profile_lines(hit: dict[str, str], profiles: dict[str, Any]) -> list[str]:
         last10_events = int(primary.get("last10_events", 0) or 0)
         last10_success = int(primary.get("last10_success", 0) or 0)
         confidence = html.escape(str(profile.get("confidence", "-")))
+        rank, rank_total = _stock_rank(profiles, symbol, period, code)
 
         if period == "15m":
             title += f" — {score:.0f}/100 · <b>ERKEN UYARI</b>"
@@ -155,6 +171,8 @@ def _profile_lines(hit: dict[str, str], profiles: dict[str, Any]) -> list[str]:
             )
             if last10_events:
                 lines.append(f"Son {last10_events}: <b>{last10_success}/{last10_events}</b> net pozitif")
+            if rank is not None:
+                lines.append(f"Hisse içi tarihsel sıra: <b>#{rank}/{rank_total}</b>")
         else:
             lines.append("Olgunlaşmış ileri-performans örneği henüz yok.")
         if period == "15m":
