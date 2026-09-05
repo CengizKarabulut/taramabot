@@ -1,5 +1,5 @@
 name: Production 4H Shadow
-run-name: "4H Production · source ${{ github.event.workflow_run.id || inputs.source_run_id }}"
+run-name: "4H Production · source ${{ github.event.workflow_run.id || inputs.source_run_id || 'latest-artifact' }}"
 
 on:
   workflow_run:
@@ -11,6 +11,10 @@ on:
         description: "Snapshot workflow run id; empty uses latest successful market-data artifact"
         required: false
         default: ""
+  push:
+    branches: [main]
+    paths:
+      - ".github/production-4h-shadow-bootstrap"
 
 permissions:
   actions: read
@@ -22,7 +26,7 @@ concurrency:
 
 jobs:
   production:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
