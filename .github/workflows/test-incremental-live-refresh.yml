@@ -73,6 +73,15 @@ jobs:
           python validate_scan_coverage.py \
             --db data/market_data.sqlite \
             --summary data/incremental-scan-summary.json
+      - name: Require production-vector 15m signal parity
+        run: |
+          python validate_signal_parity.py \
+            --db data/market_data.sqlite \
+            --period 15m \
+            --max-symbols 40 \
+            --samples-per-symbol 10 \
+            --warmup 240 \
+            --output data/python-vector-parity.json
       - name: Publish verified refreshed snapshot
         uses: actions/upload-artifact@v4
         with:
@@ -82,6 +91,7 @@ jobs:
             data/manifest.json
             data/timeframe-integrity-post-refresh.json
             data/incremental-scan-summary.json
+            data/python-vector-parity.json
           if-no-files-found: error
           retention-days: 30
           compression-level: 6
