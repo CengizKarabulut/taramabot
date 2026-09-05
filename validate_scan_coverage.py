@@ -1,4 +1,9 @@
-"""Fail if any snapshot scan silently covers fewer symbols than the SQLite universe."""
+"""Fail if a snapshot scan silently covers fewer eligible symbols than SQLite.
+
+The scanner requires at least two bars for a symbol/timeframe.  Newly listed
+stocks can legitimately have only one weekly/monthly bar, so coverage is
+compared with the scanner-eligible universe rather than every stored symbol.
+"""
 
 from __future__ import annotations
 
@@ -27,13 +32,30 @@ def main() -> int:
             if not period:
                 failures.append("period eksik")
                 continue
-            expected = len(store.list_symbols("BIST", period))
+
+            stored_symbols = store.list_symbols("BIST", period)
+            eligible = 0
+            for symbol in stored_symbols:
+                frame = store.load_dataframe(symbol, "BIST", period, limit=2)
+                if frame is not None and len(frame) >= 2:
+                    eligible += 1
+
             scanned = int(result.get("total_scanned", 0) or 0)
-            rows.append({"period": period, "expected": expected, "scanned": scanned})
-            if expected <= 0:
+            rows.append(
+                {
+                    "period": period,
+                    "stored": len(stored_symbols),
+                    "eligible": eligible,
+                    "insufficient_history": len(stored_symbols) - eligible,
+                    "scanned": scanned,
+                }
+            )
+            if not stored_symbols:
                 failures.append(f"{period}: snapshot evreni bos")
-            elif scanned != expected:
-                failures.append(f"{period}: scanned={scanned}, expected={expected}")
+            elif eligible <= 0:
+                failures.append(f"{period}: taranabilir sembol yok")
+            elif scanned != eligible:
+                failures.append(f"{period}: scanned={scanned}, eligible={eligible}")
 
     payload = {
         "passed": not failures,
