@@ -34,6 +34,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-cached-scan.txt
+          pip install pytest
       - name: Compile
         run: python -m py_compile multi_timeframe_context.py
       - name: Unit tests
