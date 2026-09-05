@@ -105,7 +105,13 @@ def _safe_plan(frame: pd.DataFrame, strategy: str, setup: str | None = None) -> 
         return {"error": str(exc)}
 
 
-def evaluate_symbol(symbol: str, frame: pd.DataFrame, *, min_score: int = 70) -> dict[str, Any] | None:
+def evaluate_symbol(
+    symbol: str,
+    frame: pd.DataFrame,
+    *,
+    daily_frame: pd.DataFrame | None = None,
+    min_score: int = 70,
+) -> dict[str, Any] | None:
     frame = closed_4h_frame(frame)
     if frame is None or len(frame) < MIN_BARS:
         return None
@@ -115,7 +121,10 @@ def evaluate_symbol(symbol: str, frame: pd.DataFrame, *, min_score: int = 70) ->
 
     smi = check_smi_macd_signal(frame)
     has_smi_full = bool(smi.get("full_buy_signal")) and passes_strategy_filter(
-        frame, "smi_macd", signal_kind="full"
+        frame,
+        "smi_macd",
+        signal_kind="full",
+        daily_df=daily_frame,
     )
 
     if not (has_pullback or has_smi_full):
@@ -144,6 +153,7 @@ def evaluate_symbol(symbol: str, frame: pd.DataFrame, *, min_score: int = 70) ->
         },
         "smi_macd": {
             "details": smi.get("details", {}),
+            "daily_limit_filter_source": daily_frame is not None and not daily_frame.empty,
         },
     }
     if has_pullback:
@@ -168,8 +178,14 @@ def build_report(database: str, *, exchange: str = "BIST", min_score: int = 70, 
             symbols = symbols[:max_symbols]
         for symbol in symbols:
             frame = store.load_dataframe(symbol, exchange, PERIOD)
+            daily_frame = store.load_dataframe(symbol, exchange, "1D", limit=60)
             try:
-                item = evaluate_symbol(symbol, frame, min_score=min_score)
+                item = evaluate_symbol(
+                    symbol,
+                    frame,
+                    daily_frame=daily_frame,
+                    min_score=min_score,
+                )
             except Exception:
                 skipped += 1
                 continue
