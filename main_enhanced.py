@@ -1,7 +1,8 @@
 """Risk-aware compatibility layer for main.py.
 
-The legacy orchestration remains untouched.  Only the compact result serializer
-is replaced so exit plans survive worker -> summary -> Telegram flow.
+Internal strategy keys remain stable for scanner/backtest parity. External
+summaries use opaque display codes and compact result artifacts expose only
+levels needed by the presentation layer.
 """
 
 from __future__ import annotations
@@ -26,6 +27,19 @@ PLAN_KEY_BY_GROUP = {
     "i9": "i9",
 }
 
+# Stable external aliases.  These match the TradingView private panel.
+PRIVATE_DISPLAY_CODE = {
+    "macd_cross": "A",
+    "h8": "B",
+    "i9": "C",
+    "ema": "D",
+    "rsi_macd": "E",
+    "new": "F",
+    "full": "G",
+    "smi": "H",
+    "rsi": "I",
+}
+
 
 def _compact_item(item: dict, strategy_key: str) -> dict:
     plan_key = PLAN_KEY_BY_GROUP[strategy_key]
@@ -40,7 +54,7 @@ def _compact_item(item: dict, strategy_key: str) -> dict:
         "stale_bar": bool(item.get("stale_bar", False)),
     }
     if plan:
-        compact["exit_plan"] = plan
+        # Do not serialize family/profile internals into outward-facing snapshots.
         compact["stop"] = plan.get("stop")
         compact["tp1"] = plan.get("tp1")
         compact["tp2"] = plan.get("tp2")
@@ -50,7 +64,6 @@ def _compact_item(item: dict, strategy_key: str) -> dict:
         compact["tp2_pct"] = plan.get("tp2_pct")
         compact["tp3_pct"] = plan.get("tp3_pct")
         compact["risk_atr"] = plan.get("risk_atr")
-        compact["exit_family"] = plan.get("family")
     return compact
 
 
@@ -86,7 +99,7 @@ def _build_common_signal_map(all_results: list[dict]) -> dict:
                 if not symbol:
                     continue
                 symbol_map.setdefault(symbol, {}).setdefault(period, []).append({
-                    "code": legacy.STRATEGY_NAMES[strategy_key],
+                    "code": PRIVATE_DISPLAY_CODE[strategy_key],
                     "change": item.get("change"),
                     "daily_change": item.get("daily_change", item.get("change")),
                     "current_price": item.get("current_price", item.get("close")),
