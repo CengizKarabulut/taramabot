@@ -2,14 +2,16 @@
 
 The rich technical commentary/reporting remains in decision_panel_v2, while
 signal state, score and setup selection are replaced with the Pine-compatible
-v6.4.5 layer.  This keeps Telegram/report ergonomics without allowing the live
-scanner and TradingView indicator to silently use different entry logic.
+v6.4.5 layer.  The primary snapshot scanner now exposes KARAR beside A-I; this
+standalone adapter stays available for audit/research artifacts without sending
+a duplicate Telegram message in the same workflow workspace.
 """
 
 from __future__ import annotations
 
 import json
 import math
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -24,6 +26,7 @@ from strategy_exit_profiles import get_exit_profile
 
 _legacy_analyze_symbol = _v2.analyze_symbol
 _legacy_build_telegram_report = _v2.build_telegram_report
+INTEGRATED_DECISION_FLAG = Path("data/decision-integrated.flag")
 
 
 def _profile_for_setup(setup: str):
@@ -120,13 +123,25 @@ def _rewrite_summary_metadata(output_dir: Path | None) -> None:
     payload["engine"] = "decision_panel_v6.4.5"
     payload["signal_model"] = "pine-compatible-v6.4.5"
     payload["risk_model"] = "setup-specific shared exit_engine"
+    payload["integrated_scan_family"] = "KARAR"
     payload["notes"] = [
         "Sinyal/puan/setup katmanı TradingView v6.4.5 ile aynı no-lookahead v6.4.4 çekirdeğinden gelir.",
+        "Canlı snapshot Telegram akışında KARAR, A-I ile aynı tarama paketinin onuncu ailesidir.",
+        "Bu standalone çıktı yalnız audit/araştırma içindir; entegre paket gönderildiyse ayrı Telegram mesajı bastırılır.",
         "Pullback v6.4.5 filtresi RVOL<=2.0 ve fiyatın 20-bar tepesinin en az %95'inde olmasını ister.",
         "Pullback çıkışı uzun-tarih walk-forward/OOS doğrulamasıyla promote edilmiştir; Trend ve Breakout mevcut profillerini korur.",
         "Relatif güç, XU100 benchmark serisi snapshot'a ayrı eklenene kadar bilgi amaçlı beklemededir.",
     ]
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=str) + "\n", encoding="utf-8")
+
+
+def _suppress_duplicate_telegram_if_integrated() -> bool:
+    force = os.getenv("ALLOW_SEPARATE_DECISION_TELEGRAM", "").strip().lower() in {"1", "true", "yes", "on"}
+    if force or not INTEGRATED_DECISION_FLAG.is_file() or "--telegram" not in sys.argv:
+        return False
+    sys.argv = [arg for arg in sys.argv if arg not in {"--telegram", "--telegram-on-change"}]
+    print("KARAR zaten A-I tarama paketinde gonderildi; ayri Karar Paneli Telegram mesaji bastirildi.")
+    return True
 
 
 def main() -> int:
@@ -135,6 +150,7 @@ def main() -> int:
     _v2.analyze_symbol = analyze_symbol
     _v2.build_telegram_report = build_telegram_report
     output_dir = _output_dir_from_argv()
+    _suppress_duplicate_telegram_if_integrated()
     code = _v2.main()
     _rewrite_summary_metadata(output_dir)
     return code
