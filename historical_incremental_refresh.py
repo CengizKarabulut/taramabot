@@ -29,6 +29,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 TZ_TURKEY = ZoneInfo("Europe/Istanbul")
+MIN_REASONABLE_BIST_UNIVERSE = 400
+
+
+def _symbols(values) -> list[str]:
+    return sorted({
+        str(value).strip().upper()
+        for value in (values or [])
+        if str(value).strip()
+    })
 
 
 def _connection() -> TvDatafeed:
@@ -73,6 +82,34 @@ def _fetch(
     return None
 
 
+def _resolve_archive_universe(existing_symbols: set[str]) -> list[str]:
+    """Keep the durable archive universe if external discovery is incomplete."""
+    existing = _symbols(existing_symbols)
+    discovered = _symbols(BIST_STOCKS)
+
+    if existing:
+        discovery_is_complete = len(discovered) >= max(
+            MIN_REASONABLE_BIST_UNIVERSE,
+            int(len(existing) * 0.80),
+        )
+        if discovery_is_complete:
+            return sorted(set(existing).union(discovered))
+        if discovered:
+            logger.warning(
+                "Borsapy/config listesi eksik (%s); %s mevcut history sembolu korunuyor.",
+                len(discovered),
+                len(existing),
+            )
+        return existing
+
+    if len(discovered) < MIN_REASONABLE_BIST_UNIVERSE:
+        raise RuntimeError(
+            "History bootstrap icin BIST evreni eksik: "
+            f"{len(discovered)} < {MIN_REASONABLE_BIST_UNIVERSE}."
+        )
+    return discovered
+
+
 def update_archive(
     database: str,
     manifest: str,
@@ -86,10 +123,6 @@ def update_archive(
     if period not in PERIOD_INTERVALS:
         raise ValueError(f"Desteklenmeyen periyot: {period}")
 
-    symbols = list(dict.fromkeys(BIST_STOCKS))
-    if not symbols:
-        raise RuntimeError("BIST sembol listesi bos")
-
     db_path = Path(database)
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -100,7 +133,8 @@ def update_archive(
     fetched_rows = 0
 
     with MarketDataStore(str(db_path)) as store:
-        existing_symbols = set(store.list_symbols("BIST", period))
+        existing_symbols = set(_symbols(store.list_symbols("BIST", period)))
+        symbols = _resolve_archive_universe(existing_symbols)
         mode = "incremental" if existing_symbols else "bootstrap"
 
         for position, symbol in enumerate(symbols, start=1):
@@ -150,6 +184,7 @@ def update_archive(
         store.set_metadata("last_refresh_mode", mode)
         store.set_metadata("bootstrap_bars", int(bootstrap_bars))
         store.set_metadata("recent_bars", int(recent_bars))
+        store.set_metadata("last_refresh_universe_size", str(len(symbols)))
         store.set_metadata("last_refresh", datetime.now(TZ_TURKEY).isoformat())
         payload = store.build_manifest()
 
