@@ -60,14 +60,20 @@ jobs:
           if [ -f /tmp/market-data/data/market_data.sqlite ]; then cp /tmp/market-data/data/market_data.sqlite data/market_data.sqlite; else cp /tmp/market-data/market_data.sqlite data/market_data.sqlite; fi
           test -s data/market_data.sqlite
       - name: Build closed-bar 4H candidate report
-        run: |
-          python production_4h.py --db data/market_data.sqlite --exchange BIST --min-score 75 --output-dir data/production-4h
-      - name: Build professional visual and structure report
+        run: python production_4h.py --db data/market_data.sqlite --exchange BIST --min-score 75 --output-dir data/production-4h
+      - name: Build professional technical charts
+        env:
+          MPLBACKEND: Agg
+        run: python production_4h_visual.py --db data/market_data.sqlite --candidates data/production-4h/candidates.json --output-dir data/production-4h
+      - name: Build concise institutional reports
         env:
           MPLBACKEND: Agg
         run: |
-          python production_4h_visual.py --db data/market_data.sqlite --candidates data/production-4h/candidates.json --output-dir data/production-4h
+          python institutional_stock_report.py --visual-json data/production-4h/visual_candidates.json --fundamentals-csv data/fundamentals/latest.csv --output-dir data/production-4h/reports
           cat data/production-4h/visual_report.md >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Kurumsal kısa raporlar" >> "$GITHUB_STEP_SUMMARY"
+          find data/production-4h/reports -name report.md -maxdepth 2 -print | sort | while read f; do cat "$f" >> "$GITHUB_STEP_SUMMARY"; echo "" >> "$GITHUB_STEP_SUMMARY"; done
       - name: Upload 4H production report
         uses: actions/upload-artifact@v4
         with:
