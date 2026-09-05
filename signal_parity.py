@@ -307,7 +307,7 @@ def fresh_signal_indexes(signal_frame: pd.DataFrame, strategy: str) -> list[int]
     if strategy not in STRATEGIES:
         raise ValueError(f"Bilinmeyen strateji: {strategy}")
     column = f"fresh_{strategy}"
-    values = signal_frame[column].to_numpy(dtype=bool)
+    values = signal_frame[column].to_numpy(dtype=bool, copy=True)
     # Last bar cannot open a next-bar trade in historical simulation.
     if len(values):
         values[-1] = False
