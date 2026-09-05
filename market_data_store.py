@@ -191,6 +191,19 @@ class MarketDataStore:
         except json.JSONDecodeError:
             return row[0]
 
+    def retain_symbols(self, exchange: str, allowed_symbols: Iterable[str]) -> int:
+        """Delete live-cache rows outside an explicitly trusted symbol universe."""
+        if self.read_only:
+            raise RuntimeError("Salt okunur veri deposu guncellenemez")
+        allowed = sorted({str(symbol).strip().upper() for symbol in allowed_symbols if str(symbol).strip()})
+        if not allowed:
+            raise ValueError("Bos sembol evreniyle prune yapilamaz")
+        placeholders = ",".join("?" for _ in allowed)
+        sql = f"DELETE FROM candles WHERE exchange = ? AND UPPER(symbol) NOT IN ({placeholders})"
+        with self.connection:
+            cursor = self.connection.execute(sql, [str(exchange), *allowed])
+        return int(cursor.rowcount if cursor.rowcount is not None and cursor.rowcount >= 0 else 0)
+
     def upsert_dataframe(
         self,
         symbol: str,
