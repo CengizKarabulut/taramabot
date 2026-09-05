@@ -1,7 +1,9 @@
-"""Send compact per-stock historical profile messages for scan hits.
+"""Send per-stock historical profile messages for scan hits.
 
-Only external A-I codes are shown.  Profiles are descriptive fixed-horizon
+Only external A-I codes are shown. Profiles are descriptive fixed-horizon
 history, not recommendations; 15m is explicitly treated as early warning.
+Each card also contains a deterministic analyst-style interpretation derived
+only from the stored historical metrics.
 """
 
 from __future__ import annotations
@@ -96,10 +98,16 @@ def _dedupe(hits: list[dict[str, str]]) -> list[dict[str, str]]:
     return output
 
 
-def _signed(value: Any, digits: int = 2) -> str:
+def _number(value: Any) -> float | None:
     try:
-        number = float(value)
+        return float(value)
     except (TypeError, ValueError):
+        return None
+
+
+def _signed(value: Any, digits: int = 2) -> str:
+    number = _number(value)
+    if number is None:
         return "-"
     return f"{number:+.{digits}f}%"
 
@@ -129,6 +137,138 @@ def _stock_rank(profiles: dict[str, Any], symbol: str, period: str, code: str) -
         if row[2] == period and row[3] == code:
             return index, len(rows)
     return None, len(rows)
+
+
+def _analyst_commentary(
+    *,
+    symbol: str,
+    period: str,
+    code: str,
+    profile: dict[str, Any],
+    best: dict[str, Any] | None,
+    rank: int | None,
+    rank_total: int,
+) -> str:
+    """Turn stored statistics into a concise, non-promotional analyst reading."""
+    events = int(profile.get("events", 0) or 0)
+    recent = int(profile.get("recent_3y_signals", 0) or 0)
+    score = float(profile.get("quality_score", 0) or 0)
+    primary = profile.get("primary") or {}
+    positive = _number(primary.get("net_positive_rate_pct"))
+    median_net = _number(primary.get("median_net_pct"))
+    mfe = _number(primary.get("avg_mfe_pct"))
+    mae = _number(primary.get("avg_mae_pct"))
+    last_n = int(primary.get("last10_events", 0) or 0)
+    last_success = int(primary.get("last10_success", 0) or 0)
+
+    parts: list[str] = []
+
+    # 1) Statistical reliability first: do not let attractive percentages hide small samples.
+    if events < 5:
+        parts.append(
+            f"{code}/{period} geçmişi yalnız {events} olgun olaya dayanıyor; görünen performans olumlu olsa bile örneklem istatistiksel olarak çok sınırlı."
+        )
+    elif events < MIN_RANK_EVENTS:
+        parts.append(
+            f"{code}/{period} için {events} olgun olay bulunuyor; ilk eğilim okunabilir ancak güvenilir bir tarihsel üstünlük demek için örneklem henüz yeterince geniş değil."
+        )
+    elif events < 20:
+        parts.append(
+            f"{code}/{period} profili {events} olgun olayla orta büyüklükte bir örnekleme sahip; sonuçlar anlamlı bir eğilim veriyor fakat tek başına kesinlik taşımıyor."
+        )
+    else:
+        parts.append(
+            f"{code}/{period} profili {events} olgun olayla görece geniş bir geçmişe dayanıyor; bu nedenle istatistikler küçük örneklem profillerine göre daha anlamlı."
+        )
+
+    # 2) Direction and payoff quality.
+    if positive is not None and median_net is not None:
+        if positive >= 65 and median_net > 0:
+            parts.append(
+                f"Net pozitiflik %{positive:.0f} ve medyan getiri {_signed(median_net)} ile tarihsel dağılım belirgin biçimde olumlu tarafa eğiliyor."
+            )
+        elif positive >= 55 and median_net > 0:
+            parts.append(
+                f"Net pozitiflik %{positive:.0f} ve {_signed(median_net)} medyan getiri, ılımlı fakat pozitif bir tarihsel eğilime işaret ediyor."
+            )
+        elif positive >= 50 and median_net > 0:
+            parts.append(
+                f"Pozitif sonuçlar çoğunlukta olsa da (%{positive:.0f}), {_signed(median_net)} medyan getiri avantajın sınırlı olduğunu gösteriyor."
+            )
+        elif median_net <= 0:
+            parts.append(
+                f"Net pozitiflik %{positive:.0f} seviyesinde ve medyan getiri {_signed(median_net)}; geçmiş dağılım mevcut sinyal için belirgin bir istatistiksel üstünlük göstermiyor."
+            )
+        else:
+            parts.append(
+                f"Net pozitiflik %{positive:.0f}; sonuç dağılımı dengeli olduğundan sinyalin tek başına güçlü bir tarihsel avantaj sunduğunu söylemek zor."
+            )
+
+    # 3) Excursion balance: reward potential versus adverse movement.
+    if mfe is not None and mae is not None:
+        adverse = abs(mae)
+        ratio = (mfe / adverse) if adverse > 0 else None
+        if ratio is not None and ratio >= 2.0:
+            parts.append(
+                f"Lehte hareket potansiyeli ({_signed(mfe)}) aleyhte harekete ({_signed(mae)}) göre belirgin üstün; geçmişte fırsat/risk dengesi kuvvetli olmuş."
+            )
+        elif ratio is not None and ratio >= 1.25:
+            parts.append(
+                f"MFE {_signed(mfe)} ve MAE {_signed(mae)} dengesi lehte, ancak fiyatın sinyal sonrasında anlamlı geri çekilme üretebildiği de görülüyor."
+            )
+        elif ratio is not None:
+            parts.append(
+                f"MFE {_signed(mfe)} ile MAE {_signed(mae)} birbirine yakın; geçmişte getiri potansiyeline karşı oynaklık/risk belirgin olduğundan seçicilik önemli."
+            )
+
+    # 4) Recency: recent outcomes can confirm or weaken the long-run profile.
+    if last_n >= 3:
+        recent_rate = 100.0 * last_success / last_n
+        if recent_rate >= 70:
+            parts.append(
+                f"Yakın dönem de profili destekliyor: son {last_n} olayın {last_success}'i net pozitif."
+            )
+        elif recent_rate <= 40:
+            parts.append(
+                f"Yakın dönem uzun vadeli tabloya göre zayıf: son {last_n} olayın yalnız {last_success}'i net pozitif."
+            )
+        else:
+            parts.append(
+                f"Son {last_n} olayda {last_success} pozitif sonuç var; yakın dönem görünümü karışık ve güçlü bir teyit üretmiyor."
+            )
+    elif recent > 0 and events > recent:
+        parts.append(f"Son 3 yılda yalnız {recent} sinyal bulunması, yakın dönem örneklemini sınırlıyor.")
+
+    # 5) Relative standing inside the stock and relation to the stock's best profile.
+    if period == "15m":
+        parts.append("15m bu sistemde işlem onayı değil, erken uyarı katmanı olarak değerlendirilmelidir.")
+    elif rank is not None and rank_total > 0:
+        percentile = rank / rank_total
+        if percentile <= 0.20:
+            parts.append(f"Hisse içi sıralamada #{rank}/{rank_total}; bu kombinasyon {symbol} için üst grupta yer alıyor.")
+        elif percentile >= 0.70:
+            parts.append(f"Hisse içi sıralamada #{rank}/{rank_total}; {symbol} geçmişinde daha güçlü kombinasyonlar bulunuyor.")
+
+    if best:
+        best_code = str(best.get("code", "-"))
+        best_period = str(best.get("period", "-"))
+        best_score = float(best.get("quality_score", 0) or 0)
+        is_same = best_code == code and best_period == period
+        if is_same:
+            parts.append(
+                f"Bu aynı zamanda {symbol} için yeterli örneklemli en güçlü tarihsel profil ({best_score:.0f}/100)."
+            )
+        elif best_score >= score + 10:
+            parts.append(
+                f"Buna karşılık hissenin daha güçlü tarihsel profili {best_code}/{best_period} ({best_score:.0f}/100); mevcut sinyal ikincil teyit niteliğinde okunmalı."
+            )
+        else:
+            parts.append(
+                f"Hissenin en güçlü tarihsel profili {best_code}/{best_period} ({best_score:.0f}/100); mevcut profil buna yakın fakat lider değil."
+            )
+
+    # Keep Telegram cards readable; the first four/five sentences carry the signal.
+    return " ".join(parts[:5])
 
 
 def _profile_lines(hit: dict[str, str], profiles: dict[str, Any]) -> list[str]:
@@ -173,6 +313,18 @@ def _profile_lines(hit: dict[str, str], profiles: dict[str, Any]) -> list[str]:
                 lines.append(f"Son {last10_events}: <b>{last10_success}/{last10_events}</b> net pozitif")
             if rank is not None:
                 lines.append(f"Hisse içi tarihsel sıra: <b>#{rank}/{rank_total}</b>")
+
+            commentary = _analyst_commentary(
+                symbol=symbol,
+                period=period,
+                code=code,
+                profile=profile,
+                best=best,
+                rank=rank,
+                rank_total=rank_total,
+            )
+            if commentary:
+                lines.append(f"\n<b>Analist değerlendirmesi:</b> {html.escape(commentary)}")
         else:
             lines.append("Olgunlaşmış ileri-performans örneği henüz yok.")
         if period == "15m":
@@ -189,7 +341,7 @@ def _profile_lines(hit: dict[str, str], profiles: dict[str, Any]) -> list[str]:
     return lines
 
 
-def build_messages(hits: list[dict[str, str]], profiles: dict[str, Any], max_items: int = 6) -> list[str]:
+def build_messages(hits: list[dict[str, str]], profiles: dict[str, Any], max_items: int = 3) -> list[str]:
     messages = []
     grouped: dict[str, list[dict[str, str]]] = {}
     for hit in _dedupe(hits):
