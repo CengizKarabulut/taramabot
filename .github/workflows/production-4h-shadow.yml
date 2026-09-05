@@ -83,7 +83,7 @@ jobs:
           python production_4h.py \
             --db data/market_data.sqlite \
             --exchange BIST \
-            --min-score 70 \
+            --min-score 75 \
             --output-dir data/production-4h
           cat data/production-4h/report.md >> "$GITHUB_STEP_SUMMARY"
 
