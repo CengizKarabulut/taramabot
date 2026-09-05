@@ -1,0 +1,773 @@
+//@version=6
+indicator("BIST 10 Sistem Durum Paneli v1.6 PRIVATE", overlay=true, max_bars_back=2500)
+
+// Karar Paneli'nden bağımsız 10-sistem görünümü.
+// 9 klasik tarama + Karar Paneli. Teknik bileşen isimleri kullanıcı arayüzünde gizlidir.
+// v1.2: Pine v6 uyumluluk temizliği (ta.sum yok), Karar planı tuple'ları önceden
+// hesaplanır ve tablo merge işlemi yalnız ilk barda yapılır.
+
+// ============================================================================
+// 1. GENEL
+// ============================================================================
+onlyClosedBar = input.bool(true, "Sadece kapanmış mumda teyit et", group="Genel")
+dailyOnly = input.bool(false, "Yalnız 1G kullan", group="Genel")
+showPanel = input.bool(true, "Strateji panelini göster", group="Panel")
+panelPosOpt = input.string("Sağ Üst", "Panel konumu", options=["Sağ Üst", "Sağ Orta", "Sol Üst", "Sol Orta"], group="Panel")
+panelSizeOpt = input.string("Küçük", "Panel boyutu", options=["Mini", "Küçük", "Normal"], group="Panel")
+showConsensusMarkers = input.bool(false, "3+ koşul konsensüs işaretlerini göster", group="Görsel")
+showTradeMarkers = input.bool(false, "Plan giriş/çıkış işaretlerini göster", group="Görsel")
+traceStrategy = input.string("Kapalı", "Sinyal mumunu doğrula", options=["Kapalı", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "Tümü"], group="Doğrulama")
+showActiveTrace = input.bool(true, "Seçilen stratejinin aktif koşul mumlarını da göster", group="Doğrulama")
+
+panelPosition = panelPosOpt == "Sol Üst" ? position.top_left : panelPosOpt == "Sol Orta" ? position.middle_left : panelPosOpt == "Sağ Orta" ? position.middle_right : position.top_right
+panelTextSize = panelSizeOpt == "Mini" ? size.tiny : panelSizeOpt == "Normal" ? size.normal : size.small
+isDaily = timeframe.isdaily
+closedGate = not onlyClosedBar or barstate.isconfirmed
+timeframeOk = not dailyOnly or isDaily
+
+f_tf_text() =>
+    string tf = timeframe.period
+    tf := timeframe.period == "1" ? "1 DK" :
+      timeframe.period == "3" ? "3 DK" :
+      timeframe.period == "5" ? "5 DK" :
+      timeframe.period == "15" ? "15 DK" :
+      timeframe.period == "30" ? "30 DK" :
+      timeframe.period == "45" ? "45 DK" :
+      timeframe.period == "60" ? "1 SA" :
+      timeframe.period == "120" ? "2 SA" :
+      timeframe.period == "180" ? "3 SA" :
+      timeframe.period == "240" ? "4 SA" :
+      timeframe.period == "D" ? "1G" :
+      timeframe.period == "W" ? "1 HFT" :
+      timeframe.period == "M" ? "1 AY" : timeframe.period
+    tf
+
+tfText = f_tf_text()
+
+// ============================================================================
+// 2. ORTAK HESAPLAMALAR
+// ============================================================================
+// Pandas ewm(alpha=1/length, adjust=false) ile aynı alpha:
+// ta.ema uzunluğu 2*length-1 olduğunda alpha = 1/length olur.
+f_ewm_inv(float source, int length) =>
+    ta.ema(source, length * 2 - 1)
+
+// indicators.py calc_rsi: ilk delta na kalır; avg_loss=0 ise sonuç na.
+f_rsi_raw(float source, int length) =>
+    float change = ta.change(source)
+    float gain = math.max(change, 0.0)
+    float loss = math.max(-change, 0.0)
+    float avgGain = f_ewm_inv(gain, length)
+    float avgLoss = f_ewm_inv(loss, length)
+    na(avgLoss) or avgLoss == 0 ? na : 100.0 - (100.0 / (1.0 + avgGain / avgLoss))
+
+// filters.py calc_rsi: ilk delta için gain/loss 0 ile başlar.
+f_rsi_filter(float source, int length) =>
+    float change = ta.change(source)
+    float gain = na(change) ? 0.0 : math.max(change, 0.0)
+    float loss = na(change) ? 0.0 : math.max(-change, 0.0)
+    float avgGain = f_ewm_inv(gain, length)
+    float avgLoss = f_ewm_inv(loss, length)
+    na(avgLoss) or avgLoss == 0 ? na : 100.0 - (100.0 / (1.0 + avgGain / avgLoss))
+
+// Karar Paneli araştırmasındaki RSI, sıfır kayıpta 100 kabul eder.
+f_rsi_dp(float source, int length) =>
+    float change = ta.change(source)
+    float gain = math.max(change, 0.0)
+    float loss = math.max(-change, 0.0)
+    float avgGain = f_ewm_inv(gain, length)
+    float avgLoss = f_ewm_inv(loss, length)
+    na(avgLoss) ? na : avgLoss == 0 ? 100.0 : 100.0 - (100.0 / (1.0 + avgGain / avgLoss))
+
+f_double_smooth(float source, int length) =>
+    ta.ema(ta.ema(source, length), length)
+
+sma5 = ta.sma(close, 5)
+sma8 = ta.sma(close, 8)
+sma20 = ta.sma(close, 20)
+sma21 = ta.sma(close, 21)
+sma50 = ta.sma(close, 50)
+sma55 = ta.sma(close, 55)
+sma200 = ta.sma(close, 200)
+
+ema5 = ta.ema(close, 5)
+ema8 = ta.ema(close, 8)
+ema13 = ta.ema(close, 13)
+ema21 = ta.ema(close, 21)
+ema55 = ta.ema(close, 55)
+ema200 = ta.ema(close, 200)
+
+[coreA, coreB, coreHist] = ta.macd(close, 12, 26, 9)
+coreActualCross = coreA[1] <= coreB[1] and coreA > coreB
+coreContinuation = not coreActualCross and coreA > coreB and coreA > coreA[1]
+coreCrossOrRise = coreActualCross or coreContinuation
+
+rangeHigh = ta.highest(high, 10)
+rangeLow = ta.lowest(low, 10)
+rangeWidth = rangeHigh - rangeLow
+rangeRelative = close - (rangeHigh + rangeLow) / 2.0
+oscNum = f_double_smooth(rangeRelative, 3)
+oscDen = f_double_smooth(rangeWidth, 3)
+// indicators.py den=0 durumunda 0.000001 kullanıyor.
+oscMain = 200.0 * oscNum / (math.abs(oscDen) < 0.000001 ? 0.000001 : oscDen)
+oscRef = ta.ema(oscMain, 3)
+oscActualCross = oscMain[1] <= oscRef[1] and oscMain > oscRef
+oscContinuation = not oscActualCross and oscMain > oscRef and oscMain > oscMain[1]
+oscCrossOrRise = oscActualCross or oscContinuation
+
+// Ham strateji RSI'ları ile filtre RSI'larını ayırıyoruz; repo da iki ayrı hesap kullanıyor.
+rsi7 = f_rsi_raw(close, 7)
+rsi14 = f_rsi_raw(close, 14)
+rsi7Filter = f_rsi_filter(close, 7)
+rsi14Filter = f_rsi_filter(close, 14)
+
+// exit_engine.py / filters.py ATR: pandas ewm(alpha=1/14, adjust=false).
+trForAtr = ta.tr(true)
+atr14Raw = f_ewm_inv(trForAtr, 14)
+atr14 = bar_index >= 13 ? atr14Raw : na
+
+vol10 = ta.sma(volume, 10)
+vol20 = ta.sma(volume, 20)
+volRatio10 = vol10 > 0 ? volume / vol10 : 0.0
+volRatio20 = vol20 > 0 ? volume / vol20 : 0.0
+
+prevClose = close[1]
+// Repo, 15m/30m/45m/1H/2H/4H taramalarında tavan kontrolünü GÜNLÜK değişimden yapar.
+// Geçmiş intraday mumlarda lookahead yaratmamak için önceki seans kapanışını yerel olarak taşırız.
+newSession = ta.change(time("D")) != 0
+var float prevSessionClose = na
+if newSession
+    prevSessionClose := close[1]
+intradayDailyChange = not na(prevSessionClose) and prevSessionClose > 0 ? ((close - prevSessionClose) / prevSessionClose) * 100.0 : 0.0
+sameTfChange = prevClose > 0 ? ((close - prevClose) / prevClose) * 100.0 : 0.0
+nearLimit = timeframe.isintraday ? intradayDailyChange >= 9.5 : sameTfChange >= 9.5
+limitOk = not nearLimit
+
+// ta.sum yerine matematiksel olarak eşdeğer SMA * length.
+// 10 barlık mutlak değişim toplamı = SMA(abs(change), 10) * 10.
+erDirection = math.abs(close - close[10])
+erNoise = ta.sma(math.abs(ta.change(close)), 10) * 10.0
+er = erNoise > 0 ? erDirection / erNoise : 0.0
+trendRegime = er >= 0.30
+softTrendRegime = er >= 0.22
+reversalRegime = er <= 0.35
+
+barRange = high - low
+mfMultiplier = barRange != 0 ? ((close - low) - (high - close)) / barRange : 0.0
+mfVolume = mfMultiplier * volume
+// sum(MFV,20)/sum(volume,20) oranında iki taraf da aynı 20'ye bölündüğü için
+// SMA(MFV,20)/SMA(volume,20) birebir aynı değeri verir.
+mfVolumeAvg20 = ta.sma(mfVolume, 20)
+volumeAvg20ForCmf = ta.sma(volume, 20)
+cmf20 = na(volumeAvg20ForCmf) or volumeAvg20ForCmf == 0 ? 0.0 : mfVolumeAvg20 / volumeAvg20ForCmf
+directionalVolume = volume > vol20 * 1.5 and close > open and cmf20 > 0
+
+above50 = close > sma50
+above200 = close > sma200
+priorLow5 = ta.lowest(low[1], 5)
+reversalStructure = close > ema8 and close > open and close > close[1] and low >= priorLow5
+emaExtensionOk = (close - ema21 <= atr14 * 2.5) and (na(rsi14Filter) or rsi14Filter <= 75)
+rsiHeatOk = na(rsi7Filter) or rsi7Filter <= 85
+
+// ============================================================================
+// 3. 9 KLASİK TARAMA
+// ============================================================================
+smCore = oscCrossOrRise and oscMain < 0 and coreHist < 0 and coreHist > coreHist[1]
+smFullRaw = smCore and above200 and volume > vol20 * 1.5
+smEarlyRaw = smCore and not smFullRaw
+smEarly = timeframeOk and limitOk and smEarlyRaw and reversalRegime and reversalStructure and directionalVolume
+smFull = timeframeOk and limitOk and smFullRaw and directionalVolume
+
+rvCrossOrRise = (rsi7[1] <= 50 and rsi7 > 50) or (rsi7 > 50 and rsi7 > rsi7[1])
+rvRaw = rsi7 > 60 and rvCrossOrRise and volume > vol10 * 1.5
+rv = timeframeOk and limitOk and rvRaw and above50 and trendRegime and directionalVolume and rsiHeatOk
+
+amvRaw = volume > vol20 * 1.5 and close > sma5 and close > sma8 and close > sma21 and close > sma50 and close > sma55 and close > sma200 and coreA > 0 and coreCrossOrRise
+amv = timeframeOk and limitOk and amvRaw
+
+rmvRsi = ((rsi14[1] <= 50 and rsi14 > 50) or (rsi14 > 50 and rsi14 > rsi14[1])) and rsi14 < 70
+rmvRaw = rmvRsi and coreCrossOrRise and volume > vol20 * 1.5
+rmv = timeframeOk and limitOk and rmvRaw and above200 and trendRegime and directionalVolume
+
+evCond4 = (ema8[1] <= ema13[1] and ema8 > ema13) or (ema8 > ema13 and ema8 > ema8[1])
+evCond5 = (ema5[1] <= ema8[1] and ema5 > ema8) or (ema5 > ema8 and ema5 > ema5[1])
+evCond6 = (ema5[1] <= ema13[1] and ema5 > ema13) or (ema5 > ema13 and ema5 > ema5[1])
+evRaw = close > ema200 and close > ema55 and close > ema21 and evCond4 and evCond5 and evCond6 and volRatio20 > 1.5
+ev = timeframeOk and limitOk and evRaw and emaExtensionOk
+
+m1Raw = rsi14 > 30 and coreCrossOrRise and coreA > 0
+m1 = timeframeOk and limitOk and m1Raw and above50 and trendRegime and directionalVolume
+
+sm1Raw = oscCrossOrRise and oscMain > 0 and coreHist > 0 and coreHist > coreHist[1]
+sm1 = timeframeOk and limitOk and sm1Raw and above50 and trendRegime and directionalVolume
+
+smv1Raw = sm1Raw and above200 and volume > vol20 * 1.5
+smv1 = timeframeOk and limitOk and smv1Raw and softTrendRegime and directionalVolume
+
+// ============================================================================
+// 4. KARAR PANELİ v6.4.5 GİRİŞ KATMANI
+// ============================================================================
+kpSma20 = sma20
+kpSma50 = sma50
+kpSma200 = sma200
+kpSlope20 = (kpSma20 / kpSma20[5] - 1.0) * 100.0
+kpSlope50 = (kpSma50 / kpSma50[10] - 1.0) * 100.0
+kpSlope200 = (kpSma200 / kpSma200[20] - 1.0) * 100.0
+kpPrice20 = close > kpSma20
+kp20Above50 = kpSma20 > kpSma50
+kp50Above200 = kpSma50 > kpSma200
+kpSlope20Ok = kpSlope20 >= 0
+kpSlope50Ok = kpSlope50 >= 0
+kpSlope200Ok = kpSlope200 >= -0.5
+kpTrendCore = kpPrice20 and kp20Above50 and kp50Above200 and kpSlope20Ok and kpSlope50Ok and kpSlope200Ok
+
+kpE5Up = ema5 > ema5[1]
+kpE8Up = ema8 > ema8[1]
+kpE13Up = ema13 > ema13[1]
+kpShortAligned = ema5 > ema8 and ema8 > ema13
+kpShortSlope = kpE5Up and kpE8Up and kpE13Up
+kpShortCore = kpShortAligned and kpShortSlope
+kpShortRecovery = ta.crossover(ema5, ema8) or (ema5 > ema8 and kpE5Up and kpE8Up)
+
+kpHistPositive = coreHist > 0
+kpHistNegative = coreHist < 0
+kpHistRising = coreHist > coreHist[1]
+kpHistFalling = coreHist < coreHist[1]
+kpHistCrossUp = kpHistPositive and coreHist[1] <= 0
+kpHistBullStrong = kpHistPositive and kpHistRising
+kpHistBullWeak = kpHistPositive and kpHistFalling
+kpHistBearRecover = kpHistNegative and kpHistRising
+kpCoreAbove = coreA > coreB
+kpCorePositive = coreA > 0
+
+kpRsi = f_rsi_dp(close, 14)
+kpRsiTrend = kpRsi >= 55 and kpRsi <= 72
+kpRsiPullback = kpRsi >= 50 and kpRsi <= 72
+kpRsiIdeal = kpRsi >= 55 and kpRsi <= 68
+
+upMove = ta.change(high)
+downMove = -ta.change(low)
+plusDM = upMove > downMove and upMove > 0 ? upMove : 0.0
+minusDM = downMove > upMove and downMove > 0 ? downMove : 0.0
+tr = ta.tr(true)
+atrDI = f_ewm_inv(tr, 14)
+plusDmAvg = f_ewm_inv(plusDM, 14)
+minusDmAvg = f_ewm_inv(minusDM, 14)
+plusDI = atrDI > 0 ? 100.0 * plusDmAvg / atrDI : 0.0
+minusDI = atrDI > 0 ? 100.0 * minusDmAvg / atrDI : 0.0
+dxDen = plusDI + minusDI
+dxValue = dxDen > 0 ? 100.0 * math.abs(plusDI - minusDI) / dxDen : na
+kpAdx = f_ewm_inv(dxValue, 14)
+kpStrength = kpAdx > 20 and plusDI > minusDI
+kpAtrPct = close > 0 ? atr14 / close * 100.0 : 0.0
+kpAtrOk = kpAtrPct >= 1.5 and kpAtrPct <= 7.0
+
+kpAvgVolPrior = ta.sma(volume, 10)[1]
+kpRvol = kpAvgVolPrior > 0 ? volume / kpAvgVolPrior : 0.0
+kpTurnover = close * volume
+kpAvgTurnPrior = ta.sma(kpTurnover, 20)[1]
+kpRelativeTurn = kpAvgTurnPrior > 0 ? kpTurnover / kpAvgTurnPrior : 0.0
+kpHigh52 = ta.highest(high, 252)
+kpHigh20 = ta.highest(high, 20)
+kpPrev20 = ta.highest(high, 20)[1]
+kpPct52 = kpHigh52 > 0 ? close / kpHigh52 * 100.0 : 0.0
+kpPct20 = kpHigh20 > 0 ? close / kpHigh20 * 100.0 : 0.0
+kpNear52 = kpPct52 >= 85
+kpNear20 = kpPct20 >= 95
+kpBreak20 = close > kpPrev20
+kpRequiredRvol = kpBreak20 ? 1.50 : 1.20
+kpParticipation = kpRvol > kpRequiredRvol
+
+kpDistPct = kpSma20 > 0 ? (close / kpSma20 - 1.0) * 100.0 : 0.0
+kpDistAtr = atr14 > 0 ? (close - kpSma20) / atr14 : 0.0
+kpDistance = kpDistPct >= 0 and kpDistPct <= 7 and kpDistAtr >= 0 and kpDistAtr <= 1.50
+
+kpBbBasis = ta.sma(close, 20)
+kpBbDev = 2.0 * ta.stdev(close, 20)
+kpBbUpper = kpBbBasis + kpBbDev
+kpBbLower = kpBbBasis - kpBbDev
+kpBbWidth = kpBbBasis > 0 ? (kpBbUpper - kpBbLower) / kpBbBasis * 100.0 : 0.0
+kpBbWidthAvg = ta.sma(kpBbWidth, 20)
+kpBbRising = kpBbWidth > kpBbWidth[1]
+kpBbAbove = kpBbWidth > kpBbWidthAvg
+kpCandleRange = high - low
+kpClv = kpCandleRange > 0 ? (close - low) / kpCandleRange : 0.5
+kpClvOk = kpClv >= 0.60
+kpUpperWick = high - math.max(open, close)
+kpUpperWickAtr = atr14 > 0 ? kpUpperWick / atr14 : 0.0
+kpUpperWickOk = kpUpperWickAtr <= 0.50
+
+kpPriorDist = atr14 > 0 ? (close - kpSma20) / atr14 : 0.0
+kpWasAbove = ta.highest(kpPriorDist[1], 10) >= 0.75
+kpTouched = low <= kpSma20 + 0.25 * atr14 and low >= kpSma20 - 0.50 * atr14
+kpPullbackSetup = not kpBreak20 and kpWasAbove and kpTouched and close > kpSma20 and kpDistAtr <= 1.0 and (close > open or kpClv >= 0.60)
+kpPullbackMomentum = kpCorePositive and kpRsiPullback and (kpHistBearRecover or kpHistCrossUp or kpHistBullStrong)
+kpPullbackShort = kpShortRecovery or kpShortCore
+kpBreakMomentum = kpCoreAbove and kpCorePositive and kpRsiTrend and (kpHistBullStrong or kpHistCrossUp)
+kpBreakQuality = kpBbRising and kpClvOk and kpUpperWickOk
+
+kpTrendScore = (kpPrice20 ? 4 : 0) + (kp20Above50 ? 4 : 0) + (kp50Above200 ? 4 : 0) + (kpSlope20Ok ? 3 : 0) + (kpSlope50Ok ? 3 : 0) + (kpSlope200 > 0 ? 2 : 0) + (kpShortAligned ? 3 : 0) + (kpShortSlope ? 2 : 0)
+kpHistScore = kpHistCrossUp ? 6 : kpHistBullStrong ? 6 : kpHistBearRecover ? 4 : kpHistBullWeak ? 2 : 0
+kpMomentumScore = (kpCorePositive ? 4 : 0) + (kpCoreAbove ? 5 : 0) + kpHistScore + (kpRsiIdeal ? 5 : 0)
+kpRvolScore = kpRvol >= 3 ? 18 : kpRvol >= 2 ? 16 : kpRvol >= 1.5 ? 12 : kpRvol >= 1.2 ? 7 : kpRvol >= 1 ? 3 : 0
+kpVolumeScore = kpRvolScore + (kpRelativeTurn >= 1 ? 2 : 0)
+kpAdxScore = kpAdx >= 40 ? 7 : kpAdx >= 30 ? 6 : kpAdx >= 25 ? 5 : kpAdx > 20 ? 3 : 0
+kpStrengthScore = kpAdxScore + (plusDI > minusDI ? 3 : 0)
+kpHighScore = kpPct52 >= 95 ? 7 : kpPct52 >= 90 ? 5 : kpPct52 >= 85 ? 3 : 0
+kpLocationScore = kpHighScore + (kpNear20 ? 3 : 0)
+kpDistPctScore = kpDistPct >= 0 and kpDistPct <= 3 ? 5 : kpDistPct > 3 and kpDistPct <= 5 ? 4 : kpDistPct > 5 and kpDistPct <= 7 ? 2 : 0
+kpDistAtrScore = kpDistAtr >= 0 and kpDistAtr < 1 ? 5 : kpDistAtr >= 1 and kpDistAtr <= 1.5 ? 4 : kpDistAtr > 1.5 and kpDistAtr <= 2 ? 2 : 0
+kpEntryScore = kpDistPctScore + kpDistAtrScore
+kpVolatilityScore = (kpBbRising ? 2 : 0) + (kpBbAbove ? 1 : 0) + (kpAtrOk ? 2 : 0)
+kpScore = kpTrendScore + kpMomentumScore + kpVolumeScore + kpStrengthScore + kpLocationScore + kpEntryScore + kpVolatilityScore
+kpHistory = bar_index >= 251 and not na(kpSma200[20]) and not na(kpHigh52)
+kpStructure = kpTrendCore and kpStrength and kpNear52
+kpCommon = kpHistory and kpStructure and kpParticipation and kpDistance and kpScore >= 75
+kpBreakout = kpCommon and kpBreak20 and kpShortCore and kpBreakMomentum and kpBreakQuality
+kpPullbackBase = kpHistory and kpStructure and kpParticipation and kpDistance and kpScore >= 75 and kpPullbackSetup and kpPullbackMomentum and kpPullbackShort
+kpPullbackGuard = kpRvol <= 2.0 and kpPct20 >= 95.0
+kpPullback = kpPullbackBase and kpPullbackGuard
+kpTrend = kpCommon and not kpBreak20 and not kpPullbackSetup and kpShortCore and kpBreakMomentum
+kpActive = timeframeOk and (kpBreakout or kpPullback or kpTrend)
+// ============================================================================
+// 5. FRESH DURUMLARI
+// ============================================================================
+f_fresh(bool active) =>
+    active and not active[1]
+
+smEarlyNew = f_fresh(smEarly)
+smFullNew = f_fresh(smFull)
+rvNew = f_fresh(rv)
+amvNew = f_fresh(amv)
+rmvNew = f_fresh(rmv)
+evNew = f_fresh(ev)
+m1New = f_fresh(m1)
+sm1New = f_fresh(sm1)
+smv1New = f_fresh(smv1)
+kpBreakoutNew = f_fresh(timeframeOk and kpBreakout)
+kpPullbackNew = f_fresh(timeframeOk and kpPullback)
+kpTrendNew = f_fresh(timeframeOk and kpTrend)
+kpNew = kpBreakoutNew or kpPullbackNew or kpTrendNew
+
+// ============================================================================
+// 6. PRODUCTION-PARITY PLAN + İŞLEM YAŞAM DÖNGÜSÜ
+// ============================================================================
+// Repo backtester ile aynı temel yürütme sırası:
+// Sinyal kapanışı -> sonraki mum açılışı giriş.
+// Plan yalnız sinyal barına kadar bilinen yapısal verilerle hesaplanır ve kilitlenir.
+// Aynı mumda stop ve hedef görülürse STOP önce kabul edilir.
+// TP1 sonrası stop girişe, TP2 sonrası ATR iz sürene geçer.
+
+swing4 = ta.lowest(low, 4)
+swing6 = ta.lowest(low, 6)
+swing7 = ta.lowest(low, 7)
+swing8 = ta.lowest(low, 8)
+
+f_plan_entry(float entry, float swingLow, float signalLow, float emaValue, float atrValue, int mode, float atrMult, float buffer, float minRiskAtr, float maxRiskAtr, float tp1R, float tp2R, float tp3R) =>
+    float swingStop = swingLow - atrValue * buffer
+    float signalStop = signalLow - atrValue * buffer
+    float emaStop = emaValue - atrValue * buffer
+    float fallback = entry - atrValue * atrMult
+    float raw = fallback
+    if mode == 1
+        raw := swingStop
+    else if mode == 2
+        float best = na
+        if swingStop < entry
+            best := swingStop
+        if signalStop < entry
+            best := na(best) ? signalStop : math.min(best, signalStop)
+        if emaStop < entry
+            best := na(best) ? emaStop : math.min(best, emaStop)
+        raw := na(best) ? fallback : best
+    else if mode == 3
+        float best = na
+        if swingStop < entry
+            best := swingStop
+        if signalStop < entry
+            best := na(best) ? signalStop : math.max(best, signalStop)
+        if emaStop < entry
+            best := na(best) ? emaStop : math.max(best, emaStop)
+        raw := na(best) ? fallback : best
+    float risk = math.max(entry - raw, 0.0)
+    float minRisk = atrValue * minRiskAtr
+    float maxRisk = atrValue * maxRiskAtr
+    if risk < minRisk
+        risk := minRisk
+        raw := entry - risk
+    else if risk > maxRisk
+        risk := maxRisk
+        raw := entry - risk
+    float tp1 = entry + risk * tp1R
+    float tp2 = entry + risk * tp2R
+    float tp3 = entry + risk * tp3R
+    [raw, tp1, tp2, tp3]
+
+// Sinyal barı [1], giriş ise mevcut barın open'ı.
+// mode: 1=swing, 2=hybrid_wide, 3=hybrid_tight
+[smEarlyPendStop, smEarlyPendTp1, smEarlyPendTp2, smEarlyPendTp3] = f_plan_entry(open, swing6[1], low[1], ema21[1], atr14[1], 1, 1.10, 0.25, 0.75, 2.25, 0.8, 1.5, 2.4)
+[smFullPendStop, smFullPendTp1, smFullPendTp2, smFullPendTp3] = f_plan_entry(open, swing7[1], low[1], ema21[1], atr14[1], 1, 1.25, 0.25, 0.80, 2.50, 0.8, 1.5, 2.4)
+[rmvPendStop, rmvPendTp1, rmvPendTp2, rmvPendTp3] = f_plan_entry(open, swing6[1], low[1], ema13[1], atr14[1], 1, 1.10, 0.20, 0.70, 2.20, 0.8, 1.5, 2.4)
+[smv1PendStop, smv1PendTp1, smv1PendTp2, smv1PendTp3] = f_plan_entry(open, swing7[1], low[1], ema21[1], atr14[1], 2, 1.20, 0.20, 0.75, 2.40, 0.8, 1.5, 2.4)
+[rvPendStop, rvPendTp1, rvPendTp2, rvPendTp3] = f_plan_entry(open, swing4[1], low[1], ema21[1], atr14[1], 2, 0.95, 0.15, 0.65, 1.90, 0.8, 1.5, 2.4)
+[sm1PendStop, sm1PendTp1, sm1PendTp2, sm1PendTp3] = f_plan_entry(open, swing6[1], low[1], ema13[1], atr14[1], 1, 1.10, 0.20, 0.70, 2.20, 0.8, 1.5, 2.4)
+
+// M-1 ve E-V-1: optimize adayları sıkı maliyet kapısını geçmedi; production baseline korunur.
+[m1PendStop, m1PendTp1, m1PendTp2, m1PendTp3] = f_plan_entry(open, swing7[1], low[1], ema21[1], atr14[1], 3, 1.40, 0.20, 0.75, 2.35, 1.0, 1.8, 2.8)
+[evPendStop, evPendTp1, evPendTp2, evPendTp3] = f_plan_entry(open, swing8[1], low[1], ema21[1], atr14[1], 3, 1.50, 0.20, 0.80, 2.50, 1.0, 2.0, 3.2)
+[amvPendStop, amvPendTp1, amvPendTp2, amvPendTp3] = f_plan_entry(open, swing8[1], low[1], ema21[1], atr14[1], 1, 1.25, 0.20, 0.80, 2.60, 0.8, 1.5, 2.4)
+
+// Karar Paneli setup planları.
+[kpPbPendStop, kpPbPendTp1, kpPbPendTp2, kpPbPendTp3] = f_plan_entry(open, swing8[1], low[1], ema21[1], atr14[1], 2, 1.25, 0.25, 0.80, 2.60, 0.8, 1.5, 2.4)
+[kpBrPendStop, kpBrPendTp1, kpBrPendTp2, kpBrPendTp3] = f_plan_entry(open, swing6[1], low[1], ema13[1], atr14[1], 3, 1.50, 0.20, 0.75, 2.20, 1.0, 2.0, 3.2)
+[kpTrPendStop, kpTrPendTp1, kpTrPendTp2, kpTrPendTp3] = f_plan_entry(open, swing7[1], low[1], ema21[1], atr14[1], 3, 1.50, 0.25, 0.80, 2.50, 1.0, 2.0, 3.0)
+
+kpSignalCode = timeframeOk ? (kpBreakout ? 2 : kpPullback ? 1 : kpTrend ? 3 : 0) : 0
+kpPendingCode = kpNew[1] ? kpSignalCode[1] : 0
+kpPendStop = kpPendingCode == 1 ? kpPbPendStop : kpPendingCode == 2 ? kpBrPendStop : kpPendingCode == 3 ? kpTrPendStop : na
+kpPendTp1 = kpPendingCode == 1 ? kpPbPendTp1 : kpPendingCode == 2 ? kpBrPendTp1 : kpPendingCode == 3 ? kpTrPendTp1 : na
+kpPendTp2 = kpPendingCode == 1 ? kpPbPendTp2 : kpPendingCode == 2 ? kpBrPendTp2 : kpPendingCode == 3 ? kpTrPendTp2 : na
+kpPendTp3 = kpPendingCode == 1 ? kpPbPendTp3 : kpPendingCode == 2 ? kpBrPendTp3 : kpPendingCode == 3 ? kpTrPendTp3 : na
+kpPendTrail = kpPendingCode == 1 ? 1.8 : 2.0
+
+smiPendingMode = oscActualCross[1] ? 1 : 2
+
+// ---- 10 bağımsız işlem state'i
+var tradeOpen = array.new_bool(10, false)
+var tradeEntry = array.new_float(10, na)
+var tradeInitialStop = array.new_float(10, na)
+var tradeStop = array.new_float(10, na)
+var tradeTp1 = array.new_float(10, na)
+var tradeTp2 = array.new_float(10, na)
+var tradeTp3 = array.new_float(10, na)
+var tradeHighest = array.new_float(10, na)
+var tradeStage = array.new_int(10, 0)       // 1 plan, 2 TP1, 3 TP2, 4 TP3-runner
+var tradeBars = array.new_int(10, 0)
+var tradeSetupCode = array.new_int(10, 0)   // yalnız KARAR: 1 PB, 2 BRK, 3 TR
+var tradeSignalTime = array.new_int(10, na)  // planı başlatan doğrulanmış sinyal mumu
+var tradeEntryTime = array.new_int(10, na)
+var tradeSignalMode = array.new_int(10, 0)   // SMI aileleri: 1 gerçek kesişim, 2 devam koşulu
+
+// Olaylar yalnız gerçekleştiği mumda görünür.
+var entryEvent = array.new_bool(10, false)
+var exitEvent = array.new_int(10, 0)        // 1 STOP, 2 BE, 3 TRAIL, 4 TIME
+var targetEvent = array.new_int(10, 0)      // 1 TP1, 2 TP2, 3 TP3
+
+if barstate.isnew
+    for i = 0 to 9
+        array.set(entryEvent, i, false)
+        array.set(exitEvent, i, 0)
+        array.set(targetEvent, i, 0)
+
+// onlyClosedBar=true iken işlem sonucu tam OHLC ile kapanışta değerlendirilir.
+// Bu, repo backtestindeki aynı-mum STOP önceliğini korur.
+tradeEvalGate = not onlyClosedBar or barstate.isconfirmed
+
+f_trade_step(int idx, bool pending, float pStop, float pTp1, float pTp2, float pTp3, float trailMult, int maxHold, int setupCode, int signalMode) =>
+    if barstate.isnew
+        bool wasOpen = array.get(tradeOpen, idx)
+        if not wasOpen and pending and not na(pStop) and not na(pTp1) and not na(pTp2) and not na(pTp3) and open > 0
+            array.set(tradeOpen, idx, true)
+            array.set(tradeEntry, idx, open)
+            array.set(tradeInitialStop, idx, pStop)
+            array.set(tradeStop, idx, pStop)
+            array.set(tradeTp1, idx, pTp1)
+            array.set(tradeTp2, idx, pTp2)
+            array.set(tradeTp3, idx, pTp3)
+            array.set(tradeHighest, idx, open)
+            array.set(tradeStage, idx, 1)
+            array.set(tradeBars, idx, 0)
+            array.set(tradeSetupCode, idx, setupCode)
+            array.set(tradeSignalTime, idx, time[1])
+            array.set(tradeEntryTime, idx, time)
+            array.set(tradeSignalMode, idx, signalMode)
+            array.set(entryEvent, idx, true)
+
+        if array.get(tradeOpen, idx)
+            array.set(tradeBars, idx, array.get(tradeBars, idx) + 1)
+
+    if array.get(tradeOpen, idx) and tradeEvalGate
+        float entry = array.get(tradeEntry, idx)
+        float initialStop = array.get(tradeInitialStop, idx)
+        float currentStop = array.get(tradeStop, idx)
+        float t1 = array.get(tradeTp1, idx)
+        float t2 = array.get(tradeTp2, idx)
+        float t3 = array.get(tradeTp3, idx)
+        float highest = math.max(nz(array.get(tradeHighest, idx), entry), high)
+        int stage = array.get(tradeStage, idx)
+        int held = array.get(tradeBars, idx)
+        array.set(tradeHighest, idx, highest)
+
+        // Konservatif sıra: aktif stop aynı mumdaki hedeflerden önce gelir.
+        if low <= currentStop
+            int reason = stage >= 3 ? 3 : currentStop >= entry ? 2 : 1
+            array.set(exitEvent, idx, reason)
+            array.set(tradeOpen, idx, false)
+        else
+            if stage < 2 and high >= t1
+                stage := 2
+                array.set(targetEvent, idx, 1)
+                currentStop := math.max(currentStop, entry)
+
+            if stage < 3 and high >= t2
+                stage := 3
+                array.set(targetEvent, idx, 2)
+
+            if stage < 4 and high >= t3
+                stage := 4
+                array.set(targetEvent, idx, 3)
+
+            // TP2 görüldükten sonra runner ATR iz süren stopla takip edilir.
+            if stage >= 3 and not na(atr14) and atr14 > 0
+                float trailCandidate = highest - atr14 * trailMult
+                currentStop := math.max(currentStop, trailCandidate)
+
+            array.set(tradeStage, idx, stage)
+            array.set(tradeStop, idx, currentStop)
+
+            if held >= maxHold
+                array.set(exitEvent, idx, 4)
+                array.set(tradeOpen, idx, false)
+
+// İndeks sırası:
+// 0 S-M-2, 1 S-M-V-2, 2 R-M-V-1, 3 S-M-V-1, 4 R-V-1,
+// 5 S-M-1, 6 M-1, 7 E-V-1, 8 A-M-V-1, 9 KARAR
+f_trade_step(0, smEarlyNew[1], smEarlyPendStop, smEarlyPendTp1, smEarlyPendTp2, smEarlyPendTp3, 1.8, 80, 0, smiPendingMode)
+f_trade_step(1, smFullNew[1], smFullPendStop, smFullPendTp1, smFullPendTp2, smFullPendTp3, 2.2, 80, 0, smiPendingMode)
+f_trade_step(2, rmvNew[1], rmvPendStop, rmvPendTp1, rmvPendTp2, rmvPendTp3, 1.9, 80, 0, 0)
+f_trade_step(3, smv1New[1], smv1PendStop, smv1PendTp1, smv1PendTp2, smv1PendTp3, 2.2, 80, 0, smiPendingMode)
+f_trade_step(4, rvNew[1], rvPendStop, rvPendTp1, rvPendTp2, rvPendTp3, 1.5, 55, 0, 0)
+f_trade_step(5, sm1New[1], sm1PendStop, sm1PendTp1, sm1PendTp2, sm1PendTp3, 1.7, 80, 0, smiPendingMode)
+f_trade_step(6, m1New[1], m1PendStop, m1PendTp1, m1PendTp2, m1PendTp3, 1.9, 80, 0, 0)
+f_trade_step(7, evNew[1], evPendStop, evPendTp1, evPendTp2, evPendTp3, 2.1, 80, 0, 0)
+f_trade_step(8, amvNew[1], amvPendStop, amvPendTp1, amvPendTp2, amvPendTp3, 2.2, 80, 0, 0)
+f_trade_step(9, kpNew[1], kpPendStop, kpPendTp1, kpPendTp2, kpPendTp3, kpPendTrail, 80, kpPendingCode, 0)
+
+f_open_count() =>
+    int count = 0
+    for i = 0 to 9
+        count += array.get(tradeOpen, i) ? 1 : 0
+    count
+
+f_any_entry_event() =>
+    bool found = false
+    for i = 0 to 9
+        found := found or array.get(entryEvent, i)
+    found
+
+f_any_exit_event() =>
+    bool found = false
+    for i = 0 to 9
+        found := found or array.get(exitEvent, i) > 0
+    found
+
+f_kp_validation(int code) =>
+    // J alt tipleri de kullanıcıya özel kodlanır.
+    string value = ""
+    if code == 1
+        value := isDaily ? "J1 · D" : "J1 · T"
+    else if code == 2
+        value := isDaily ? "J2 · N" : "J2 · T"
+    else if code == 3
+        value := isDaily ? "J3 · R" : "J3 · T"
+    value
+
+// ============================================================================
+// 7. PANEL — KOŞUL İLE AÇIK PLANI AYIR
+// ============================================================================
+f_price(float value) =>
+    na(value) ? "-" : str.tostring(value, format.mintick)
+
+f_signal_time(int value) =>
+    na(value) ? "-" : str.format_time(value, "dd.MM HH:mm", syminfo.timezone)
+
+f_trade_state(int idx, bool active, bool fresh) =>
+    int exitCode = array.get(exitEvent, idx)
+    bool isOpen = array.get(tradeOpen, idx)
+    bool justEntry = array.get(entryEvent, idx)
+    int stage = array.get(tradeStage, idx)
+    string value = "BEKLE"
+
+    if not timeframeOk
+        value := "1G KİLİDİ"
+    else if exitCode == 1
+        value := "STOP"
+    else if exitCode == 2
+        value := "MALİYET ÇIKIŞI"
+    else if exitCode == 3
+        value := "İZ SÜREN ÇIKIŞ"
+    else if exitCode == 4
+        value := "SÜRE ÇIKIŞI"
+    else if isOpen
+        value := justEntry ? "GİRİŞ · PLAN AKTİF" :
+          stage >= 4 ? "TP3 · RUNNER" :
+          stage >= 3 ? "TP2 · İZ SÜREN" :
+          stage >= 2 ? "TP1 · MALİYET STOP" : "PLAN AKTİF"
+    else if fresh
+        value := onlyClosedBar and not barstate.isconfirmed ? "KAPANIŞ BEKLE" : "YENİ SETUP · SONRAKİ AÇ."
+    else if active
+        value := "KOŞUL AKTİF · PLAN YOK"
+    value
+
+f_trade_color(int idx, bool active, bool fresh) =>
+    int exitCode = array.get(exitEvent, idx)
+    bool isOpen = array.get(tradeOpen, idx)
+    int stage = array.get(tradeStage, idx)
+    color value = color.new(color.gray, 55)
+    if not timeframeOk
+        value := color.orange
+    else if exitCode == 1
+        value := color.red
+    else if exitCode == 2
+        value := color.yellow
+    else if exitCode == 3 or exitCode == 4
+        value := color.orange
+    else if isOpen
+        value := stage >= 3 ? color.green : stage >= 2 ? color.blue : color.teal
+    else if fresh
+        value := color.green
+    else if active
+        value := color.blue
+    value
+
+f_row(table t, int row, int idx, string code, bool active, bool fresh, string extra) =>
+    string status = f_trade_state(idx, active, fresh)
+    bool hasPlan = array.get(tradeOpen, idx) or array.get(exitEvent, idx) > 0 or array.get(entryEvent, idx)
+    int storedMode = array.get(tradeSignalMode, idx)
+    bool smiFamily = idx == 0 or idx == 1 or idx == 3 or idx == 5
+    int visibleMode = hasPlan ? storedMode : fresh and smiFamily ? (oscActualCross ? 1 : 2) : 0
+    if smiFamily and visibleMode == 1
+        status += " · T1"
+    else if smiFamily and visibleMode == 2
+        status += " · T2"
+
+    if extra != "" and (active or fresh or hasPlan)
+        status += " · " + extra
+
+    color c = f_trade_color(idx, active, fresh)
+    int signalTs = hasPlan ? array.get(tradeSignalTime, idx) : fresh ? time : na
+    string signalText = f_signal_time(signalTs)
+    string entryText = fresh and not hasPlan ? "SONRAKİ AÇ." : hasPlan ? f_price(array.get(tradeEntry, idx)) : "-"
+    string stopText = hasPlan ? f_price(array.get(tradeStop, idx)) : "-"
+    string tp1Text = hasPlan ? f_price(array.get(tradeTp1, idx)) : "-"
+    string tp2Text = hasPlan ? f_price(array.get(tradeTp2, idx)) : "-"
+    string tp3Text = hasPlan ? f_price(array.get(tradeTp3, idx)) : "-"
+
+    table.cell(t, 0, row, code, text_color=color.white, bgcolor=color.new(color.black, 5), text_size=panelTextSize)
+    table.cell(t, 1, row, status, text_color=color.white, bgcolor=color.new(c, 25), text_size=panelTextSize)
+    table.cell(t, 2, row, signalText, text_color=color.white, bgcolor=color.new(color.purple, 65), text_size=panelTextSize)
+    table.cell(t, 3, row, entryText, text_color=color.white, bgcolor=color.new(color.gray, 55), text_size=panelTextSize)
+    table.cell(t, 4, row, stopText, text_color=color.white, bgcolor=color.new(color.orange, 55), text_size=panelTextSize)
+    table.cell(t, 5, row, tp1Text, text_color=color.white, bgcolor=color.new(color.blue, 60), text_size=panelTextSize)
+    table.cell(t, 6, row, tp2Text, text_color=color.white, bgcolor=color.new(color.green, 60), text_size=panelTextSize)
+    table.cell(t, 7, row, tp3Text, text_color=color.white, bgcolor=color.new(color.green, 45), text_size=panelTextSize)
+
+activeCount = (smEarly ? 1 : 0) + (smFull ? 1 : 0) + (rv ? 1 : 0) + (amv ? 1 : 0) + (rmv ? 1 : 0) + (ev ? 1 : 0) + (m1 ? 1 : 0) + (sm1 ? 1 : 0) + (smv1 ? 1 : 0) + (kpActive ? 1 : 0)
+openPlanCount = f_open_count()
+consensusText = not timeframeOk ? "1G KİLİDİ" : str.tostring(activeCount) + "/10 KOŞUL · " + str.tostring(openPlanCount) + " PLAN · " + tfText
+consensusColor = activeCount >= 5 ? color.green : activeCount >= 3 ? color.blue : activeCount >= 1 ? color.orange : color.gray
+validationScopeText = isDaily ? "1G OOS DOĞRULAMALI PROFİL" : "TF SİNYAL · 1G PROFİL / TF OOS TESTSİZ"
+
+kpStoredCode = array.get(tradeSetupCode, 9)
+kpDisplayCode = (array.get(tradeOpen, 9) or array.get(exitEvent, 9) > 0) ? kpStoredCode : kpSignalCode
+kpExtra = f_kp_validation(kpDisplayCode)
+
+var table panel = table.new(panelPosition, 8, 12, border_width=1, frame_width=1)
+
+if barstate.isfirst
+    table.merge_cells(panel, 0, 0, 7, 0)
+
+if barstate.islast and showPanel
+    table.cell(panel, 0, 0, "10 SİSTEM · " + tfText + "\n" + validationScopeText, text_color=color.white, bgcolor=color.new(consensusColor, 10), text_size=panelTextSize)
+    table.cell(panel, 0, 1, "SİSTEM", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+    table.cell(panel, 1, 1, consensusText, text_color=color.white, bgcolor=color.new(consensusColor, 25), text_size=panelTextSize)
+    table.cell(panel, 2, 1, "SİNYAL MUMU", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+    table.cell(panel, 3, 1, "GİRİŞ", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+    table.cell(panel, 4, 1, "STOP", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+    table.cell(panel, 5, 1, "TP1", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+    table.cell(panel, 6, 1, "TP2", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+    table.cell(panel, 7, 1, "TP3", text_color=color.white, bgcolor=color.new(color.gray, 50), text_size=panelTextSize)
+
+    // Özel kullanıcı kodları. Gerçek strateji adları arayüzde gösterilmez.
+    f_row(panel, 2, 6, "A", m1, m1New, "")
+    f_row(panel, 3, 5, "B", sm1, sm1New, "")
+    f_row(panel, 4, 3, "C", smv1, smv1New, "")
+    f_row(panel, 5, 7, "D", ev, evNew, "")
+    f_row(panel, 6, 2, "E", rmv, rmvNew, "")
+    f_row(panel, 7, 8, "F", amv, amvNew, "")
+    f_row(panel, 8, 1, "G", smFull, smFullNew, "")
+    f_row(panel, 9, 0, "H", smEarly, smEarlyNew, "")
+    f_row(panel, 10, 4, "I", rv, rvNew, "")
+    f_row(panel, 11, 9, "J", kpActive, kpNew, kpExtra)
+else if barstate.islast
+    table.clear(panel, 0, 0, 7, 11)
+
+// ============================================================================
+// 8. İŞARETLER / ALARMLAR
+// ============================================================================
+// Konsensüs işareti işlem girişi değildir; yalnız teknik koşul sayısının 3+ bölgesinde
+// bir önceki bara göre arttığını gösterir.
+conditionConsensusImproved = activeCount >= 3 and activeCount > nz(activeCount[1], 0)
+anyNew = smEarlyNew or smFullNew or rvNew or amvNew or rmvNew or evNew or m1New or sm1New or smv1New or kpNew
+anyEntry = f_any_entry_event()
+anyExit = f_any_exit_event()
+
+f_trace(string code) =>
+    traceStrategy == "Tümü" or traceStrategy == code
+
+// Doğrulama modu varsayılan KAPALI.
+// Küçük gri daire = seçilen özel sistemin koşulu bu mumda aktif.
+// A-J etiketi = false->true fresh epizodunun başladığı sinyal mumu.
+plotshape(showActiveTrace and f_trace("A") and m1 and not m1New, title="Trace A aktif", style=shape.circle, location=location.belowbar, color=color.gray, size=size.tiny)
+plotshape(f_trace("A") and m1New, title="Trace A sinyal", text="A", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+plotshape(showActiveTrace and f_trace("B") and sm1 and not sm1New, title="Trace B aktif", style=shape.circle, location=location.belowbar, color=color.gray, size=size.tiny)
+plotshape(f_trace("B") and sm1New, title="Trace B sinyal", text="B", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+plotshape(showActiveTrace and f_trace("C") and smv1 and not smv1New, title="Trace C aktif", style=shape.circle, location=location.belowbar, color=color.gray, size=size.tiny)
+plotshape(f_trace("C") and smv1New, title="Trace C sinyal", text="C", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+plotshape(showActiveTrace and f_trace("D") and ev and not evNew, title="Trace D aktif", style=shape.circle, location=location.belowbar, color=color.gray, size=size.tiny)
+plotshape(f_trace("D") and evNew, title="Trace D sinyal", text="D", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+plotshape(showActiveTrace and f_trace("E") and rmv and not rmvNew, title="Trace E aktif", style=shape.circle, location=location.belowbar, color=color.gray, size=size.tiny)
+plotshape(f_trace("E") and rmvNew, title="Trace E sinyal", text="E", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+plotshape(showActiveTrace and f_trace("F") and amv and not amvNew, title="Trace F aktif", style=shape.circle, location=location.belowbar, color=color.gray, size=size.tiny)
+plotshape(f_trace("F") and amvNew, title="Trace F sinyal", text="F", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+plotshape(showActiveTrace and f_trace("G") and smFull and not smFullNew, title="Trace G aktif", style=shape.circle, location=location.belowbar, color=color.gray, size=size.tiny)
+plotshape(f_trace("G") and smFullNew, title="Trace G sinyal", text="G", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+plotshape(showActiveTrace and f_trace("H") and smEarly and not smEarlyNew, title="Trace H aktif", style=shape.circle, location=location.belowbar, color=color.gray, size=size.tiny)
+plotshape(f_trace("H") and smEarlyNew, title="Trace H sinyal", text="H", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+plotshape(showActiveTrace and f_trace("I") and rv and not rvNew, title="Trace I aktif", style=shape.circle, location=location.belowbar, color=color.gray, size=size.tiny)
+plotshape(f_trace("I") and rvNew, title="Trace I sinyal", text="I", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+plotshape(showActiveTrace and f_trace("J") and kpActive and not kpNew, title="Trace J aktif", style=shape.circle, location=location.belowbar, color=color.gray, size=size.tiny)
+plotshape(f_trace("J") and kpNew, title="Trace J sinyal", text="J", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+
+plotshape(showConsensusMarkers and closedGate and conditionConsensusImproved, title="3+ koşul konsensüsü", text="3+K", style=shape.labelup, location=location.belowbar, color=color.green, textcolor=color.white, size=size.tiny)
+plotshape(showTradeMarkers and anyEntry, title="Plan girişi", text="G", style=shape.labelup, location=location.belowbar, color=color.blue, textcolor=color.white, size=size.tiny)
+plotshape(showTradeMarkers and anyExit, title="Plan çıkışı", text="Ç", style=shape.labeldown, location=location.abovebar, color=color.orange, textcolor=color.white, size=size.tiny)
+
+alertcondition(closedGate and anyNew, title="10 Strateji Paneli: Yeni Setup", message="{{ticker}} {{interval}} üzerinde yeni strateji setup'ı oluştu.")
+alertcondition(anyEntry, title="10 Strateji Paneli: Plan Girişi", message="{{ticker}} {{interval}} üzerinde sinyal sonrası yeni plan girişe geçti.")
+alertcondition(anyExit, title="10 Strateji Paneli: Plan Çıkışı", message="{{ticker}} {{interval}} üzerinde açık strateji planlarından biri kapandı.")
+alertcondition(closedGate and activeCount >= 3 and activeCount[1] < 3, title="10 Strateji Paneli: 3+ Koşul", message="{{ticker}} {{interval}} üzerinde en az 3 sistemin teknik koşulu aynı anda aktif.")
+
+// v1.6 PRIVATE:
+// - UYGUN kaldırıldı: KOŞUL AKTİF ile gerçek PLAN AKTİF birbirinden ayrıldı.
+// - Sinyal kapanışından SONRAKİ mum açılışı giriş kabul edilir.
+// - Giriş/Stop/TP seviyeleri girişte kilitlenir ve her mum yeniden hesaplanmaz.
+// - 10 stratejinin her biri ayrı yaşam döngüsü taşır.
+// - STOP > TP aynı mumda konservatif önceliğe sahiptir.
+// - TP1 -> maliyet stop, TP2 -> ATR iz süren, TP3 -> runner.
+// - 4H/1H/diğer TF'lerde sinyal çalışır; OOS doğrulama kapsamı hâlâ açıkça 1G olarak etiketlenir.
+
+// AUDIT NOTLARI:
+// - SMI şartı repo ile aynıdır: gerçek yukarı kesişim VEYA EMA üzerinde yükselen devam koşulu.
+// - Panel SMI ailesinde bunun hangisi olduğunu "SMI KESİŞİM" / "SMI DEVAM" diye yazar.
+// - "SİNYAL MUMU" planı başlatan fresh epizod başlangıcıdır; giriş bir sonraki mum açılışıdır.
+// - Intraday tavan filtresi repo gibi önceki seans kapanışına göre günlük değişim kullanır.
+// - Classic RSI, filter RSI, Decision Panel RSI seed/zero-loss davranışları repo kaynaklarına ayrıldı.
+// - ATR ve ADX yumuşatması pandas ewm(alpha=1/n, adjust=false) alfasına eşlendi.
+// - Hybrid fallback artık minRisk değil profile.atr_mult kullanır.
+
+// PRIVATE UI:
+// - Arayüzde yalnız A-J kodları görünür.
+// - Doğrulama varsayılan kapalıdır; açıldığında grafikte yalnız özel kod gösterilir.
+// - T1/T2 yalnız sahibinin bildiği tetik türü kodlarıdır.
+// - J1/J2/J3, J sisteminin alt tiplerini dışarıya açıklamadan ayırır.
