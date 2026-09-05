@@ -87,9 +87,19 @@ jobs:
               cp -r /tmp/fundamental-data/. data/fundamentals/
             fi
           fi
+          if [ -s data/fundamentals/latest.csv ]; then
+            python - <<'PY' || rm -f data/fundamentals/latest.csv data/fundamentals/manifest.json
+          import pandas as pd
+          p = pd.read_csv('data/fundamentals/latest.csv')
+          metrics = [c for c in ('pe','pb','ev_ebitda','ev_sales','roe','roa','net_margin','ebitda_margin') if c in p.columns]
+          if not metrics or max(int(pd.to_numeric(p[c], errors='coerce').notna().sum()) for c in metrics) == 0:
+              raise SystemExit('cached fundamental snapshot has no usable metrics')
+          print('Cached fundamental snapshot validated:', len(p), 'rows;', metrics)
+          PY
+          fi
           if [ ! -s data/fundamentals/latest.csv ]; then
-            echo "No cached peer snapshot; refreshing now."
-            python fundamental_data_pipeline.py peer --output-dir data/fundamentals
+            echo "No valid cached peer snapshot; refreshing now."
+            python fundamental_peer_refresh.py --output-dir data/fundamentals
           fi
           test -s data/fundamentals/latest.csv
       - name: Fetch 8-quarter statements for current candidates
