@@ -27,18 +27,15 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: requirements-cached-scan.txt
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-cached-scan.txt
-
       - name: Download exact market snapshot
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -50,43 +47,27 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p data /tmp/market-data
-
           source_run_id="${MANUAL_RUN_ID:-}"
-          if [ -z "${source_run_id}" ] && [ "${EVENT_NAME}" = "workflow_run" ]; then
-            source_run_id="${WORKFLOW_RUN_ID}"
-          fi
-
+          if [ -z "${source_run_id}" ] && [ "${EVENT_NAME}" = "workflow_run" ]; then source_run_id="${WORKFLOW_RUN_ID}"; fi
           if [ -n "${source_run_id}" ]; then
-            artifact_id="$(
-              gh api --paginate "repos/${REPOSITORY}/actions/runs/${source_run_id}/artifacts?per_page=100" \
-                --jq '.artifacts[] | select(.name == "market-data-latest" and .expired == false) | .id' | tail -n1
-            )"
+            artifact_id="$(gh api --paginate "repos/${REPOSITORY}/actions/runs/${source_run_id}/artifacts?per_page=100" --jq '.artifacts[] | select(.name == "market-data-latest" and .expired == false) | .id' | tail -n1)"
           else
-            artifact_id="$(
-              gh api "repos/${REPOSITORY}/actions/artifacts?name=market-data-latest&per_page=100" \
-                --jq '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty'
-            )"
+            artifact_id="$(gh api "repos/${REPOSITORY}/actions/artifacts?name=market-data-latest&per_page=100" --jq '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty')"
           fi
-
           test -n "${artifact_id}"
           gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/market-data.zip
           unzip -q -o /tmp/market-data.zip -d /tmp/market-data
-          if [ -f /tmp/market-data/data/market_data.sqlite ]; then
-            cp /tmp/market-data/data/market_data.sqlite data/market_data.sqlite
-          else
-            cp /tmp/market-data/market_data.sqlite data/market_data.sqlite
-          fi
+          if [ -f /tmp/market-data/data/market_data.sqlite ]; then cp /tmp/market-data/data/market_data.sqlite data/market_data.sqlite; else cp /tmp/market-data/market_data.sqlite data/market_data.sqlite; fi
           test -s data/market_data.sqlite
-
       - name: Build closed-bar 4H candidate report
         run: |
-          python production_4h.py \
-            --db data/market_data.sqlite \
-            --exchange BIST \
-            --min-score 75 \
-            --output-dir data/production-4h
-          cat data/production-4h/report.md >> "$GITHUB_STEP_SUMMARY"
-
+          python production_4h.py --db data/market_data.sqlite --exchange BIST --min-score 75 --output-dir data/production-4h
+      - name: Build professional visual and structure report
+        env:
+          MPLBACKEND: Agg
+        run: |
+          python production_4h_visual.py --db data/market_data.sqlite --candidates data/production-4h/candidates.json --output-dir data/production-4h
+          cat data/production-4h/visual_report.md >> "$GITHUB_STEP_SUMMARY"
       - name: Upload 4H production report
         uses: actions/upload-artifact@v4
         with:
