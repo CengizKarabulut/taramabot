@@ -89,7 +89,7 @@ jobs:
           fi
           if [ ! -s data/fundamentals/latest.csv ]; then
             echo "No cached peer snapshot; refreshing now."
-            python fundamental_data_pipeline.py peer --output-dir data/fundamentals
+            python fundamental_peer_refresh.py --output-dir data/fundamentals
           fi
           test -s data/fundamentals/latest.csv
       - name: Fetch 8-quarter statements for current candidates
