@@ -2,6 +2,10 @@ name: Fundamental Data Refresh
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/fundamental-data-refresh-bootstrap"
   schedule:
     # 18:45 Europe/Istanbul = 15:45 UTC
     - cron: "45 15 * * 1-5"
