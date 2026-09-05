@@ -34,12 +34,15 @@ jobs:
           pip install -r requirements-cached-scan.txt
       - name: Refresh BIST peer fundamentals
         run: |
-          python fundamental_data_pipeline.py peer --output-dir data/fundamentals
+          python fundamental_peer_refresh.py --output-dir data/fundamentals
           python - <<'PY'
-          import pandas as pd
+          import json, pandas as pd
           p = pd.read_csv('data/fundamentals/latest.csv')
+          m = json.load(open('data/fundamentals/manifest.json', encoding='utf-8'))
           print(f'Fundamental peer rows: {len(p)}')
           print('Columns:', ', '.join(p.columns))
+          print('Non-null metrics:', m.get('metric_non_null'))
+          print('Sector mapped:', m.get('sector_non_generic'))
           PY
       - name: Upload fundamental snapshot
         uses: actions/upload-artifact@v4
