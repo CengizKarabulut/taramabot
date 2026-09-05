@@ -13,13 +13,13 @@ from zoneinfo import ZoneInfo
 
 from tvDatafeed import Interval, TvDatafeed
 
-from config import BARS_TO_FETCH, BIST_STOCKS, TV_PASSWORD, TV_USERNAME
-from market_data_store import (
-    MarketDataStore,
+from bist_timeframes import (
     resample_bist_intraday,
     resample_calendar,
     resample_daily,
 )
+from config import BARS_TO_FETCH, BIST_STOCKS, TV_PASSWORD, TV_USERNAME
+from market_data_store import MarketDataStore
 
 
 logging.basicConfig(
