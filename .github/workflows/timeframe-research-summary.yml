@@ -2,6 +2,9 @@ name: Timeframe Research Summary
 run-name: "Timeframe Research Summary · 1H/4H + Extended"
 
 on:
+  push:
+    paths:
+      - ".github/workflows/timeframe-research-summary.yml"
   workflow_dispatch:
     inputs:
       core_run_id:
@@ -32,8 +35,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          CORE_RUN_ID: ${{ inputs.core_run_id }}
-          EXTENDED_RUN_ID: ${{ inputs.extended_run_id }}
+          CORE_RUN_ID: ${{ inputs.core_run_id || '33934090077' }}
+          EXTENDED_RUN_ID: ${{ inputs.extended_run_id || '33934764128' }}
         shell: bash
         run: |
           set -euo pipefail
