@@ -33,6 +33,40 @@ def prepare_state(base_state: Path, target: Path) -> None:
         target.write_text("{}\n", encoding="utf-8")
 
 
+def _send_historical_profiles(repository: Path, result_paths: list[str]) -> None:
+    """Send optional A-I stock-history cards after the normal scan summary."""
+    profile_value = os.getenv("HISTORICAL_PROFILE_FILE", "").strip()
+    if not profile_value:
+        print("Tarihsel profil dosyasi tanimli degil; profil follow-up atlandi.")
+        return
+
+    profile_path = Path(profile_value)
+    if not profile_path.is_absolute():
+        profile_path = (repository / profile_path).resolve()
+    if not profile_path.is_file() or profile_path.stat().st_size == 0:
+        print(f"Tarihsel profil artifact'i bulunamadi: {profile_path}; follow-up atlandi.")
+        return
+
+    command = [
+        sys.executable,
+        "historical_profile_sender.py",
+        "--profiles",
+        str(profile_path),
+        "--scan-results",
+        *result_paths,
+    ]
+    audit_value = os.getenv("HISTORICAL_PROFILE_AUDIT_FILE", "").strip()
+    if audit_value:
+        audit_path = Path(audit_value)
+        if not audit_path.is_absolute():
+            audit_path = (repository / audit_path).resolve()
+        audit_path.parent.mkdir(parents=True, exist_ok=True)
+        command.extend(["--output", str(audit_path)])
+
+    print("Tarama sonucu gonderildi; tarihsel hisse profilleri gonderiliyor...")
+    subprocess.run(command, cwd=repository, env=os.environ.copy(), check=True)
+
+
 def run_parallel(args: argparse.Namespace) -> None:
     database = args.db.resolve()
     if not database.is_file() or database.stat().st_size == 0:
@@ -95,9 +129,7 @@ def run_parallel(args: argparse.Namespace) -> None:
             safe_log_text = log_text.encode(output_encoding, errors="replace").decode(output_encoding)
             print(safe_log_text)
             if worker["return_code"] != 0 or not worker["result_path"].is_file():
-                failures.append(
-                    f"{worker['period']} (kod={worker['return_code']})"
-                )
+                failures.append(f"{worker['period']} (kod={worker['return_code']})")
 
         if failures:
             raise RuntimeError("Paralel tarama basarisiz: " + ", ".join(failures))
@@ -121,12 +153,17 @@ def run_parallel(args: argparse.Namespace) -> None:
         )
 
         if send_telegram:
+            # 1) Mevcut tarama sonucu ve ortak sinyal ozeti.
             subprocess.run(
                 [sys.executable, "main.py", "summary", *result_paths],
                 cwd=repository,
                 env=os.environ.copy(),
                 check=True,
             )
+            # 2) Ayni turda cikan hisselerin tarihsel profili.
+            # Karar Paneli workflow'un sonraki adiminda calistigi icin mesaj sirasi:
+            # Tarama sonucu -> Tarihsel profil -> Karar Paneli.
+            _send_historical_profiles(repository, result_paths)
 
 
 def main() -> None:
