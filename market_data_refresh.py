@@ -41,6 +41,15 @@ PERIOD_INTERVALS = {
     "1M": Interval.in_monthly,
 }
 DERIVED_INTRADAY_PERIODS = ("30m", "45m", "1H", "2H", "4H")
+MIN_REASONABLE_BIST_UNIVERSE = 400
+
+
+def _normalise_symbols(values) -> list[str]:
+    return sorted({
+        str(value).strip().upper()
+        for value in (values or [])
+        if str(value).strip()
+    })
 
 
 class MarketDataRefresher:
@@ -90,17 +99,69 @@ class MarketDataRefresher:
     def _minimum_success_count(total_symbols: int) -> int:
         return max(1, int(total_symbols * 0.70))
 
+    @staticmethod
+    def _snapshot_symbols(store: MarketDataStore) -> list[str]:
+        symbols = store.list_symbols("BIST", "15m")
+        if not symbols:
+            symbols = store.list_symbols("BIST", "1D")
+        return _normalise_symbols(symbols)
+
+    def _resolve_refresh_symbols(self, store: MarketDataStore, *, allow_empty_snapshot: bool) -> list[str]:
+        """Use the durable snapshot as the authoritative refresh universe.
+
+        ``config.BIST_STOCKS`` is populated from borsapy at import time, but an
+        intermittent borsapy failure can leave only the small static fallback
+        list.  Never let that shrink a healthy 500+ symbol snapshot.  A
+        sufficiently complete discovered list is unioned only to pick up new
+        listings.
+        """
+        snapshot = self._snapshot_symbols(store)
+        discovered = _normalise_symbols(BIST_STOCKS)
+
+        if snapshot:
+            discovery_is_complete = len(discovered) >= max(
+                MIN_REASONABLE_BIST_UNIVERSE,
+                int(len(snapshot) * 0.80),
+            )
+            if discovery_is_complete:
+                resolved = sorted(set(snapshot).union(discovered))
+                if len(resolved) > len(snapshot):
+                    logger.info(
+                        "BIST evrenine dis kaynaktan %s yeni sembol adayi eklendi (%s -> %s).",
+                        len(resolved) - len(snapshot),
+                        len(snapshot),
+                        len(resolved),
+                    )
+                return resolved
+
+            if discovered:
+                logger.warning(
+                    "Borsapy/config BIST listesi eksik gorunuyor (%s); saglam snapshot evreni (%s) korunuyor.",
+                    len(discovered),
+                    len(snapshot),
+                )
+            return snapshot
+
+        if not allow_empty_snapshot:
+            raise RuntimeError("Saglam snapshot BIST evreni bulunamadi")
+        if len(discovered) < MIN_REASONABLE_BIST_UNIVERSE:
+            raise RuntimeError(
+                "Ilk kurulum BIST sembol evreni eksik: "
+                f"{len(discovered)} < {MIN_REASONABLE_BIST_UNIVERSE}. "
+                "Kalici history rebuild veya tam borsapy listesi gerekli."
+            )
+        return discovered
+
     def full_refresh(self, store: MarketDataStore) -> dict:
-        """Tum periyotlarda dogrudan TradingView verisiyle aksam snapshot'i olustur."""
+        """Tum periyotlarda dogrudan TradingView verisiyle kurtarma snapshot'i olustur."""
         period_stats = {}
-        total_symbols = len(BIST_STOCKS)
-        if total_symbols == 0:
-            raise RuntimeError("BIST sembol listesi bos")
+        symbols = self._resolve_refresh_symbols(store, allow_empty_snapshot=True)
+        total_symbols = len(symbols)
 
         for period, interval in PERIOD_INTERVALS.items():
             success = 0
             logger.info("%s tam veri yenilemesi basladi (%s sembol).", period, total_symbols)
-            for position, symbol in enumerate(BIST_STOCKS, start=1):
+            for position, symbol in enumerate(symbols, start=1):
                 frame = self._fetch(symbol, interval, BARS_TO_FETCH)
                 if frame is not None:
                     store.upsert_dataframe(
@@ -125,18 +186,19 @@ class MarketDataRefresher:
         return period_stats
 
     def intraday_refresh(self, store: MarketDataStore, recent_bars: int = 64) -> dict:
-        """Yalnizca yeni 15m mumlari indirip diger periyotlarin guncel mumlarini turet."""
-        total_symbols = len(BIST_STOCKS)
-        if total_symbols == 0:
-            raise RuntimeError("BIST sembol listesi bos")
-        if store.symbol_count("BIST", "1D") < self._minimum_success_count(total_symbols):
+        """Yalnizca yakin 15m mumlarini indirip ust periyotlarin guncel mumlarini turet."""
+        symbols = self._resolve_refresh_symbols(store, allow_empty_snapshot=False)
+        total_symbols = len(symbols)
+        current_daily_symbols = store.symbol_count("BIST", "1D")
+        if current_daily_symbols < self._minimum_success_count(total_symbols):
             raise RuntimeError(
-                "Tam veri snapshot'i bulunamadi. Once full yenileme calistirilmali."
+                "Tam veri snapshot'i bulunamadi veya kapsami yetersiz: "
+                f"1D={current_daily_symbols}, evren={total_symbols}."
             )
 
         success = 0
         logger.info("Artimli 15m veri yenilemesi basladi (%s sembol).", total_symbols)
-        for position, symbol in enumerate(BIST_STOCKS, start=1):
+        for position, symbol in enumerate(symbols, start=1):
             frame_15m = self._fetch(symbol, Interval.in_15_minute, recent_bars)
             if frame_15m is None:
                 continue
@@ -206,6 +268,7 @@ class MarketDataRefresher:
 
         store.set_metadata("last_intraday_refresh", datetime.now(TZ_TURKEY).isoformat())
         store.set_metadata("last_refresh_mode", "intraday")
+        store.set_metadata("last_refresh_universe_size", str(total_symbols))
         return {"15m": {"success": success, "total": total_symbols}}
 
     def run(self, mode: str, manifest_path: str, recent_bars: int = 64) -> dict:
