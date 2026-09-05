@@ -12,6 +12,10 @@ from telegram_sender_legacy import SCREENSHOTS_DIR, SCAN_RESULT_IMAGE_MAX_ROWS
 
 
 class TelegramSender(LegacyTelegramSender):
+    @staticmethod
+    def _is_15m(period: str) -> bool:
+        return str(period or "").strip().lower() in {"15m", "15min", "15dk"}
+
     def _scan_result_rows(self, strategies):
         rows = []
         for strategy_index, strategy in enumerate(self._enabled_strategies(strategies)):
@@ -64,7 +68,9 @@ class TelegramSender(LegacyTelegramSender):
         fig.patch.set_facecolor("#f8fafc")
         ax.set_axis_off()
         ax.add_patch(Rectangle((0, 0.89), 1, 0.11, transform=ax.transAxes, color="#0f172a"))
-        ax.text(0.045, 0.95, "SİNYAL + RİSK PLANI", transform=ax.transAxes, color="white", fontsize=22, fontweight="bold", va="center")
+        is_15m = self._is_15m(period)
+        title = "ERKEN UYARI + REFERANS SEVİYELER" if is_15m else "SİNYAL + RİSK PLANI"
+        ax.text(0.045, 0.95, title, transform=ax.transAxes, color="white", fontsize=22, fontweight="bold", va="center")
         subtitle = f"{(market_type or 'BIST').upper()} | {self._period_name(period)}"
         if strategy_label:
             subtitle += f" | {strategy_label}"
@@ -101,7 +107,11 @@ class TelegramSender(LegacyTelegramSender):
                 ax.text(.785,y,pv(row.get("tp3")),transform=ax.transAxes,color="#166534",fontsize=9.1,fontweight="bold",va="center")
                 ax.text(.94,y,risk_text,transform=ax.transAxes,color="#7c2d12",fontsize=8.9,ha="right",va="center")
                 y-=row_step
-        ax.text(.045,.045,"Stop/TP seviyeleri başlangıç risk profilleridir; backtest optimizasyonu tamamlandıkça strateji/periyot bazında güncellenecektir.",transform=ax.transAxes,color="#64748b",fontsize=8.6,va="center")
+        if is_15m:
+            footer = "15 dk erken uyarı/izleme katmanıdır; Stop/TP seviyeleri takip referansıdır, doğrulanmış işlem planı değildir."
+        else:
+            footer = "Stop/TP seviyeleri başlangıç risk profilleridir; backtest optimizasyonu tamamlandıkça strateji/periyot bazında güncellenecektir."
+        ax.text(.045,.045,footer,transform=ax.transAxes,color="#64748b",fontsize=8.6,va="center")
         fig.savefig(path,bbox_inches="tight",facecolor=fig.get_facecolor()); plt.close(fig)
         return path
 
