@@ -1,0 +1,140 @@
+name: Manual Telegram Snapshot Scan
+run-name: "Telegram Snapshot Test · ${{ github.event_name }}"
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/manual-telegram-snapshot-trigger"
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: manual-telegram-snapshot-scan
+  cancel-in-progress: false
+
+jobs:
+  scan-and-send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v4
+
+      - name: Python 3.11 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+
+      - name: Bagimliliklari kur
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+
+      - name: Son piyasa snapshot'ini ve state'i geri yukle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/market-data /tmp/scanner-state
+
+          latest_artifact_id() {
+            local artifact_name="$1"
+            gh api "repos/${REPOSITORY}/actions/artifacts?name=${artifact_name}&per_page=100" |
+              jq -r '[.artifacts[] | select(.expired == false)] | sort_by(.created_at) | last | .id // empty'
+          }
+
+          market_id="$(latest_artifact_id market-data-latest)"
+          if [ -z "${market_id}" ]; then
+            echo "market-data-latest artifact bulunamadi. Once normal snapshot pipeline calismali."
+            exit 1
+          fi
+
+          gh api "repos/${REPOSITORY}/actions/artifacts/${market_id}/zip" > /tmp/market-data.zip
+          unzip -q -o /tmp/market-data.zip -d /tmp/market-data
+          market_db="$(find /tmp/market-data -type f -name 'market_data.sqlite' | head -n1 || true)"
+          if [ -z "${market_db}" ]; then
+            echo "Artifact icinde market_data.sqlite bulunamadi."
+            exit 1
+          fi
+          cp "${market_db}" data/market_data.sqlite
+          echo "Piyasa snapshot artifact ${market_id} kullaniliyor."
+
+          state_id="$(latest_artifact_id scanner-state-latest)"
+          if [ -n "${state_id}" ]; then
+            gh api "repos/${REPOSITORY}/actions/artifacts/${state_id}/zip" > /tmp/scanner-state.zip
+            unzip -q -o /tmp/scanner-state.zip -d /tmp/scanner-state
+            state_path="$(find /tmp/scanner-state -type f -name 'state.json' | head -n1 || true)"
+            if [ -n "${state_path}" ]; then
+              cp "${state_path}" state.json
+              echo "Scanner state artifact ${state_id} kullaniliyor."
+            fi
+          else
+            echo "Scanner state artifact yok; repodaki state.json kullaniliyor."
+          fi
+
+          test -s data/market_data.sqlite
+          python -m json.tool state.json > /dev/null
+
+      - name: Mevcut 9 zaman dilimi taramasini calistir ve Telegram'a gonder
+        env:
+          DISABLE_TELEGRAM: "false"
+          MARKET_DATA_DB: ${{ github.workspace }}/data/market_data.sqlite
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ vars.TG_CHAT_ID || secrets.TG_CHAT_ID }}
+          TG_THREAD_ID: ${{ vars.TG_THREAD_ID || secrets.TG_THREAD_ID }}
+        run: |
+          set -euo pipefail
+          python parallel_snapshot_scan.py \
+            --db "${MARKET_DATA_DB}" \
+            --market bist \
+            --state state.json \
+            --summary data/manual_telegram_scan_results.json
+
+      - name: Karar Panelini calistir ve degisiklik varsa Telegram'a gonder
+        env:
+          MARKET_DATA_DB: ${{ github.workspace }}/data/market_data.sqlite
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ vars.TG_CHAT_ID || secrets.TG_CHAT_ID }}
+          TG_THREAD_ID: ${{ vars.TG_THREAD_ID || secrets.TG_THREAD_ID }}
+        run: |
+          set -euo pipefail
+          mkdir -p data/decision-panel
+          python decision_panel_scan.py \
+            --snapshot-db "${MARKET_DATA_DB}" \
+            --universe XUTUM \
+            --min-score 70 \
+            --min-turnover-mn 25 \
+            --charts 0 \
+            --output-dir data/decision-panel \
+            --telegram \
+            --telegram-on-change \
+            --state-file state.json
+
+      - name: Test sonucunu artifact olarak sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manual-telegram-snapshot-${{ github.run_id }}
+          path: |
+            data/manual_telegram_scan_results.json
+            data/decision-panel
+          if-no-files-found: warn
+          retention-days: 14
+          compression-level: 6
+
+      - name: Guncel state'i sakla
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scanner-state-latest
+          path: state.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
