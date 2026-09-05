@@ -1,0 +1,279 @@
+//@version=6
+indicator("BIST A-I Tarama Parity v1.4", overlay=true, max_bars_back=2500)
+
+// Telegram/Python dis kodlariyla birebir grafik takip paneli.
+// A=M-1/macd_cross, B=S-M-1/h8, C=S-M-V-1/i9, D=E-V-1/ema,
+// E=R-M-V-1/rsi_macd, F=A-M-V-1/new_scan, G=S-M-V-2/full,
+// H=S-M-2/smi early, I=R-V-1/rsi.
+
+onlyClosedBar = input.bool(true, "Sadece kapanmis mumda teyit et", group="Genel")
+dailyOnly = input.bool(false, "Yalniz 1G kullan", group="Genel")
+showPanel = input.bool(true, "A-I panelini goster", group="Panel")
+panelPosOpt = input.string("Sag Ust", "Panel konumu", options=["Sag Ust", "Sag Orta", "Sol Ust", "Sol Orta"], group="Panel")
+panelSizeOpt = input.string("Kucuk", "Panel boyutu", options=["Mini", "Kucuk", "Normal"], group="Panel")
+
+panelPosition = panelPosOpt == "Sol Ust" ? position.top_left : panelPosOpt == "Sol Orta" ? position.middle_left : panelPosOpt == "Sag Orta" ? position.middle_right : position.top_right
+panelTextSize = panelSizeOpt == "Mini" ? size.tiny : panelSizeOpt == "Normal" ? size.normal : size.small
+closedGate = not onlyClosedBar or barstate.isconfirmed
+timeframeOk = not dailyOnly or timeframe.isdaily
+
+f_ewm_alpha(float source, int length) =>
+    float alpha = 1.0 / length
+    float value = na
+    value := na(source) ? value[1] : na(value[1]) ? source : alpha * source + (1.0 - alpha) * value[1]
+    value
+
+// indicators.calc_rsi parity.
+f_rsi(float source, int length) =>
+    float change = ta.change(source)
+    float gain = na(change) ? na : math.max(change, 0.0)
+    float loss = na(change) ? na : math.max(-change, 0.0)
+    float avgGain = f_ewm_alpha(gain, length)
+    float avgLoss = f_ewm_alpha(loss, length)
+    avgLoss == 0 ? na : 100.0 - 100.0 / (1.0 + avgGain / avgLoss)
+
+// filters.calc_rsi parity (ilk change=0 seed).
+f_filter_rsi(float source, int length) =>
+    float change = ta.change(source)
+    float gain = na(change) ? 0.0 : change > 0 ? change : 0.0
+    float loss = na(change) ? 0.0 : change < 0 ? -change : 0.0
+    float avgGain = f_ewm_alpha(gain, length)
+    float avgLoss = f_ewm_alpha(loss, length)
+    avgLoss == 0 ? na : 100.0 - 100.0 / (1.0 + avgGain / avgLoss)
+
+f_double_ema(float source, int length) =>
+    ta.ema(ta.ema(source, length), length)
+
+f_tf_text() =>
+    string tf = timeframe.period
+    tf := tf == "15" ? "15 DK" : tf == "30" ? "30 DK" : tf == "45" ? "45 DK" : tf == "60" ? "1 SA" : tf == "120" ? "2 SA" : tf == "240" ? "4 SA" : tf == "D" ? "1G" : tf == "W" ? "1HFT" : tf == "M" ? "1AY" : tf
+    tf
+
+// -----------------------------------------------------------------------------
+// Ortak seriler - Python indicators.py / filters.py ile ayni parametreler.
+// -----------------------------------------------------------------------------
+sma5 = ta.sma(close, 5)
+sma8 = ta.sma(close, 8)
+sma21 = ta.sma(close, 21)
+sma50 = ta.sma(close, 50)
+sma55 = ta.sma(close, 55)
+sma200 = ta.sma(close, 200)
+
+ema5 = ta.ema(close, 5)
+ema8 = ta.ema(close, 8)
+ema13 = ta.ema(close, 13)
+ema21 = ta.ema(close, 21)
+ema55 = ta.ema(close, 55)
+ema200 = ta.ema(close, 200)
+
+[macdLine, macdSignal, macdHist] = ta.macd(close, 12, 26, 9)
+macdCrossOrRise = (macdLine[1] <= macdSignal[1] and macdLine > macdSignal) or (macdLine > macdSignal and macdLine > macdLine[1])
+
+hh10 = ta.highest(high, 10)
+ll10 = ta.lowest(low, 10)
+width10 = hh10 - ll10
+relative10 = close - (hh10 + ll10) / 2.0
+smi = width10 != 0 ? 200.0 * f_double_ema(relative10, 3) / f_double_ema(width10, 3) : 0.0
+smiRef = ta.ema(smi, 3)
+smiCrossOrRise = (smi[1] <= smiRef[1] and smi > smiRef) or (smi > smiRef and smi > smi[1])
+
+rsi7 = f_rsi(close, 7)
+rsi14 = f_rsi(close, 14)
+filterRsi7 = f_filter_rsi(close, 7)
+filterRsi14 = f_filter_rsi(close, 14)
+
+trRaw = ta.tr(true)
+atrEwm14 = f_ewm_alpha(trRaw, 14)
+atr14 = bar_index >= 13 ? atrEwm14 : na
+
+vol10 = ta.sma(volume, 10)
+vol20 = ta.sma(volume, 20)
+volRatio20 = vol20 > 0 ? volume / vol20 : 0.0
+
+// Intraday production tavan filtresi: mevcut fiyat / onceki GUNLUK kapanis.
+// [1] + lookahead_on yalniz tamamlanmis onceki 1G barini tum gun boyunca tasir.
+prevDailyClose = timeframe.isintraday ? request.security(syminfo.tickerid, "D", close[1], lookahead=barmerge.lookahead_on) : close[1]
+nearLimit = prevDailyClose > 0 ? (close / prevDailyClose - 1.0) * 100.0 >= 9.5 : false
+limitOk = not nearLimit
+
+// Kaufman Efficiency Ratio.
+erDirection = math.abs(close - close[10])
+erNoise = ta.sma(math.abs(ta.change(close)), 10) * 10.0
+er = erNoise > 0 ? erDirection / erNoise : na
+trendRegime = er >= 0.30
+softTrendRegime = er >= 0.22
+reversalRegime = er <= 0.35
+
+// Directional volume + CMF20. Zero-range bar varsa Python rolling CMF NaN olur;
+// validCount kontrolu ayni pencereyi reddeder.
+barRange = high - low
+mfMultiplier = barRange != 0 ? ((close - low) - (high - close)) / barRange : na
+mfVolume = mfMultiplier * volume
+mfAvg20 = ta.sma(mfVolume, 20)
+volAvg20 = ta.sma(volume, 20)
+validCmf = ta.sma(barRange != 0 ? 1.0 : 0.0, 20) >= 0.999999
+cmf20 = validCmf and volAvg20 != 0 ? mfAvg20 / volAvg20 : na
+directionalVolume = volume > vol20 * 1.5 and close > open and cmf20 > 0
+
+above50 = close > sma50
+above200 = close > sma200
+priorLow5 = ta.lowest(low[1], 5)
+reversalStructure = close > ema8 and close > open and close > close[1] and low >= priorLow5
+emaExtensionOk = (close - ema21 <= atr14 * 2.5) and (na(filterRsi14) or filterRsi14 <= 75)
+rsiHeatOk = na(filterRsi7) or filterRsi7 <= 85
+
+// -----------------------------------------------------------------------------
+// A-I sinyal durumlari.
+// -----------------------------------------------------------------------------
+smCore = smiCrossOrRise and smi < 0 and macdHist < 0 and macdHist > macdHist[1]
+smFullRaw = smCore and above200 and volume > vol20 * 1.5
+smEarlyRaw = smCore and not smFullRaw
+sigH = timeframeOk and limitOk and smEarlyRaw and reversalRegime and reversalStructure and directionalVolume
+sigG = timeframeOk and limitOk and smFullRaw and directionalVolume
+
+rsi7CrossOrRise = (rsi7[1] <= 50 and rsi7 > 50) or (rsi7 > 50 and rsi7 > rsi7[1])
+rsiRaw = rsi7 > 60 and rsi7CrossOrRise and volume > vol10 * 1.5
+sigI = timeframeOk and limitOk and rsiRaw and above50 and trendRegime and directionalVolume and rsiHeatOk
+
+newRaw = volume > vol20 * 1.5 and close > sma5 and close > sma8 and close > sma21 and close > sma50 and close > sma55 and close > sma200 and macdLine > 0 and macdCrossOrRise
+sigF = timeframeOk and limitOk and newRaw
+
+rsi14Up = (rsi14[1] <= 50 and rsi14 > 50) or (rsi14 > 50 and rsi14 > rsi14[1])
+rmvRaw = rsi14Up and rsi14 < 70 and macdCrossOrRise and volume > vol20 * 1.5
+sigE = timeframeOk and limitOk and rmvRaw and above200 and trendRegime and directionalVolume
+
+ev4 = (ema8[1] <= ema13[1] and ema8 > ema13) or (ema8 > ema13 and ema8 > ema8[1])
+ev5 = (ema5[1] <= ema8[1] and ema5 > ema8) or (ema5 > ema8 and ema5 > ema5[1])
+ev6 = (ema5[1] <= ema13[1] and ema5 > ema13) or (ema5 > ema13 and ema5 > ema5[1])
+emaRaw = close > ema200 and close > ema55 and close > ema21 and ev4 and ev5 and ev6 and volume > vol20 * 1.5
+sigD = timeframeOk and limitOk and emaRaw and emaExtensionOk
+
+macdRaw = rsi14 > 30 and macdCrossOrRise and macdLine > 0
+sigA = timeframeOk and limitOk and macdRaw and above50 and trendRegime and directionalVolume
+
+h8Raw = smiCrossOrRise and smi > 0 and macdHist > 0 and macdHist > macdHist[1]
+sigB = timeframeOk and limitOk and h8Raw and above50 and trendRegime and directionalVolume
+
+i9Raw = h8Raw and above200 and volume > vol20 * 1.5
+sigC = timeframeOk and limitOk and i9Raw and softTrendRegime and directionalVolume
+
+freshA = sigA and not sigA[1]
+freshB = sigB and not sigB[1]
+freshC = sigC and not sigC[1]
+freshD = sigD and not sigD[1]
+freshE = sigE and not sigE[1]
+freshF = sigF and not sigF[1]
+freshG = sigG and not sigG[1]
+freshH = sigH and not sigH[1]
+freshI = sigI and not sigI[1]
+
+// -----------------------------------------------------------------------------
+// Scanner ile ayni gorunen stop/TP baslangic planlari.
+// -----------------------------------------------------------------------------
+f_plan(float swingLow, float emaValue, int mode, float buffer, float minRiskAtr, float maxRiskAtr, float tp1R, float tp2R, float tp3R) =>
+    float entry = close
+    float swingStop = swingLow - atr14 * buffer
+    float signalStop = low - atr14 * buffer
+    float emaStop = emaValue - atr14 * buffer
+    float fallback = entry - atr14 * minRiskAtr
+    float raw = fallback
+    if mode == 1
+        raw := swingStop
+    else if mode == 2
+        float best = na
+        if swingStop < entry
+            best := swingStop
+        if signalStop < entry
+            best := na(best) ? signalStop : math.min(best, signalStop)
+        if emaStop < entry
+            best := na(best) ? emaStop : math.min(best, emaStop)
+        raw := na(best) ? fallback : best
+    else if mode == 3
+        float best = na
+        if swingStop < entry
+            best := swingStop
+        if signalStop < entry
+            best := na(best) ? signalStop : math.max(best, signalStop)
+        if emaStop < entry
+            best := na(best) ? emaStop : math.max(best, emaStop)
+        raw := na(best) ? fallback : best
+    float risk = math.max(entry - raw, 0.0)
+    float minRisk = atr14 * minRiskAtr
+    float maxRisk = atr14 * maxRiskAtr
+    if risk < minRisk
+        risk := minRisk
+        raw := entry - risk
+    else if risk > maxRisk
+        risk := maxRisk
+        raw := entry - risk
+    [raw, entry + risk * tp1R, entry + risk * tp2R, entry + risk * tp3R]
+
+swing4 = ta.lowest(low, 4)
+swing6 = ta.lowest(low, 6)
+swing7 = ta.lowest(low, 7)
+swing8 = ta.lowest(low, 8)
+
+[aStop, aTp1, aTp2, aTp3] = f_plan(swing7, ema21, 3, 0.20, 0.75, 2.35, 1.0, 1.8, 2.8)
+[bStop, bTp1, bTp2, bTp3] = f_plan(swing6, ema13, 1, 0.20, 0.70, 2.20, 0.8, 1.5, 2.4)
+[cStop, cTp1, cTp2, cTp3] = f_plan(swing7, ema21, 2, 0.20, 0.75, 2.40, 0.8, 1.5, 2.4)
+[dStop, dTp1, dTp2, dTp3] = f_plan(swing8, ema21, 3, 0.20, 0.80, 2.50, 1.0, 2.0, 3.2)
+[eStop, eTp1, eTp2, eTp3] = f_plan(swing6, ema13, 1, 0.20, 0.70, 2.20, 0.8, 1.5, 2.4)
+[fStop, fTp1, fTp2, fTp3] = f_plan(swing8, ema21, 1, 0.20, 0.80, 2.60, 0.8, 1.5, 2.4)
+[gStop, gTp1, gTp2, gTp3] = f_plan(swing7, ema21, 1, 0.25, 0.80, 2.50, 0.8, 1.5, 2.4)
+[hStop, hTp1, hTp2, hTp3] = f_plan(swing6, ema21, 1, 0.25, 0.75, 2.25, 0.8, 1.5, 2.4)
+[iStop, iTp1, iTp2, iTp3] = f_plan(swing4, ema21, 2, 0.15, 0.65, 1.90, 0.8, 1.5, 2.4)
+
+f_status(bool active, bool fresh) =>
+    not timeframeOk ? "1G KILIDI" : active and onlyClosedBar and not barstate.isconfirmed ? "KAPANIS" : active and fresh ? "YENI" : active ? "UYGUN" : "BEKLE"
+
+f_color(bool active, bool fresh) =>
+    not timeframeOk ? color.orange : active and onlyClosedBar and not barstate.isconfirmed ? color.orange : active and fresh ? color.green : active ? color.blue : color.new(color.gray, 55)
+
+f_price(float value) =>
+    na(value) ? "-" : str.tostring(value, format.mintick)
+
+f_row(table t, int row, string code, string alias, bool active, bool fresh, float stop, float tp1, float tp2, float tp3) =>
+    color c = f_color(active, fresh)
+    table.cell(t, 0, row, code + " · " + alias, text_color=color.white, bgcolor=color.new(color.black, 5), text_size=panelTextSize)
+    table.cell(t, 1, row, f_status(active, fresh), text_color=color.white, bgcolor=color.new(c, 25), text_size=panelTextSize)
+    table.cell(t, 2, row, active ? f_price(stop) : "-", text_color=color.white, text_size=panelTextSize)
+    table.cell(t, 3, row, active ? f_price(tp1) : "-", text_color=color.white, text_size=panelTextSize)
+    table.cell(t, 4, row, active ? f_price(tp2) : "-", text_color=color.white, text_size=panelTextSize)
+    table.cell(t, 5, row, active ? f_price(tp3) : "-", text_color=color.white, text_size=panelTextSize)
+
+activeCount = (sigA ? 1 : 0) + (sigB ? 1 : 0) + (sigC ? 1 : 0) + (sigD ? 1 : 0) + (sigE ? 1 : 0) + (sigF ? 1 : 0) + (sigG ? 1 : 0) + (sigH ? 1 : 0) + (sigI ? 1 : 0)
+var table panel = table.new(panelPosition, 6, 11, border_width=1, frame_width=1)
+
+if barstate.isfirst
+    table.merge_cells(panel, 0, 0, 5, 0)
+
+if barstate.islast and showPanel
+    table.cell(panel, 0, 0, "A-I TARAYICI PARITY · " + f_tf_text() + " · " + str.tostring(activeCount) + "/9", text_color=color.white, bgcolor=color.new(activeCount >= 3 ? color.green : activeCount >= 1 ? color.orange : color.gray, 15), text_size=panelTextSize)
+    table.cell(panel, 0, 1, "KOD", text_color=color.white, text_size=panelTextSize)
+    table.cell(panel, 1, 1, "DURUM", text_color=color.white, text_size=panelTextSize)
+    table.cell(panel, 2, 1, "STOP", text_color=color.white, text_size=panelTextSize)
+    table.cell(panel, 3, 1, "TP1", text_color=color.white, text_size=panelTextSize)
+    table.cell(panel, 4, 1, "TP2", text_color=color.white, text_size=panelTextSize)
+    table.cell(panel, 5, 1, "TP3", text_color=color.white, text_size=panelTextSize)
+    f_row(panel, 2, "A", "M-1", sigA, freshA, aStop, aTp1, aTp2, aTp3)
+    f_row(panel, 3, "B", "S-M-1", sigB, freshB, bStop, bTp1, bTp2, bTp3)
+    f_row(panel, 4, "C", "S-M-V-1", sigC, freshC, cStop, cTp1, cTp2, cTp3)
+    f_row(panel, 5, "D", "E-V-1", sigD, freshD, dStop, dTp1, dTp2, dTp3)
+    f_row(panel, 6, "E", "R-M-V-1", sigE, freshE, eStop, eTp1, eTp2, eTp3)
+    f_row(panel, 7, "F", "A-M-V-1", sigF, freshF, fStop, fTp1, fTp2, fTp3)
+    f_row(panel, 8, "G", "S-M-V-2", sigG, freshG, gStop, gTp1, gTp2, gTp3)
+    f_row(panel, 9, "H", "S-M-2", sigH, freshH, hStop, hTp1, hTp2, hTp3)
+    f_row(panel, 10, "I", "R-V-1", sigI, freshI, iStop, iTp1, iTp2, iTp3)
+else if barstate.islast
+    table.clear(panel, 0, 0, 5, 10)
+
+// Kod bazli alarmlar: Telegram kodu ile grafikteki alarm ayni.
+alertcondition(closedGate and freshA, title="A · M-1", message="{{ticker}} {{interval}} A · M-1 yeni uyum")
+alertcondition(closedGate and freshB, title="B · S-M-1", message="{{ticker}} {{interval}} B · S-M-1 yeni uyum")
+alertcondition(closedGate and freshC, title="C · S-M-V-1", message="{{ticker}} {{interval}} C · S-M-V-1 yeni uyum")
+alertcondition(closedGate and freshD, title="D · E-V-1", message="{{ticker}} {{interval}} D · E-V-1 yeni uyum")
+alertcondition(closedGate and freshE, title="E · R-M-V-1", message="{{ticker}} {{interval}} E · R-M-V-1 yeni uyum")
+alertcondition(closedGate and freshF, title="F · A-M-V-1", message="{{ticker}} {{interval}} F · A-M-V-1 yeni uyum")
+alertcondition(closedGate and freshG, title="G · S-M-V-2", message="{{ticker}} {{interval}} G · S-M-V-2 yeni uyum")
+alertcondition(closedGate and freshH, title="H · S-M-2", message="{{ticker}} {{interval}} H · S-M-2 yeni uyum")
+alertcondition(closedGate and freshI, title="I · R-V-1", message="{{ticker}} {{interval}} I · R-V-1 yeni uyum")
