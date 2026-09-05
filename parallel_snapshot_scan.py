@@ -16,6 +16,8 @@ from state_merge import load_state, merge_states, write_state
 
 PERIODS = ("15m", "30m", "45m", "1H", "2H", "4H", "1D", "1W", "1M")
 FALSE_VALUES = {"", "0", "false", "no", "off"}
+RESULT_GROUPS = ("full", "smi", "rsi", "new", "rsi_macd", "ema", "macd_cross", "h8", "i9")
+MIN_TRUSTED_BIST_UNIVERSE = 400
 
 
 def telegram_enabled() -> bool:
@@ -31,6 +33,56 @@ def prepare_state(base_state: Path, target: Path) -> None:
         shutil.copy2(base_state, target)
     else:
         target.write_text("{}\n", encoding="utf-8")
+
+
+def _trusted_bist_symbols(market: str) -> set[str] | None:
+    """Return the current XUTUM universe only when discovery looks complete.
+
+    Snapshot is the durable fallback when borsapy is temporarily unavailable.
+    When the discovery source returns a healthy 400+ symbol universe, however,
+    live outward-facing results must not contain stale/delisted cache symbols.
+    """
+    if str(market).lower() != "bist":
+        return None
+    try:
+        from config import BIST_STOCKS
+
+        symbols = {
+            str(symbol).strip().upper()
+            for symbol in (BIST_STOCKS or [])
+            if str(symbol).strip()
+        }
+        if len(symbols) >= MIN_TRUSTED_BIST_UNIVERSE:
+            print(f"Canli BIST sonuc evreni: {len(symbols)} sembol (guncel XUTUM).")
+            return symbols
+        print(
+            f"Guncel XUTUM listesi eksik gorunuyor ({len(symbols)}); "
+            "snapshot sonuc evreni korunuyor."
+        )
+    except Exception as exc:
+        print(f"Guncel XUTUM evreni dogrulanamadi; snapshot korunuyor: {exc}")
+    return None
+
+
+def _filter_result_file(path: Path, allowed_symbols: set[str] | None) -> None:
+    if not allowed_symbols or not path.is_file():
+        return
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    removed = 0
+    for group in RESULT_GROUPS:
+        items = payload.get(group)
+        if not isinstance(items, list):
+            continue
+        filtered = [
+            item
+            for item in items
+            if str((item or {}).get("symbol", "")).strip().upper() in allowed_symbols
+        ]
+        removed += len(items) - len(filtered)
+        payload[group] = filtered
+    if removed:
+        print(f"{payload.get('period', path.name)}: {removed} eski/evren-disi sinyal sonucu bastirildi.")
+    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
 
 def _send_historical_profiles(repository: Path, result_paths: list[str]) -> None:
@@ -139,6 +191,13 @@ def run_parallel(args: argparse.Namespace) -> None:
             for worker in processes:
                 merged = merge_states(merged, load_state(worker["state_path"]))
             write_state(base_state, merged)
+
+        # The database may deliberately retain old/delisted rows for continuity.
+        # If current XUTUM discovery is healthy, prevent those rows from leaking
+        # into user-facing scan results.  If discovery fails, keep the snapshot.
+        allowed_symbols = _trusted_bist_symbols(args.market)
+        for worker in processes:
+            _filter_result_file(worker["result_path"], allowed_symbols)
 
         result_paths = [str(worker["result_path"]) for worker in processes]
         summary_path = args.summary.resolve()
