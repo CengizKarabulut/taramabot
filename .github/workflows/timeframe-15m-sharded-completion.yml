@@ -1,0 +1,198 @@
+name: Complete 15m EMA and new_scan
+run-name: "15m completion · EMA + new_scan · exact sharded"
+
+on:
+  push:
+    paths:
+      - ".github/workflows/timeframe-15m-sharded-completion.yml"
+      - "timeframe_15m_sharded_optimize.py"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: timeframe-15m-sharded-completion
+  cancel-in-progress: false
+
+env:
+  SOURCE_RUN_ID: "33934764128"
+  SHARD_COUNT: "6"
+
+jobs:
+  train-shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        scanner: ["ema", "new_scan"]
+        shard: [0, 1, 2, 3, 4, 5]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+
+      - name: Download immutable 15m snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data/timeframe /tmp/tf15
+          artifact_name="historical-15m-${SOURCE_RUN_ID}"
+          artifact_id="$(
+            gh api --paginate "repos/${REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/artifacts?per_page=100" \
+              --jq ".artifacts[] | select(.name == \"${artifact_name}\" and .expired == false) | .id" |
+              tail -n1
+          )"
+          test -n "${artifact_id}"
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/tf15.zip
+          unzip -q -o /tmp/tf15.zip -d /tmp/tf15
+          cp /tmp/tf15/historical_15m.sqlite data/timeframe/historical_15m.sqlite 2>/dev/null || \
+            cp /tmp/tf15/data/timeframe/historical_15m.sqlite data/timeframe/historical_15m.sqlite
+          test -s data/timeframe/historical_15m.sqlite
+
+      - name: Compile research code
+        run: |
+          python -m py_compile \
+            timeframe_15m_sharded_optimize.py \
+            historical_exit_optimize.py \
+            historical_period_cost_sensitivity.py \
+            historical_replay.py \
+            strategy_optimizer.py \
+            trade_backtester.py \
+            strategy_exit_profiles.py
+
+      - name: Evaluate train-grid shard
+        run: |
+          mkdir -p reports/timeframe/15m/shards
+          python timeframe_15m_sharded_optimize.py shard \
+            --db data/timeframe/historical_15m.sqlite \
+            --strategy "${{ matrix.scanner }}" \
+            --period 15m \
+            --warmup 240 \
+            --shard-index "${{ matrix.shard }}" \
+            --shard-count "${SHARD_COUNT}" \
+            --output "reports/timeframe/15m/shards/${{ matrix.scanner }}-shard-${{ matrix.shard }}.json"
+
+      - name: Upload shard
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf15-shard-${{ matrix.scanner }}-${{ matrix.shard }}-${{ github.run_id }}
+          path: reports/timeframe/15m/shards/${{ matrix.scanner }}-shard-${{ matrix.shard }}.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  merge-and-cost:
+    needs: train-shard
+    if: ${{ !cancelled() && needs.train-shard.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        scanner: ["ema", "new_scan"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-cached-scan.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-cached-scan.txt
+
+      - name: Download immutable 15m snapshot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data/timeframe /tmp/tf15
+          artifact_name="historical-15m-${SOURCE_RUN_ID}"
+          artifact_id="$(
+            gh api --paginate "repos/${REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/artifacts?per_page=100" \
+              --jq ".artifacts[] | select(.name == \"${artifact_name}\" and .expired == false) | .id" |
+              tail -n1
+          )"
+          test -n "${artifact_id}"
+          gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/tf15.zip
+          unzip -q -o /tmp/tf15.zip -d /tmp/tf15
+          cp /tmp/tf15/historical_15m.sqlite data/timeframe/historical_15m.sqlite 2>/dev/null || \
+            cp /tmp/tf15/data/timeframe/historical_15m.sqlite data/timeframe/historical_15m.sqlite
+          test -s data/timeframe/historical_15m.sqlite
+
+      - name: Download all scanner shards from this run
+        uses: actions/download-artifact@v4
+        with:
+          pattern: tf15-shard-${{ matrix.scanner }}-*-${{ github.run_id }}
+          path: reports/timeframe/15m/shards
+          merge-multiple: true
+
+      - name: Verify shard coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          count="$(find reports/timeframe/15m/shards -maxdepth 1 -type f -name '${{ matrix.scanner }}-shard-*.json' | wc -l)"
+          echo "${{ matrix.scanner }} shard count: ${count}"
+          test "${count}" -eq "${SHARD_COUNT}"
+
+      - name: Merge exact train ranking and evaluate validation/OOS
+        run: |
+          mkdir -p reports/timeframe/15m
+          python timeframe_15m_sharded_optimize.py merge \
+            --db data/timeframe/historical_15m.sqlite \
+            --strategy "${{ matrix.scanner }}" \
+            --period 15m \
+            --warmup 240 \
+            --shards-dir reports/timeframe/15m/shards \
+            --shard-count "${SHARD_COUNT}" \
+            --top-train 20 \
+            --output "reports/timeframe/15m/${{ matrix.scanner }}_walk_forward.json"
+
+      - name: Replay untouched OOS with costs
+        run: |
+          python historical_period_cost_sensitivity.py \
+            --db data/timeframe/historical_15m.sqlite \
+            --strategy "${{ matrix.scanner }}" \
+            --period 15m \
+            --warmup 240 \
+            --optimizer-json "reports/timeframe/15m/${{ matrix.scanner }}_walk_forward.json" \
+            --output "reports/timeframe/15m/${{ matrix.scanner }}_costs.json"
+
+      - name: Upload final 15m result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf15-final-${{ matrix.scanner }}-${{ github.run_id }}
+          path: |
+            reports/timeframe/15m/${{ matrix.scanner }}_walk_forward.json
+            reports/timeframe/15m/${{ matrix.scanner }}_costs.json
+          if-no-files-found: warn
+          retention-days: 90
