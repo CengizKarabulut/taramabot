@@ -19,6 +19,8 @@ jobs:
   parity:
     runs-on: ubuntu-latest
     timeout-minutes: 240
+    env:
+      PYTHONPATH: ${{ github.workspace }}
 
     steps:
       - name: taramabot branchini al
