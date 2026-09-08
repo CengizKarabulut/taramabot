@@ -28,6 +28,11 @@ def _ema(s: pd.Series, span: int) -> pd.Series:
     return s.ewm(span=span, adjust=False, min_periods=span).mean()
 
 
+def _ema_loose(s: pd.Series, span: int) -> pd.Series:
+    """EWM variant used by the original NE ARARSAN VAR research module."""
+    return s.ewm(span=span, adjust=False).mean()
+
+
 def _wilder(s: pd.Series, length: int) -> pd.Series:
     return s.ewm(alpha=1.0 / length, adjust=False, min_periods=length).mean()
 
@@ -43,9 +48,26 @@ def _rsi(close: pd.Series, length: int = 14) -> pd.Series:
     return out.where(ad != 0.0, 100.0)
 
 
+def _rsi_plain(close: pd.Series, length: int = 14) -> pd.Series:
+    """RSI variant used by NE ARARSAN VAR and its locked histogram research."""
+    d = close.diff()
+    gain = d.clip(lower=0.0)
+    loss = (-d).clip(lower=0.0)
+    avg_gain = gain.ewm(alpha=1.0 / length, adjust=False, min_periods=length).mean()
+    avg_loss = loss.ewm(alpha=1.0 / length, adjust=False, min_periods=length).mean()
+    rs = avg_gain / avg_loss.replace(0.0, np.nan)
+    return 100.0 - 100.0 / (1.0 + rs)
+
+
 def _macd(close: pd.Series) -> tuple[pd.Series, pd.Series, pd.Series]:
     level = _ema(close, 12) - _ema(close, 26)
     signal = _ema(level, 9)
+    return level, signal, level - signal
+
+
+def _macd_loose(close: pd.Series) -> tuple[pd.Series, pd.Series, pd.Series]:
+    level = _ema_loose(close, 12) - _ema_loose(close, 26)
+    signal = _ema_loose(level, 9)
     return level, signal, level - signal
 
 
@@ -125,13 +147,17 @@ def event_series(df: pd.DataFrame, record: ProductionRecord) -> pd.Series:
     tf = record.timeframe
 
     if family == "NE ARARSAN VAR":
-        ema5, ema8, ema13 = _ema(c, 5), _ema(c, 8), _ema(c, 13)
-        r = _rsi(c)
-        _, _, hist = _macd(c)
+        # Exact frozen research semantics. Unlike the other RVOL families,
+        # this research lineage used current-inclusive 20-bar volume mean.
+        volume = v.fillna(0.0)
+        ema5, ema8, ema13 = _ema_loose(c, 5), _ema_loose(c, 8), _ema_loose(c, 13)
+        r = _rsi_plain(c)
+        _, _, hist = _macd_loose(c)
+        rvol20 = volume / volume.rolling(20, min_periods=20).mean().replace(0.0, np.nan)
         cond = (
             (c > ema5) & (ema5 > ema8) & (ema8 > ema13)
             & (r > 30.0) & (r < 60.0)
-            & (_rvol(v, 20) > 1.50)
+            & (rvol20 > 1.50)
             & _hist_rise2(hist)
         )
         return _fresh(cond)
