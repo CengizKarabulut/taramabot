@@ -1,0 +1,33 @@
+{
+  "version": "scanner-production-parity-v1",
+  "status": "FAIL",
+  "models": 28,
+  "models_exact_match": 26,
+  "research_sha": "5a25fbfb497f5b0a4a1ba8e527d24c77cb7d2aee",
+  "timeframes": [
+    {
+      "period": "2H",
+      "models": 1,
+      "exact": 1,
+      "status": "PASS"
+    },
+    {
+      "period": "4H",
+      "models": 7,
+      "exact": 7,
+      "status": "PASS"
+    },
+    {
+      "period": "1D",
+      "models": 10,
+      "exact": 9,
+      "status": "FAIL"
+    },
+    {
+      "period": "1W",
+      "models": 10,
+      "exact": 9,
+      "status": "FAIL"
+    }
+  ]
+}

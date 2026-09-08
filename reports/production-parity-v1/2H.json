@@ -1,0 +1,27 @@
+{
+  "version": "scanner-production-parity-v1",
+  "period": "2H",
+  "database": "data/parity/historical_2H.sqlite",
+  "registry_version": "taramabot-production-registry-v1",
+  "models": 1,
+  "models_exact_match": 1,
+  "status": "PASS",
+  "rows": [
+    {
+      "family": "BB & SMA",
+      "timeframe": "2H",
+      "tier": "ACTIVE",
+      "quality_score": 53.0,
+      "symbols_compared": 564,
+      "bars_compared": 2410745,
+      "research_signals": 15110,
+      "production_signals": 15110,
+      "true_positive": 15110,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
+    }
+  ]
+}

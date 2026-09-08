@@ -1,0 +1,322 @@
+{
+  "version": "scanner-production-parity-v1",
+  "period": "1D",
+  "database": "data/parity/historical_1D.sqlite",
+  "registry_version": "taramabot-production-registry-v1",
+  "models": 10,
+  "models_exact_match": 9,
+  "status": "FAIL",
+  "rows": [
+    {
+      "family": "13 - MACD YenidenHareket",
+      "timeframe": "1D",
+      "tier": "CORE",
+      "quality_score": 93.4,
+      "symbols_compared": 542,
+      "bars_compared": 892847,
+      "research_signals": 104103,
+      "production_signals": 104103,
+      "true_positive": 104103,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
+    },
+    {
+      "family": "11 - Stoc.RSI & RSI & BB & MACD",
+      "timeframe": "1D",
+      "tier": "CORE",
+      "quality_score": 78.9,
+      "symbols_compared": 542,
+      "bars_compared": 892847,
+      "research_signals": 8585,
+      "production_signals": 8585,
+      "true_positive": 8585,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
+    },
+    {
+      "family": "14 - MACD DipDönüşü",
+      "timeframe": "1D",
+      "tier": "SECONDARY",
+      "quality_score": 71.4,
+      "symbols_compared": 542,
+      "bars_compared": 892847,
+      "research_signals": 19632,
+      "production_signals": 19632,
+      "true_positive": 19632,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
+    },
+    {
+      "family": "9 - BulutKeser",
+      "timeframe": "1D",
+      "tier": "ACTIVE",
+      "quality_score": 69.6,
+      "symbols_compared": 542,
+      "bars_compared": 892847,
+      "research_signals": 646,
+      "production_signals": 646,
+      "true_positive": 646,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
+    },
+    {
+      "family": "StochRSI / Momentum / Hacim",
+      "timeframe": "1D",
+      "tier": "ACTIVE",
+      "quality_score": 63.5,
+      "symbols_compared": 561,
+      "bars_compared": 969578,
+      "research_signals": 32378,
+      "production_signals": 32378,
+      "true_positive": 32378,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
+    },
+    {
+      "family": "7 - BB Daralması",
+      "timeframe": "1D",
+      "tier": "ACTIVE",
+      "quality_score": 63.0,
+      "symbols_compared": 542,
+      "bars_compared": 892847,
+      "research_signals": 11085,
+      "production_signals": 11085,
+      "true_positive": 11085,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
+    },
+    {
+      "family": "8 - TavanTarama",
+      "timeframe": "1D",
+      "tier": "ACTIVE",
+      "quality_score": 59.0,
+      "symbols_compared": 542,
+      "bars_compared": 892847,
+      "research_signals": 1957,
+      "production_signals": 1957,
+      "true_positive": 1957,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
+    },
+    {
+      "family": "NE ARARSAN VAR",
+      "timeframe": "1D",
+      "tier": "ACTIVE",
+      "quality_score": 58.8,
+      "symbols_compared": 561,
+      "bars_compared": 969578,
+      "research_signals": 14349,
+      "production_signals": 14971,
+      "true_positive": 14131,
+      "false_positive": 840,
+      "false_negative": 218,
+      "mismatch_samples": [
+        {
+          "symbol": "A1YEN",
+          "time": "2026-08-19T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "ACSEL",
+          "time": "2018-10-16T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "ACSEL",
+          "time": "2024-12-04T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "ADEL",
+          "time": "2023-04-17T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "ADESE",
+          "time": "2020-01-14T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "ADESE",
+          "time": "2020-09-08T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "ADESE",
+          "time": "2017-12-20T06:00:00",
+          "kind": "research_only"
+        },
+        {
+          "symbol": "AEFES",
+          "time": "2023-10-04T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AEFES",
+          "time": "2023-12-11T06:00:00",
+          "kind": "research_only"
+        },
+        {
+          "symbol": "AFYON",
+          "time": "2021-09-06T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AFYON",
+          "time": "2024-01-25T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AFYON",
+          "time": "2024-07-10T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AFYON",
+          "time": "2025-04-07T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AGESA",
+          "time": "2018-02-19T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AGHOL",
+          "time": "2020-04-13T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AGHOL",
+          "time": "2022-11-04T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AGHOL",
+          "time": "2024-11-08T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AGHOL",
+          "time": "2022-02-01T06:00:00",
+          "kind": "research_only"
+        },
+        {
+          "symbol": "AGYO",
+          "time": "2018-04-24T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AHGAZ",
+          "time": "2023-10-11T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AKBNK",
+          "time": "2017-04-11T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AKBNK",
+          "time": "2023-06-02T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AKBNK",
+          "time": "2025-05-14T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AKCNS",
+          "time": "2019-09-10T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AKCNS",
+          "time": "2024-01-09T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AKCNS",
+          "time": "2025-03-18T06:00:00",
+          "kind": "research_only"
+        },
+        {
+          "symbol": "AKENR",
+          "time": "2018-06-28T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AKFGY",
+          "time": "2023-09-18T06:00:00",
+          "kind": "production_only"
+        },
+        {
+          "symbol": "AKGRT",
+          "time": "2017-10-19T06:00:00",
+          "kind": "research_only"
+        },
+        {
+          "symbol": "AKMGY",
+          "time": "2017-10-12T06:00:00",
+          "kind": "production_only"
+        }
+      ],
+      "exact_match": false,
+      "event_agreement_pct": 93.034433
+    },
+    {
+      "family": "BB & SMA",
+      "timeframe": "1D",
+      "tier": "ACTIVE",
+      "quality_score": 58.1,
+      "symbols_compared": 544,
+      "bars_compared": 903698,
+      "research_signals": 6483,
+      "production_signals": 6483,
+      "true_positive": 6483,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
+    },
+    {
+      "family": "RSI & MACD - RVOL",
+      "timeframe": "1D",
+      "tier": "ACTIVE",
+      "quality_score": 54.2,
+      "symbols_compared": 544,
+      "bars_compared": 903698,
+      "research_signals": 34407,
+      "production_signals": 34407,
+      "true_positive": 34407,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
+    }
+  ]
+}
