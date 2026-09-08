@@ -1,0 +1,184 @@
+name: Production Registry Parity v1
+run-name: "Production registry parity v1 · ${{ github.run_id }}"
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/production-registry-parity-bootstrap"
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: production-registry-parity-v1
+  cancel-in-progress: false
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+
+    steps:
+      - name: taramabot branchini al
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Frozen research referansini al
+        uses: actions/checkout@v4
+        with:
+          repository: CengizKarabulut/deneme
+          ref: main
+          path: deneme_ref
+
+      - name: Python 3.11 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Parity bagimliliklarini kur
+        run: |
+          python -m pip install --upgrade pip
+          pip install "pandas>=2.0" "numpy>=1.24" "pytest>=8.0"
+
+      - name: Parity kodunu derle ve kontrat testlerini calistir
+        run: |
+          python -m py_compile \
+            production_scanners/registry.py \
+            production_scanners/history.py \
+            production_scanners/signals.py \
+            production_scanners/fingerprint.py \
+            production_scanner_parity.py
+          pytest -q \
+            tests/test_production_registry.py \
+            tests/test_production_fingerprint.py \
+            tests/test_production_signals_smoke.py
+
+      - name: Frozen registry kaynaginin SHA bilgisini kaydet
+        id: research
+        working-directory: deneme_ref
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Tarihsel artifactlari indir ve parity calistir
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p data/parity reports/production-parity-v1 /tmp/parity
+
+          for PERIOD in 2H 4H 1D 1W; do
+            stable_name="historical-live-${PERIOD}"
+            artifact_id="$(
+              for page in 1 2 3 4 5; do
+                gh api "repos/${REPOSITORY}/actions/artifacts?per_page=100&page=${page}"
+              done | jq -s -r --arg stable "${stable_name}" '
+                [.[] | .artifacts[] | select(.expired == false and .name == $stable)]
+                | sort_by(.created_at) | last | .id // empty
+              '
+            )"
+
+            if [ -z "${artifact_id}" ]; then
+              echo "::error::${stable_name} artifacti bulunamadi."
+              exit 2
+            fi
+
+            rm -rf "/tmp/parity/${PERIOD}" /tmp/parity.zip
+            mkdir -p "/tmp/parity/${PERIOD}"
+            gh api "repos/${REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/parity.zip
+            unzip -q -o /tmp/parity.zip -d "/tmp/parity/${PERIOD}"
+            sqlite_path="$(find "/tmp/parity/${PERIOD}" -type f -name '*.sqlite' | head -n1 || true)"
+            if [ -z "${sqlite_path}" ]; then
+              echo "::error::${stable_name} icinde SQLite bulunamadi."
+              exit 3
+            fi
+
+            cp "${sqlite_path}" "data/parity/historical_${PERIOD}.sqlite"
+            python production_scanner_parity.py \
+              --db "data/parity/historical_${PERIOD}.sqlite" \
+              --period "${PERIOD}" \
+              --deneme-root deneme_ref \
+              --output-json "reports/production-parity-v1/${PERIOD}.json" \
+              --output-md "reports/production-parity-v1/${PERIOD}.md"
+          done
+
+      - name: Ortak parity ozetini olustur
+        env:
+          RESEARCH_SHA: ${{ steps.research.outputs.sha }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+
+          root = Path("reports/production-parity-v1")
+          periods = ["2H", "4H", "1D", "1W"]
+          rows = [json.loads((root / f"{p}.json").read_text(encoding="utf-8")) for p in periods]
+          total = sum(int(r["models"]) for r in rows)
+          passed = sum(int(r["models_exact_match"]) for r in rows)
+          status = "PASS" if passed == total else "FAIL"
+
+          lines = [
+              "# Scanner Production Parity v1 — Summary",
+              "",
+              f"**Overall status:** {status}",
+              f"**Exact models:** {passed}/{total}",
+              f"**Research SHA:** `{os.environ.get('RESEARCH_SHA', '')}`",
+              "**Data source:** latest non-expired `historical-live-*` SQLite artifacts from `taramabot`.",
+              "",
+              "| Timeframe | Models | Exact | Status |",
+              "|---|---:|---:|---|",
+          ]
+          for r in rows:
+              lines.append(f"| {r['period']} | {r['models']} | {r['models_exact_match']} | {r['status']} |")
+
+          failed = [m for r in rows for m in r["rows"] if not m["exact_match"]]
+          if failed:
+              lines += ["", "## Models requiring correction", ""]
+              for m in failed:
+                  lines.append(
+                      f"- **{m['family']} / {m['timeframe']}** — FP {m['false_positive']}, "
+                      f"FN {m['false_negative']}, agreement {m['event_agreement_pct']:.3f}%"
+                  )
+          else:
+              lines += ["", "All 28 routable family/timeframe entry models match the frozen research reference exactly."]
+
+          lines += [
+              "",
+              "A model passes only when both production-only and research-only event counts are zero after the research warm-up.",
+              "This gate compares entry event identity only; exit/risk-management parity is a separate gate before live activation.",
+          ]
+          (root / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          (root / "summary.json").write_text(json.dumps({
+              "version": "scanner-production-parity-v1",
+              "status": status,
+              "models": total,
+              "models_exact_match": passed,
+              "research_sha": os.environ.get("RESEARCH_SHA", ""),
+              "timeframes": [{"period": r["period"], "models": r["models"], "exact": r["models_exact_match"], "status": r["status"]} for r in rows],
+          }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          print(f"Parity summary: {status} {passed}/{total}")
+          PY
+
+      - name: Parity raporlarini artifact olarak sakla
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-registry-parity-v1-${{ github.run_id }}
+          path: reports/production-parity-v1
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Parity raporlarini branch'e kaydet
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/production-parity-v1
+          if git diff --cached --quiet; then
+            echo "Parity raporunda degisiklik yok."
+            exit 0
+          fi
+          git commit -m "Record production scanner parity v1"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
