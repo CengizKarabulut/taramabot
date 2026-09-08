@@ -4,8 +4,8 @@
   "database": "data/parity/historical_1W.sqlite",
   "registry_version": "taramabot-production-registry-v1",
   "models": 10,
-  "models_exact_match": 9,
-  "status": "FAIL",
+  "models_exact_match": 10,
+  "status": "PASS",
   "rows": [
     {
       "family": "11 - Stoc.RSI & RSI & BB & MACD",
@@ -79,164 +79,13 @@
       "symbols_compared": 510,
       "bars_compared": 371968,
       "research_signals": 6407,
-      "production_signals": 6678,
-      "true_positive": 6309,
-      "false_positive": 369,
-      "false_negative": 98,
-      "mismatch_samples": [
-        {
-          "symbol": "ACSEL",
-          "time": "2017-07-03T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ACSEL",
-          "time": "2018-09-17T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ACSEL",
-          "time": "2024-12-16T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ADEL",
-          "time": "2004-07-12T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ADEL",
-          "time": "2007-05-14T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ADEL",
-          "time": "2007-05-28T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AEFES",
-          "time": "2006-12-04T07:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AGYO",
-          "time": "2014-10-27T07:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AGYO",
-          "time": "2024-11-25T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AGYO",
-          "time": "2016-08-29T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "AKCNS",
-          "time": "2017-01-02T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKCNS",
-          "time": "2021-11-15T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "AKENR",
-          "time": "2005-01-03T07:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKENR",
-          "time": "2013-05-13T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKENR",
-          "time": "2022-07-25T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKENR",
-          "time": "2024-02-19T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "AKFGY",
-          "time": "2017-06-05T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKGRT",
-          "time": "2020-11-16T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKGRT",
-          "time": "2012-07-09T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "AKMGY",
-          "time": "2022-08-01T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKMGY",
-          "time": "2022-08-15T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKSA",
-          "time": "2025-09-22T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKSA",
-          "time": "2003-04-21T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "AKSA",
-          "time": "2024-02-12T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "AKSEN",
-          "time": "2019-08-19T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKSEN",
-          "time": "2023-07-03T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ALARK",
-          "time": "2014-05-20T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "ALCAR",
-          "time": "2006-10-30T07:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ALCAR",
-          "time": "2013-10-21T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ALCTL",
-          "time": "2001-11-05T07:00:00",
-          "kind": "production_only"
-        }
-      ],
-      "exact_match": false,
-      "event_agreement_pct": 93.108028
+      "production_signals": 6407,
+      "true_positive": 6407,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
     },
     {
       "family": "8 - TavanTarama",

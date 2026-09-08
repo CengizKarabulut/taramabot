@@ -4,8 +4,8 @@
   "database": "data/parity/historical_1D.sqlite",
   "registry_version": "taramabot-production-registry-v1",
   "models": 10,
-  "models_exact_match": 9,
-  "status": "FAIL",
+  "models_exact_match": 10,
+  "status": "PASS",
   "rows": [
     {
       "family": "13 - MACD YenidenHareket",
@@ -127,164 +127,13 @@
       "symbols_compared": 561,
       "bars_compared": 969578,
       "research_signals": 14349,
-      "production_signals": 14971,
-      "true_positive": 14131,
-      "false_positive": 840,
-      "false_negative": 218,
-      "mismatch_samples": [
-        {
-          "symbol": "A1YEN",
-          "time": "2026-08-19T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ACSEL",
-          "time": "2018-10-16T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ACSEL",
-          "time": "2024-12-04T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ADEL",
-          "time": "2023-04-17T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ADESE",
-          "time": "2020-01-14T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ADESE",
-          "time": "2020-09-08T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "ADESE",
-          "time": "2017-12-20T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "AEFES",
-          "time": "2023-10-04T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AEFES",
-          "time": "2023-12-11T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "AFYON",
-          "time": "2021-09-06T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AFYON",
-          "time": "2024-01-25T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AFYON",
-          "time": "2024-07-10T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AFYON",
-          "time": "2025-04-07T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AGESA",
-          "time": "2018-02-19T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AGHOL",
-          "time": "2020-04-13T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AGHOL",
-          "time": "2022-11-04T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AGHOL",
-          "time": "2024-11-08T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AGHOL",
-          "time": "2022-02-01T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "AGYO",
-          "time": "2018-04-24T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AHGAZ",
-          "time": "2023-10-11T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKBNK",
-          "time": "2017-04-11T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKBNK",
-          "time": "2023-06-02T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKBNK",
-          "time": "2025-05-14T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKCNS",
-          "time": "2019-09-10T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKCNS",
-          "time": "2024-01-09T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKCNS",
-          "time": "2025-03-18T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "AKENR",
-          "time": "2018-06-28T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKFGY",
-          "time": "2023-09-18T06:00:00",
-          "kind": "production_only"
-        },
-        {
-          "symbol": "AKGRT",
-          "time": "2017-10-19T06:00:00",
-          "kind": "research_only"
-        },
-        {
-          "symbol": "AKMGY",
-          "time": "2017-10-12T06:00:00",
-          "kind": "production_only"
-        }
-      ],
-      "exact_match": false,
-      "event_agreement_pct": 93.034433
+      "production_signals": 14349,
+      "true_positive": 14349,
+      "false_positive": 0,
+      "false_negative": 0,
+      "mismatch_samples": [],
+      "exact_match": true,
+      "event_agreement_pct": 100.0
     },
     {
       "family": "BB & SMA",
