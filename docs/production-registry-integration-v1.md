@@ -11,7 +11,7 @@ This layer moves the frozen scanner research decisions into `taramabot` without 
 The integration deliberately separates two sources of truth:
 
 1. **Common promotion registry** decides whether a family/timeframe is `CORE`, `ACTIVE`, `SECONDARY`, `FORWARD_WATCH`, `RESEARCH` or `REJECT`.
-2. **Locked family research spec** defines the actual completed-bar entry semantics for that family/timeframe.
+2. **Locked family research spec / implementation** defines the actual completed-bar entry semantics for that family/timeframe.
 
 A scanner quality score is a historical ranking aid, not a predicted win probability.
 
@@ -22,12 +22,12 @@ Normal production routing is limited to `CORE`, `ACTIVE` and `SECONDARY`.
 - `CORE`: primary production evidence.
 - `ACTIVE`: normal production evidence.
 - `SECONDARY`: supporting / early-warning evidence. It receives a lower stock-confidence weight because the historical robustness materially depends on custom/adaptive trade management.
-- `FORWARD_WATCH`: calculated only for future validation; never normal routing.
+- `FORWARD_WATCH`: future validation only; never normal routing.
 - `RESEARCH`: research-only.
 - `REJECT`: excluded.
 - `1M`: never normal production routing in v1.
 
-The frozen registry currently contains **28 routable family/timeframe models**:
+The frozen registry contains **28 routable family/timeframe models**:
 
 - 2H: 1
 - 4H: 7
@@ -55,17 +55,52 @@ This overlap model is intentionally heuristic. It should later be calibrated wit
 
 ## Signal implementation
 
-`production_scanners/signals.py` is side-effect free. It does not write state and does not send Telegram messages. It evaluates only models that the frozen registry marks routable.
+The production layer is deliberately split in two:
 
-Important semantics carried from the research layer include:
+- `production_scanners/history.py` is the authoritative locked entry-event engine used for historical parity and live/shadow trigger identity.
+- `production_scanners/live.py` takes the real `triggered` flag from the locked event engine while preserving rich diagnostic components/values from `signals.py`.
+- `production_scanners/signals.py` remains side-effect free and provides the human-readable diagnostic decomposition. It does not write state and does not send Telegram messages.
+
+Important semantics carried from research include:
 
 - completed-bar signal generation;
-- fresh crossover / false-to-true episode semantics where required;
-- previous-bar volume averages that exclude the current signal bar;
+- fresh crossover / full-condition False-to-True episode semantics where required;
 - timeframe-specific trigger definitions rather than one rule reused across all timeframes;
 - displayed Ichimoku Kumo semantics using the 26-bar displacement without look-ahead;
 - original DMI/ADX trigger semantics for TavanTarama;
+- BB-squeeze `relative20` uses the research implementation's 120-bar reference with `min_periods=60`;
+- family-specific volume semantics are preserved exactly. Most RVOL/volume filters exclude the current bar where their locked research specifies that behaviour. `NE ARARSAN VAR` intentionally retains its original research lineage's current-inclusive 20-bar RVOL denominator because the historical production decision was measured with that implementation;
 - management-dependent models remain `SECONDARY` even when their numeric historical quality score is high.
+
+## Entry parity — FROZEN PASS
+
+The research-to-production entry parity gate is complete.
+
+Reference research commit:
+
+`5a25fbfb497f5b0a4a1ba8e527d24c77cb7d2aee`
+
+Data source:
+
+latest non-expired `historical-live-*` SQLite artifacts from `taramabot`, i.e. the same persistent historical datasets consumed by the research workflows.
+
+Final result:
+
+| Timeframe | Production models | Exact match | Status |
+|---|---:|---:|---|
+| 2H | 1 | 1 | PASS |
+| 4H | 7 | 7 | PASS |
+| 1D | 10 | 10 | PASS |
+| 1W | 10 | 10 | PASS |
+| **Total** | **28** | **28** | **PASS** |
+
+A model passes only when there are **zero production-only events and zero research-only events** after that research module's own warm-up. The final historical bar is excluded because the frozen research execution reference is next-bar open.
+
+The first real-data comparison found 26/28 exact models. Both mismatches were `NE ARARSAN VAR` (1D and 1W). The parity investigation identified an implementation-semantic difference: its research lineage used a current-inclusive RVOL20 denominator and its own RSI edge-case behaviour. Production was corrected to reproduce the actual measured research semantics rather than changing/tuning the strategy. The next run produced 28/28 exact parity.
+
+Machine/human parity reports are frozen under:
+
+`reports/production-parity-v1/`
 
 ## Validation status
 
@@ -79,20 +114,18 @@ Contract tests cover:
 - ignoring non-routable evidence;
 - smoke evaluation of every promoted evaluator (1 + 7 + 10 + 10 models).
 
-A local test run of the integration package passes all eight tests.
+The GitHub parity workflow compiles the production layer and passes all eight contract tests before it is allowed to read the historical artifacts.
 
-Research-code parity review has also confirmed the DMI/ADX formula and the displayed Ichimoku Kumo implementation against the corresponding `deneme` research scripts. BB-squeeze relative-percentile research uses a 120-bar window with `min_periods=60`; the current production evaluator waits for the full 120 observations. With the research workflow's normal 260-bar warm-up this does not change evaluated production bars, but exact early-warm-up parity should be normalized before live activation.
+## Remaining gates before live routing
 
-## Rollout rule
+This branch remains **shadow-ready, not live-routed**. Entry identity is now frozen and accepted, but entry parity alone is not enough for safe activation because several models — especially `SECONDARY` — derive their robustness from custom risk/exit management.
 
-This branch is **shadow-ready, not live-ready**.
+The remaining rollout order is:
 
-Before connecting the new layer to Telegram or replacing the legacy A-I scanner path:
+1. Build and verify **exit / risk-management parity** against each locked research profile (initial stop, ATR/swing logic, partial targets, sticky tighten rules, technical hard exits, max-hold and same-bar STOP_FIRST semantics).
+2. Freeze an exit-parity report; no parameter retuning is allowed during parity correction.
+3. Run the 28-model layer in **shadow mode** beside the current bot and persist forward signal/result observations.
+4. Use those forward observations to validate/calibrate the stock-level technical fingerprint and overlap assumptions without re-optimizing on the historical selection sample.
+5. Only after those gates are accepted should CORE/ACTIVE/SECONDARY routing and technical fingerprint output be connected to reports/Telegram.
 
-1. Replay the same stored OHLCV snapshots used by research and compare signal timestamps family-by-family/timeframe-by-timeframe.
-2. Investigate every material mismatch; do not tune parameters to make the outputs look better.
-3. Freeze a parity report and version the registry/spec snapshot.
-4. Run the new layer in shadow mode beside the existing bot and store forward signals/results.
-5. Only after parity is accepted, connect CORE/ACTIVE/SECONDARY routing and the stock-level technical fingerprint to reports/Telegram.
-
-No legacy live file is modified by this branch at the current stage.
+No legacy live file has been modified by this integration branch.
