@@ -1,4 +1,8 @@
-"""GitHub Actions icin kalici ve artimli piyasa verisi deposu."""
+"""GitHub Actions icin kalici ve artimli piyasa verisi deposu.
+
+User-facing scan periods are limited to 1H, 4H, 1D and 1W.  The 15m period is
+kept only as an internal refresh source for building current intraday candles.
+"""
 
 from __future__ import annotations
 
@@ -15,12 +19,11 @@ import pandas as pd
 
 TZ_TURKEY = ZoneInfo("Europe/Istanbul")
 OHLCV_COLUMNS = ("open", "high", "low", "close", "volume")
+INTERNAL_SOURCE_PERIOD = "15m"
+SCAN_PERIODS = ("1H", "4H", "1D", "1W")
 INTRADAY_MINUTES: Dict[str, int] = {
-    "15m": 15,
-    "30m": 30,
-    "45m": 45,
+    INTERNAL_SOURCE_PERIOD: 15,
     "1H": 60,
-    "2H": 120,
     "4H": 240,
 }
 
@@ -28,17 +31,21 @@ INTRADAY_MINUTES: Dict[str, int] = {
 def normalize_period(period: str) -> str:
     value = str(period).strip()
     mapping = {
-        "15M": "15m",
-        "30M": "30m",
-        "45M": "45m",
+        "15M": INTERNAL_SOURCE_PERIOD,
         "1h": "1H",
-        "2h": "2H",
         "4h": "4H",
         "1d": "1D",
         "1w": "1W",
-        "1m": "1M",
+        "1wk": "1W",
     }
-    return mapping.get(value, value)
+    normalized = mapping.get(value, value)
+    allowed = {INTERNAL_SOURCE_PERIOD, *SCAN_PERIODS}
+    if normalized not in allowed:
+        raise ValueError(
+            f"Desteklenmeyen periyot: {period}. Desteklenen tarama periyotlari: "
+            "1H, 4H, 1D, 1W"
+        )
+    return normalized
 
 
 def _clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
@@ -78,14 +85,14 @@ def _aggregate(frame: pd.DataFrame, bucket_index: Iterable[pd.Timestamp]) -> pd.
 
 
 def resample_bist_intraday(df_15m: pd.DataFrame, target_period: str) -> pd.DataFrame:
-    """15 dakikalik mumlari BIST 10:00 seansina sabitleyerek birlestirir."""
+    """15 dakikalik kaynak mumlari desteklenen 1H/4H periyotlarina birlestirir."""
     target_period = normalize_period(target_period)
     minutes = INTRADAY_MINUTES.get(target_period)
     if minutes is None:
         raise ValueError(f"Desteklenmeyen gun ici periyot: {target_period}")
 
     clean = _clean_dataframe(df_15m)
-    if clean.empty or target_period == "15m":
+    if clean.empty or target_period == INTERNAL_SOURCE_PERIOD:
         return clean
 
     buckets = []
@@ -103,18 +110,16 @@ def resample_daily(df_15m: pd.DataFrame) -> pd.DataFrame:
 
 
 def resample_calendar(df_daily: pd.DataFrame, target_period: str) -> pd.DataFrame:
-    """Gunluk mumlardan haftalik veya aylik son mumlari olusturur."""
+    """Gunluk mumlardan haftalik mumlari olusturur."""
     clean = _clean_dataframe(df_daily)
     if clean.empty:
         return clean
 
-    naive_index = clean.index.tz_localize(None) if clean.index.tz is not None else clean.index
-    if normalize_period(target_period) == "1W":
-        buckets = naive_index.to_period("W-SUN").start_time
-    elif normalize_period(target_period) == "1M":
-        buckets = naive_index.to_period("M").start_time
-    else:
+    normalized = normalize_period(target_period)
+    if normalized != "1W":
         raise ValueError(f"Desteklenmeyen takvim periyodu: {target_period}")
+    naive_index = clean.index.tz_localize(None) if clean.index.tz is not None else clean.index
+    buckets = naive_index.to_period("W-SUN").start_time
     return _aggregate(clean, buckets)
 
 
@@ -349,6 +354,8 @@ class MarketDataStore:
             "generated_at": datetime.now(TZ_TURKEY).isoformat(timespec="seconds"),
             "database": os.path.basename(self.path),
             "integrity_ok": self.integrity_ok(),
+            "scan_periods": list(SCAN_PERIODS),
+            "internal_source_period": INTERNAL_SOURCE_PERIOD,
             "datasets": [
                 {
                     "exchange": exchange,
@@ -358,5 +365,6 @@ class MarketDataStore:
                     "latest_candle": latest,
                 }
                 for exchange, period, symbols, count, latest in rows
+                if period in {INTERNAL_SOURCE_PERIOD, *SCAN_PERIODS}
             ],
         }
