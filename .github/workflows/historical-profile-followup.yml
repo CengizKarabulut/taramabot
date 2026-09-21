@@ -4,7 +4,7 @@ run-name: "Historical Profile Follow-up · source ${{ github.event.workflow_run.
 on:
   workflow_run:
     workflows:
-      - "StockMarketLab 15 Dakika Snapshot Taramasi"
+      - "StockMarketLab Zaman Dilimi Snapshot Taramasi"
       - "Manual Telegram Snapshot Scan"
     types:
       - completed
