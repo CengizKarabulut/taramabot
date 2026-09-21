@@ -1,5 +1,5 @@
 name: Long History Incremental Archive
-run-name: "Long History Archive · ${{ github.event_name }} · ${{ github.run_id }}"
+run-name: "INTERNAL DATA · Long History Archive · ${{ github.event_name }} · ${{ github.run_id }}"
 
 on:
   schedule:
@@ -20,6 +20,7 @@ concurrency:
 
 jobs:
   refresh:
+    name: "INTERNAL DATA · ${{ matrix.period }}"
     runs-on: ubuntu-latest
     timeout-minutes: 240
     strategy:
