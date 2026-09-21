@@ -1,4 +1,4 @@
-"""SQLite snapshot uzerinde periyot taramalarini ayri sureclerde paralel calistir."""
+"""SQLite snapshot uzerinde yalnizca 1H, 4H, 1D ve 1W taramalarini paralel calistir."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from pathlib import Path
 from state_merge import load_state, merge_states, write_state
 
 
-PERIODS = ("15m", "30m", "45m", "1H", "2H", "4H", "1D", "1W", "1M")
+PERIODS = ("1H", "4H", "1D", "1W")
 FALSE_VALUES = {"", "0", "false", "no", "off"}
 RESULT_GROUPS = ("full", "smi", "rsi", "new", "rsi_macd", "ema", "macd_cross", "h8", "i9", "decision")
 MIN_TRUSTED_BIST_UNIVERSE = 400
@@ -231,7 +231,7 @@ def run_parallel(args: argparse.Namespace) -> None:
 
         # The database may deliberately retain old/delisted rows for continuity.
         # If current XUTUM discovery is healthy, prevent those rows from leaking
-        # into user-facing scan results.  If discovery fails, keep the snapshot.
+        # into user-facing scan results. If discovery fails, keep the snapshot.
         allowed_symbols = _trusted_bist_symbols(args.market)
         for worker in processes:
             _filter_result_file(worker["result_path"], allowed_symbols)
