@@ -1,9 +1,8 @@
 """Canonical BIST timeframe alignment for the cached live snapshot.
 
-TvDatafeed stores BIST timestamps as naive UTC values.  The production cache
-keeps direct TradingView history for depth, then updates recent bars from 15m.
-These helpers reproduce TradingView candle labels so incremental rows replace
-(they do not overlap) direct rows.
+Only 1H, 4H, 1D and 1W are user-facing scan timeframes.  A 15-minute feed is
+kept internally as the smallest durable source used to refresh the current
+1H/4H/daily candles without downloading full history on every run.
 """
 
 from __future__ import annotations
@@ -13,7 +12,7 @@ import pandas as pd
 from market_data_store import OHLCV_COLUMNS, normalize_period
 
 
-# TradingView labels BIST daily/weekly/monthly bars at 09:00 Europe/Istanbul,
+# TradingView labels BIST daily/weekly bars at 09:00 Europe/Istanbul,
 # which is 06:00 UTC year-round because Türkiye is UTC+3.
 TV_DAILY_LABEL_UTC_HOUR = 6
 
@@ -49,21 +48,15 @@ def _aggregate(frame: pd.DataFrame, buckets: pd.DatetimeIndex) -> pd.DataFrame:
 
 
 def resample_bist_intraday(df_15m: pd.DataFrame, target_period: str) -> pd.DataFrame:
-    """Aggregate 15m bars to TradingView-compatible BIST clock buckets."""
+    """Aggregate internal 15m bars to supported TradingView-compatible BIST bars."""
     clean = _clean(df_15m)
     period = normalize_period(target_period)
     if clean.empty or period == "15m":
         return clean
 
     index = pd.DatetimeIndex(clean.index)
-    if period == "30m":
-        buckets = index.floor("30min")
-    elif period == "45m":
-        buckets = index.floor("45min")
-    elif period == "1H":
+    if period == "1H":
         buckets = index.floor("1h")
-    elif period == "2H":
-        buckets = index.floor("2h")
     elif period == "4H":
         # TradingView BIST 4H bars are labelled 06:00, 10:00, 14:00 UTC.
         offset = pd.Timedelta(hours=2)
@@ -82,16 +75,14 @@ def resample_daily(df_15m: pd.DataFrame) -> pd.DataFrame:
 
 
 def resample_calendar(df_daily: pd.DataFrame, target_period: str) -> pd.DataFrame:
+    """Build the supported weekly timeframe from daily candles."""
     clean = _clean(df_daily)
     if clean.empty:
         return clean
     naive = clean.index.tz_localize(None) if clean.index.tz is not None else clean.index
     period = normalize_period(target_period)
-    if period == "1W":
-        starts = naive.to_period("W-SUN").start_time
-    elif period == "1M":
-        starts = naive.to_period("M").start_time
-    else:
+    if period != "1W":
         raise ValueError(f"Desteklenmeyen takvim periyodu: {target_period}")
+    starts = naive.to_period("W-SUN").start_time
     buckets = pd.DatetimeIndex(starts) + pd.Timedelta(hours=TV_DAILY_LABEL_UTC_HOUR)
     return _aggregate(clean, buckets)
