@@ -1,4 +1,4 @@
-"""Merge historical profile parts and calculate each stock's best A-I/timeframe combinations."""
+"""Merge core historical profile parts and rank each stock's A-I combinations."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 
-PERIOD_ORDER = {period: index for index, period in enumerate(("15m", "30m", "45m", "1H", "2H", "4H", "1D", "1W", "1M"))}
+PERIOD_ORDER = {period: index for index, period in enumerate(("1H", "4H", "1D", "1W"))}
 MIN_RANK_EVENTS = 8
 
 
@@ -42,6 +42,8 @@ def merge(paths: list[str]) -> dict[str, Any]:
         if round_trip_cost is None:
             round_trip_cost = payload.get("round_trip_cost_pct")
         for period, symbols in (payload.get("periods") or {}).items():
+            if period not in PERIOD_ORDER:
+                continue
             destination = periods.setdefault(period, {})
             for symbol, codes in symbols.items():
                 destination.setdefault(symbol, {}).update(codes)
@@ -49,29 +51,25 @@ def merge(paths: list[str]) -> dict[str, Any]:
     all_symbols = sorted({symbol for symbols in periods.values() for symbol in symbols})
     rankings: dict[str, list[dict[str, Any]]] = {}
     best_by_symbol: dict[str, Any] = {}
-    best_early_warning: dict[str, Any] = {}
 
     for symbol in all_symbols:
         candidates = []
-        early = []
         for period, symbols in periods.items():
             for code, profile in symbols.get(symbol, {}).items():
                 row = _candidate(symbol, period, code, profile)
                 if row["events"] < MIN_RANK_EVENTS:
                     continue
-                if period == "15m":
-                    early.append(row)
-                else:
-                    candidates.append(row)
+                candidates.append(row)
 
-        sort_key = lambda row: (row["quality_score"], row["events"], -PERIOD_ORDER.get(row["period"], 99))
+        sort_key = lambda row: (
+            row["quality_score"],
+            row["events"],
+            -PERIOD_ORDER.get(row["period"], 99),
+        )
         candidates.sort(key=sort_key, reverse=True)
-        early.sort(key=sort_key, reverse=True)
         rankings[symbol] = candidates[:5]
         if candidates:
             best_by_symbol[symbol] = candidates[0]
-        if early:
-            best_early_warning[symbol] = early[0]
 
     return {
         "schema_version": 1,
@@ -81,7 +79,6 @@ def merge(paths: list[str]) -> dict[str, Any]:
         "ranking_min_events": MIN_RANK_EVENTS,
         "periods": dict(sorted(periods.items(), key=lambda item: PERIOD_ORDER.get(item[0], 99))),
         "best_by_symbol": best_by_symbol,
-        "best_early_warning_by_symbol": best_early_warning,
         "top_profiles_by_symbol": rankings,
         "sources": sources,
     }
@@ -96,11 +93,17 @@ def main() -> int:
     destination = Path(args.output)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    print(json.dumps({
-        "symbols": len(payload["top_profiles_by_symbol"]),
-        "best_symbols": len(payload["best_by_symbol"]),
-        "periods": {period: len(symbols) for period, symbols in payload["periods"].items()},
-    }, ensure_ascii=False, indent=2))
+    print(
+        json.dumps(
+            {
+                "symbols": len(payload["top_profiles_by_symbol"]),
+                "best_symbols": len(payload["best_by_symbol"]),
+                "periods": {period: len(symbols) for period, symbols in payload["periods"].items()},
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0
 
 

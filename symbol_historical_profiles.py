@@ -1,14 +1,13 @@
-"""Build per-stock historical A-I profiles from canonical BIST history.
+"""Build per-stock historical A-I profiles for the four core scan timeframes.
 
-The profile is descriptive, not a trading recommendation.  Signals are generated
-with the same vector parity engine used by production research.  Entry is the
-next bar open.  Only signals with a fully observed forward horizon are scored,
+The profile is descriptive, not a trading recommendation. Signals are generated
+with the same vector parity engine used by production research. Entry is the
+next bar open. Only signals with a fully observed forward horizon are scored,
 so the latest live signal can never leak future information into its own card.
 
-For intraday targets, 30m/45m/1H/2H/4H bars are derived from the persistent 15m
-archive with the exact production resampler.  1W/1M are derived from 1D.  This
-avoids ranking stocks on direct higher-timeframe artifacts whose volume/bucket
-semantics may differ from the live cache.
+User-facing profiles are limited to 1H, 4H, 1D and 1W. The persistent 15m
+archive remains an internal source used only to derive canonical 1H/4H bars;
+1W is derived from the 1D archive with the production resampler.
 """
 
 from __future__ import annotations
@@ -28,18 +27,13 @@ from market_data_store import MarketDataStore, normalize_period
 from signal_parity import CODE_TO_STRATEGY, build_signal_frame, fresh_signal_indexes
 
 
-PERIODS = ("15m", "30m", "45m", "1H", "2H", "4H", "1D", "1W", "1M")
+PERIODS = ("1H", "4H", "1D", "1W")
 HORIZONS = (1, 2, 4, 8, 16, 32)
 PRIMARY_HORIZON = {
-    "15m": 16,
-    "30m": 8,
-    "45m": 8,
     "1H": 8,
-    "2H": 4,
     "4H": 4,
     "1D": 8,
     "1W": 4,
-    "1M": 2,
 }
 ROUND_TRIP_COST_PCT = 0.20
 MIN_PROFILE_EVENTS = 5
@@ -156,15 +150,13 @@ def _quality_score(primary_rows: list[dict[str, float]]) -> tuple[float, dict[st
 
 def _derive_frame(period: str, intraday: pd.DataFrame | None, daily: pd.DataFrame | None) -> pd.DataFrame:
     period = normalize_period(period)
-    if period == "15m":
-        return intraday.copy() if intraday is not None else pd.DataFrame()
-    if period in {"30m", "45m", "1H", "2H", "4H"}:
+    if period in {"1H", "4H"}:
         return resample_bist_intraday(intraday, period) if intraday is not None else pd.DataFrame()
     if period == "1D":
         return daily.copy() if daily is not None else pd.DataFrame()
-    if period in {"1W", "1M"}:
+    if period == "1W":
         return resample_calendar(daily, period) if daily is not None else pd.DataFrame()
-    raise ValueError(f"Desteklenmeyen periyot: {period}")
+    raise ValueError(f"Desteklenmeyen periyot: {period}. Yalnizca 1H, 4H, 1D ve 1W desteklenir.")
 
 
 def _event_rows(frame: pd.DataFrame, signal_positions: list[int]) -> tuple[dict[int, list[dict[str, float]]], list[pd.Timestamp]]:
@@ -214,7 +206,7 @@ def _build_one_profile(period: str, frame: pd.DataFrame, signal_frame: pd.DataFr
     return {
         "period": period,
         "code": next(code for code, key in CODE_TO_STRATEGY.items() if key == strategy),
-        "status": "early_warning" if period == "15m" else "historical_profile",
+        "status": "historical_profile",
         "primary_horizon": primary,
         "events": mature_events,
         "signal_events_total": int(len(signal_times)),
@@ -240,9 +232,11 @@ def build_profiles(
     requested = [normalize_period(value) for value in periods]
     for period in requested:
         if period not in PERIODS:
-            raise ValueError(f"Desteklenmeyen periyot: {period}")
+            raise ValueError(
+                f"Desteklenmeyen periyot: {period}. Yalnizca 1H, 4H, 1D ve 1W desteklenir."
+            )
 
-    need_intraday = any(period in {"15m", "30m", "45m", "1H", "2H", "4H"} for period in requested)
+    need_intraday = any(period in {"1H", "4H"} for period in requested)
     need_daily = True
 
     result: dict[str, Any] = {
@@ -251,8 +245,8 @@ def build_profiles(
         "round_trip_cost_pct": ROUND_TRIP_COST_PCT,
         "periods": {period: {} for period in requested},
         "source": {
-            "intraday": "historical-live-15m; upper intraday derived with production resampler",
-            "daily": "historical-live-1D; weekly/monthly derived with production resampler",
+            "intraday": "historical-live-15m; 1H/4H derived with production resampler",
+            "daily": "historical-live-1D; 1W derived with production resampler",
         },
     }
 
@@ -314,11 +308,20 @@ def main() -> int:
     )
     destination = Path(args.output)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":"), default=str) + "\n", encoding="utf-8")
-    print(json.dumps({
-        "generated_at": payload["generated_at"],
-        "periods": {period: len(symbols) for period, symbols in payload["periods"].items()},
-    }, ensure_ascii=False, indent=2))
+    destination.write_text(
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":"), default=str) + "\n",
+        encoding="utf-8",
+    )
+    print(
+        json.dumps(
+            {
+                "generated_at": payload["generated_at"],
+                "periods": {period: len(symbols) for period, symbols in payload["periods"].items()},
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0
 
 
