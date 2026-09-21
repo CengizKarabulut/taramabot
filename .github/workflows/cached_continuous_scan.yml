@@ -1,33 +1,46 @@
-name: StockMarketLab 15 Dakika Snapshot Taramasi
-run-name: "Snapshot Tarama · ${{ github.event.schedule || github.event.action || inputs.mode || github.event_name }}"
+name: StockMarketLab Zaman Dilimi Snapshot Taramasi
+run-name: "Snapshot Tarama · ${{ github.event.schedule || inputs.mode || github.event_name }}"
 
 on:
   schedule:
-    # Hafta ici 10:30 ve 10:45 (Turkiye saati, UTC+3).
-    - cron: "30,45 7 * * 1-5"
-    # Hafta ici 11:00-17:45 arasi her 15 dakika.
-    - cron: "0,15,30,45 8-14 * * 1-5"
-    # Hafta ici son iki baslangic: 18:00 ve 18:15.
-    - cron: "0,15 15 * * 1-5"
-    # Kapanis sonrasi artimli snapshot yenilemesi: 19:00.
+    # Europe/Istanbul = UTC+3. Otomatik taramalar yalnızca hafta içi çalışır.
+    # 1H: 10:20, 11:20, 12:20, 13:20, 14:20, 15:20, 16:20, 17:20, 17:40, 18:20
+    - cron: "20 7-15 * * 1-5"
+    - cron: "40 14 * * 1-5"
+    # 4H: 11:00, 13:00, 14:30, 16:30, 17:30, 18:30
+    - cron: "0 8,10 * * 1-5"
+    - cron: "30 11,13-15 * * 1-5"
+    # 1D: 10:45, 12:45, 14:45, 16:45, 17:45, 18:45
+    - cron: "45 7,9,11,13-15 * * 1-5"
+    # 1W: 10:30, 13:45, 16:00, 17:25, 19:00
+    - cron: "30 7 * * 1-5"
+    - cron: "45 10 * * 1-5"
+    - cron: "0 13 * * 1-5"
+    - cron: "25 14 * * 1-5"
     - cron: "0 16 * * 1-5"
-
-  repository_dispatch:
-    types:
-      - taramabot-cache-tick
 
   workflow_dispatch:
     inputs:
       mode:
         description: "Calistirma modu"
         required: true
-        default: "intraday_chain"
+        default: "intraday_once"
         type: choice
         options:
-          - intraday_chain
           - intraday_once
           - full_refresh
           - scan_only
+      periods:
+        description: "Manuel taramada zaman dilimi"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - 1H
+          - 4H
+          - 1D
+          - 1W
       send_telegram:
         description: "Manuel taramada Telegram mesaji gonder"
         required: true
@@ -38,6 +51,9 @@ permissions:
   actions: write
   contents: write
 
+# Snapshot/state bütünlüğü için taramabot koşuları tek kuyrukta tutulur. Cron
+# tetikleri yine belirtilen slotlarda oluşur; uzun süren bir önceki koşu varsa
+# sonraki koşu güvenli biçimde sıraya girer.
 concurrency:
   group: cached-market-pipeline
   cancel-in-progress: false
@@ -47,95 +63,86 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     outputs:
-      continue_chain: ${{ steps.gate.outputs.continue_chain }}
       run_mode: ${{ steps.gate.outputs.run_mode }}
       run_pipeline: ${{ steps.gate.outputs.run_pipeline }}
       closing_run: ${{ steps.gate.outputs.closing_run }}
+      scan_periods: ${{ steps.gate.outputs.scan_periods }}
 
     steps:
-      - name: Calisma modunu ve zaman penceresini belirle
+      - name: Calisma modunu ve zaman dilimini belirle
         id: gate
         env:
           EVENT_NAME: ${{ github.event_name }}
           SCHEDULE_EXPRESSION: ${{ github.event.schedule }}
           MANUAL_MODE: ${{ inputs.mode }}
+          MANUAL_PERIODS: ${{ inputs.periods }}
         run: |
           set -euo pipefail
 
           run_pipeline=true
           run_mode=intraday
-          continue_chain=false
           closing_run=false
-
+          scan_periods="1H,4H,1D,1W"
           day_of_week="$(TZ=Europe/Istanbul date +%u)"
           now_tr="$(TZ=Europe/Istanbul date +%H:%M)"
-
-          to_minutes() {
-            local value="$1"
-            local hour="${value%%:*}"
-            local minute="${value##*:}"
-            echo $((10#${hour} * 60 + 10#${minute}))
-          }
-
-          now_minutes="$(to_minutes "${now_tr}")"
-          start_minutes="$(to_minutes "10:30")"
-          last_minutes="$(to_minutes "18:15")"
-          closing_start_minutes="$(to_minutes "18:55")"
-          closing_end_minutes="$(to_minutes "19:45")"
 
           if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
             case "${MANUAL_MODE}" in
               full_refresh)
-                # Yalniz ilk kurulum / kurtarma icin.
                 run_mode=full
                 ;;
               scan_only)
                 run_mode=scan_only
                 ;;
-              intraday_once)
-                run_mode=intraday
-                ;;
               *)
                 run_mode=intraday
-                continue_chain=true
                 ;;
             esac
-          elif [ "${EVENT_NAME}" = "repository_dispatch" ]; then
-            if [ "${day_of_week}" -gt 5 ] || (( now_minutes < start_minutes || now_minutes > last_minutes )); then
-              echo "Saat ${now_tr}; 10:30-18:15 tarama penceresi disinda."
-              run_pipeline=false
-            else
-              run_mode=intraday
-              continue_chain=true
-            fi
+
+            case "${MANUAL_PERIODS:-all}" in
+              all|ALL|"") scan_periods="1H,4H,1D,1W" ;;
+              1H|4H|1D|1W) scan_periods="${MANUAL_PERIODS}" ;;
+              *)
+                echo "Desteklenmeyen manuel zaman dilimi: ${MANUAL_PERIODS}"
+                exit 1
+                ;;
+            esac
           elif [ "${EVENT_NAME}" = "schedule" ]; then
+            if [ "${day_of_week}" -gt 5 ]; then
+              echo "Hafta sonu; otomatik BIST taramasi atlandi."
+              run_pipeline=false
+            fi
+
             case "${SCHEDULE_EXPRESSION}" in
-              "0 16 * * 1-5")
-                # 19:00'da da tam gecmis cekilmez; son snapshot artimli guncellenir.
-                run_mode=intraday
-                closing_run=true
-                if [ "${day_of_week}" -gt 5 ] || (( now_minutes < closing_start_minutes || now_minutes > closing_end_minutes )); then
-                  echo "Gecikmis 19:00 kapanis guncellemesi ${now_tr} saatinde izinli 18:55-19:45 penceresi disinda; atlandi."
-                  run_pipeline=false
-                fi
+              "20 7-15 * * 1-5"|"40 14 * * 1-5")
+                scan_periods="1H"
+                ;;
+              "0 8,10 * * 1-5"|"30 11,13-15 * * 1-5")
+                scan_periods="4H"
+                ;;
+              "45 7,9,11,13-15 * * 1-5")
+                scan_periods="1D"
+                ;;
+              "30 7 * * 1-5"|"45 10 * * 1-5"|"0 13 * * 1-5"|"25 14 * * 1-5"|"0 16 * * 1-5")
+                scan_periods="1W"
                 ;;
               *)
-                if [ "${day_of_week}" -gt 5 ] || (( now_minutes < start_minutes || now_minutes > last_minutes )); then
-                  echo "Gecikmis schedule ${now_tr} saatinde pencere disinda; tarama atlandi."
-                  run_pipeline=false
-                else
-                  run_mode=intraday
-                  continue_chain=true
-                fi
+                echo "Bilinmeyen otomatik tarama slotu: ${SCHEDULE_EXPRESSION}"
+                exit 1
                 ;;
             esac
+
+            # 19:00 haftalik kosu gunun son state snapshot'ini da kalici hale getirir.
+            if [ "${SCHEDULE_EXPRESSION}" = "0 16 * * 1-5" ]; then
+              closing_run=true
+            fi
           fi
 
           echo "run_pipeline=${run_pipeline}" >> "${GITHUB_OUTPUT}"
           echo "run_mode=${run_mode}" >> "${GITHUB_OUTPUT}"
-          echo "continue_chain=${continue_chain}" >> "${GITHUB_OUTPUT}"
           echo "closing_run=${closing_run}" >> "${GITHUB_OUTPUT}"
-          echo "TR saati ${now_tr}; mode=${run_mode}; calis=${run_pipeline}; zincir=${continue_chain}; kapanis=${closing_run}"
+          echo "scan_periods=${scan_periods}" >> "${GITHUB_OUTPUT}"
+          echo "TR saati ${now_tr}; mode=${run_mode}; calis=${run_pipeline}; periods=${scan_periods}; kapanis=${closing_run}"
 
       - name: Kodu al
         if: steps.gate.outputs.run_pipeline == 'true'
@@ -235,7 +242,7 @@ jobs:
           retention-days: 30
           compression-level: 6
 
-      - name: Snapshot uzerinden tum taramalari calistir
+      - name: Snapshot uzerinden planli zaman dilimini tara
         if: steps.gate.outputs.run_pipeline == 'true' && steps.gate.outputs.run_mode != 'full'
         env:
           DISABLE_TELEGRAM: ${{ github.event_name == 'workflow_dispatch' && inputs.send_telegram != true }}
@@ -251,11 +258,13 @@ jobs:
             python parallel_snapshot_scan.py \
               --db "${MARKET_DATA_DB}" \
               --market bist \
+              --periods "${{ steps.gate.outputs.scan_periods }}" \
               --no-state
           else
             python parallel_snapshot_scan.py \
               --db "${MARKET_DATA_DB}" \
               --market bist \
+              --periods "${{ steps.gate.outputs.scan_periods }}" \
               --state state.json
           fi
 
@@ -348,47 +357,3 @@ jobs:
                 fi
               done
           done
-
-  schedule-next:
-    needs: refresh-and-scan
-    if: always() && needs.refresh-and-scan.outputs.continue_chain == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - name: Bir sonraki sabit 15 dakikalik tick'i tetikle
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-
-          day_of_week="$(TZ=Europe/Istanbul date +%u)"
-          now_hour="$(TZ=Europe/Istanbul date +%H)"
-          now_minute="$(TZ=Europe/Istanbul date +%M)"
-          now_second="$(TZ=Europe/Istanbul date +%S)"
-          now_minutes=$((10#${now_hour} * 60 + 10#${now_minute}))
-          last_start=$((18 * 60 + 15))
-
-          if [ "${day_of_week}" -gt 5 ] || (( now_minutes >= last_start )); then
-            echo "Tarama zinciri tamamlandi; yeni tick yok."
-            exit 0
-          fi
-
-          next_minutes=$(( (now_minutes / 15 + 1) * 15 ))
-          if (( next_minutes > last_start )); then
-            echo "Siradaki ceyrek 18:15 sonrasinda; zincir tamamlandi."
-            exit 0
-          fi
-
-          wait_seconds=$(( (next_minutes - now_minutes) * 60 - 10#${now_second} ))
-          if (( wait_seconds < 1 )); then
-            wait_seconds=1
-          fi
-
-          printf 'Siradaki tick icin %s saniye beklenecek.\n' "${wait_seconds}"
-          sleep "${wait_seconds}"
-
-          gh api --method POST \
-            "repos/${REPOSITORY}/dispatches" \
-            -f event_type='taramabot-cache-tick'
