@@ -27,21 +27,14 @@ jobs:
       max-parallel: 3
       matrix:
         include:
+          # 15m yalnizca 1H/4H tarihsel profillerini uretmek icin ham veri kaynagidir;
+          # kullaniciya acik bir tarama/profil zaman dilimi degildir.
           - period: "15m"
             bootstrap: 5000
             recent: 256
-          - period: "30m"
-            bootstrap: 5000
-            recent: 128
-          - period: "45m"
-            bootstrap: 5000
-            recent: 96
           - period: "1H"
             bootstrap: 2500
             recent: 64
-          - period: "2H"
-            bootstrap: 5000
-            recent: 32
           - period: "4H"
             bootstrap: 2500
             recent: 16
@@ -51,9 +44,6 @@ jobs:
           - period: "1W"
             bootstrap: 1500
             recent: 6
-          - period: "1M"
-            bootstrap: 600
-            recent: 3
 
     steps:
       - name: Kodu al

@@ -1,9 +1,7 @@
-"""Send per-stock historical profile messages for scan hits.
+"""Send historical A-I profile messages for core-timeframe scan hits.
 
-Only external A-I codes are shown. Profiles are descriptive fixed-horizon
-history, not recommendations; 15m is explicitly treated as early warning.
-Each card also contains a deterministic analyst-style interpretation derived
-only from the stored historical metrics.
+Only the supported 1H, 4H, 1D and 1W profiles are accepted. Historical
+statistics are descriptive and are not recommendations.
 """
 
 from __future__ import annotations
@@ -18,15 +16,27 @@ from typing import Any
 from telegram_sender import get_telegram_sender
 
 
-PERIODS = ("15m", "30m", "45m", "1H", "2H", "4H", "1D", "1W", "1M")
+PERIODS = ("1H", "4H", "1D", "1W")
 PERIOD_ORDER = {period: index for index, period in enumerate(PERIODS)}
 GROUP_TO_CODE = {
-    "macd_cross": "A", "h8": "B", "i9": "C", "ema": "D",
-    "rsi_macd": "E", "new": "F", "full": "G", "smi": "H", "rsi": "I",
+    "macd_cross": "A",
+    "h8": "B",
+    "i9": "C",
+    "ema": "D",
+    "rsi_macd": "E",
+    "new": "F",
+    "full": "G",
+    "smi": "H",
+    "rsi": "I",
 }
 STRATEGY_TO_CODE = {
-    "macd_cross": "A", "h8": "B", "i9": "C", "ema": "D",
-    "rsi_macd": "E", "new_scan": "F", "rsi": "I",
+    "macd_cross": "A",
+    "h8": "B",
+    "i9": "C",
+    "ema": "D",
+    "rsi_macd": "E",
+    "new_scan": "F",
+    "rsi": "I",
 }
 MIN_RANK_EVENTS = 8
 
@@ -44,19 +54,19 @@ def _parse_time(value: str | None) -> datetime | None:
 
 
 def _hits_from_results(paths: list[str]) -> list[dict[str, str]]:
-    hits = []
+    hits: list[dict[str, str]] = []
     for path in paths:
         payload = json.loads(Path(path).read_text(encoding="utf-8"))
         result_list = payload if isinstance(payload, list) else [payload]
         for result in result_list:
-            period = result.get("period")
-            if not period:
+            period = str(result.get("period", ""))
+            if period not in PERIOD_ORDER:
                 continue
             for group, code in GROUP_TO_CODE.items():
                 for item in result.get(group, []) or []:
                     symbol = item.get("symbol")
                     if symbol:
-                        hits.append({"symbol": str(symbol), "period": str(period), "code": code})
+                        hits.append({"symbol": str(symbol), "period": period, "code": code})
     return hits
 
 
@@ -64,7 +74,7 @@ def _hits_from_state(state_path: str, start: str | None, end: str | None) -> lis
     payload = json.loads(Path(state_path).read_text(encoding="utf-8"))
     start_dt = _parse_time(start)
     end_dt = _parse_time(end)
-    hits = []
+    hits: list[dict[str, str]] = []
     for event in payload.get("signal_history", []) or []:
         detected = _parse_time(event.get("detected_at"))
         if detected is None:
@@ -73,28 +83,38 @@ def _hits_from_state(state_path: str, start: str | None, end: str | None) -> lis
             continue
         if end_dt is not None and detected > end_dt:
             continue
+        period = str(event.get("period", ""))
+        if period not in PERIOD_ORDER:
+            continue
         strategy = str(event.get("strategy", ""))
         if strategy == "smi_macd":
             code = "G" if bool(event.get("is_full")) else "H"
         else:
             code = STRATEGY_TO_CODE.get(strategy)
         symbol = event.get("symbol")
-        period = event.get("period")
-        if code and symbol and period:
-            hits.append({"symbol": str(symbol), "period": str(period), "code": code})
+        if code and symbol:
+            hits.append({"symbol": str(symbol), "period": period, "code": code})
     return hits
 
 
 def _dedupe(hits: list[dict[str, str]]) -> list[dict[str, str]]:
-    seen = set()
-    output = []
+    seen: set[tuple[str, str, str]] = set()
+    output: list[dict[str, str]] = []
     for hit in hits:
+        if hit.get("period") not in PERIOD_ORDER:
+            continue
         key = (hit["symbol"], hit["period"], hit["code"])
         if key in seen:
             continue
         seen.add(key)
         output.append(hit)
-    output.sort(key=lambda row: (PERIOD_ORDER.get(row["period"], 99), row["code"], row["symbol"]))
+    output.sort(
+        key=lambda row: (
+            PERIOD_ORDER[row["period"]],
+            row["code"],
+            row["symbol"],
+        )
+    )
     return output
 
 
@@ -112,11 +132,11 @@ def _signed(value: Any, digits: int = 2) -> str:
     return f"{number:+.{digits}f}%"
 
 
-def _stock_rank(profiles: dict[str, Any], symbol: str, period: str, code: str) -> tuple[int | None, int]:
-    rows = []
+def _stock_rank(
+    profiles: dict[str, Any], symbol: str, period: str, code: str
+) -> tuple[int | None, int]:
+    rows: list[tuple[float, int, str, str]] = []
     for candidate_period in PERIODS:
-        if candidate_period == "15m":
-            continue
         codes = (((profiles.get("periods") or {}).get(candidate_period) or {}).get(symbol) or {})
         for candidate_code, profile in codes.items():
             events = int(profile.get("events", 0) or 0)
@@ -130,9 +150,10 @@ def _stock_rank(profiles: dict[str, Any], symbol: str, period: str, code: str) -
                     candidate_code,
                 )
             )
-    rows.sort(key=lambda row: (row[0], row[1], -PERIOD_ORDER.get(row[2], 99)), reverse=True)
-    if period == "15m":
-        return None, len(rows)
+    rows.sort(
+        key=lambda row: (row[0], row[1], -PERIOD_ORDER.get(row[2], 99)),
+        reverse=True,
+    )
     for index, row in enumerate(rows, start=1):
         if row[2] == period and row[3] == code:
             return index, len(rows)
@@ -162,112 +183,102 @@ def _analyst_commentary(
     last_success = int(primary.get("last10_success", 0) or 0)
 
     parts: list[str] = []
-
-    # 1) Statistical reliability first: do not let attractive percentages hide small samples.
     if events < 5:
         parts.append(
-            f"{code}/{period} geçmişi yalnız {events} olgun olaya dayanıyor; görünen performans olumlu olsa bile örneklem istatistiksel olarak çok sınırlı."
+            f"{code}/{period} geçmişi yalnız {events} olgun olaya dayanıyor; örneklem çok sınırlı."
         )
     elif events < MIN_RANK_EVENTS:
         parts.append(
-            f"{code}/{period} için {events} olgun olay bulunuyor; ilk eğilim okunabilir ancak güvenilir bir tarihsel üstünlük demek için örneklem henüz yeterince geniş değil."
+            f"{code}/{period} için {events} olgun olay var; eğilim okunabilir ancak örneklem henüz sınırlı."
         )
     elif events < 20:
         parts.append(
-            f"{code}/{period} profili {events} olgun olayla orta büyüklükte bir örnekleme sahip; sonuçlar anlamlı bir eğilim veriyor fakat tek başına kesinlik taşımıyor."
+            f"{code}/{period} profili {events} olgun olayla orta büyüklükte bir örnekleme sahip."
         )
     else:
         parts.append(
-            f"{code}/{period} profili {events} olgun olayla görece geniş bir geçmişe dayanıyor; bu nedenle istatistikler küçük örneklem profillerine göre daha anlamlı."
+            f"{code}/{period} profili {events} olgun olayla görece geniş bir geçmişe dayanıyor."
         )
 
-    # 2) Direction and payoff quality.
     if positive is not None and median_net is not None:
         if positive >= 65 and median_net > 0:
             parts.append(
-                f"Net pozitiflik %{positive:.0f} ve medyan getiri {_signed(median_net)} ile tarihsel dağılım belirgin biçimde olumlu tarafa eğiliyor."
+                f"Net pozitiflik %{positive:.0f} ve medyan getiri {_signed(median_net)} ile tarihsel dağılım olumlu tarafa eğiliyor."
             )
         elif positive >= 55 and median_net > 0:
             parts.append(
-                f"Net pozitiflik %{positive:.0f} ve {_signed(median_net)} medyan getiri, ılımlı fakat pozitif bir tarihsel eğilime işaret ediyor."
+                f"Net pozitiflik %{positive:.0f} ve {_signed(median_net)} medyan getiri ılımlı pozitif bir tarihsel eğilim gösteriyor."
             )
         elif positive >= 50 and median_net > 0:
             parts.append(
-                f"Pozitif sonuçlar çoğunlukta olsa da (%{positive:.0f}), {_signed(median_net)} medyan getiri avantajın sınırlı olduğunu gösteriyor."
+                f"Pozitif sonuçlar çoğunlukta (%{positive:.0f}), ancak {_signed(median_net)} medyan getiri avantajın sınırlı olduğunu gösteriyor."
             )
         elif median_net <= 0:
             parts.append(
-                f"Net pozitiflik %{positive:.0f} seviyesinde ve medyan getiri {_signed(median_net)}; geçmiş dağılım mevcut sinyal için belirgin bir istatistiksel üstünlük göstermiyor."
-            )
-        else:
-            parts.append(
-                f"Net pozitiflik %{positive:.0f}; sonuç dağılımı dengeli olduğundan sinyalin tek başına güçlü bir tarihsel avantaj sunduğunu söylemek zor."
+                f"Net pozitiflik %{positive:.0f} ve medyan getiri {_signed(median_net)}; geçmiş dağılım belirgin üstünlük göstermiyor."
             )
 
-    # 3) Excursion balance: reward potential versus adverse movement.
     if mfe is not None and mae is not None:
         adverse = abs(mae)
         ratio = (mfe / adverse) if adverse > 0 else None
         if ratio is not None and ratio >= 2.0:
             parts.append(
-                f"Lehte hareket potansiyeli ({_signed(mfe)}) aleyhte harekete ({_signed(mae)}) göre belirgin üstün; geçmişte fırsat/risk dengesi kuvvetli olmuş."
+                f"Lehte hareket ({_signed(mfe)}) aleyhte harekete ({_signed(mae)}) göre belirgin üstün."
             )
         elif ratio is not None and ratio >= 1.25:
             parts.append(
-                f"MFE {_signed(mfe)} ve MAE {_signed(mae)} dengesi lehte, ancak fiyatın sinyal sonrasında anlamlı geri çekilme üretebildiği de görülüyor."
+                f"MFE {_signed(mfe)} ve MAE {_signed(mae)} dengesi lehte, ancak anlamlı geri çekilme de görülebiliyor."
             )
         elif ratio is not None:
             parts.append(
-                f"MFE {_signed(mfe)} ile MAE {_signed(mae)} birbirine yakın; geçmişte getiri potansiyeline karşı oynaklık/risk belirgin olduğundan seçicilik önemli."
+                f"MFE {_signed(mfe)} ile MAE {_signed(mae)} birbirine yakın; oynaklık belirgin."
             )
 
-    # 4) Recency: recent outcomes can confirm or weaken the long-run profile.
     if last_n >= 3:
         recent_rate = 100.0 * last_success / last_n
         if recent_rate >= 70:
             parts.append(
-                f"Yakın dönem de profili destekliyor: son {last_n} olayın {last_success}'i net pozitif."
+                f"Yakın dönem profili destekliyor: son {last_n} olayın {last_success}'i net pozitif."
             )
         elif recent_rate <= 40:
             parts.append(
-                f"Yakın dönem uzun vadeli tabloya göre zayıf: son {last_n} olayın yalnız {last_success}'i net pozitif."
+                f"Yakın dönem zayıf: son {last_n} olayın yalnız {last_success}'i net pozitif."
             )
         else:
             parts.append(
-                f"Son {last_n} olayda {last_success} pozitif sonuç var; yakın dönem görünümü karışık ve güçlü bir teyit üretmiyor."
+                f"Son {last_n} olayda {last_success} pozitif sonuç var; yakın dönem karışık."
             )
     elif recent > 0 and events > recent:
-        parts.append(f"Son 3 yılda yalnız {recent} sinyal bulunması, yakın dönem örneklemini sınırlıyor.")
+        parts.append(f"Son 3 yılda yalnız {recent} sinyal bulunması yakın dönem örneklemini sınırlıyor.")
 
-    # 5) Relative standing inside the stock and relation to the stock's best profile.
-    if period == "15m":
-        parts.append("15m bu sistemde işlem onayı değil, erken uyarı katmanı olarak değerlendirilmelidir.")
-    elif rank is not None and rank_total > 0:
+    if rank is not None and rank_total > 0:
         percentile = rank / rank_total
         if percentile <= 0.20:
-            parts.append(f"Hisse içi sıralamada #{rank}/{rank_total}; bu kombinasyon {symbol} için üst grupta yer alıyor.")
+            parts.append(
+                f"Hisse içi sıralamada #{rank}/{rank_total}; bu kombinasyon {symbol} için üst grupta."
+            )
         elif percentile >= 0.70:
-            parts.append(f"Hisse içi sıralamada #{rank}/{rank_total}; {symbol} geçmişinde daha güçlü kombinasyonlar bulunuyor.")
+            parts.append(
+                f"Hisse içi sıralamada #{rank}/{rank_total}; {symbol} geçmişinde daha güçlü kombinasyonlar var."
+            )
 
     if best:
         best_code = str(best.get("code", "-"))
         best_period = str(best.get("period", "-"))
         best_score = float(best.get("quality_score", 0) or 0)
-        is_same = best_code == code and best_period == period
-        if is_same:
+        if best_code == code and best_period == period:
             parts.append(
                 f"Bu aynı zamanda {symbol} için yeterli örneklemli en güçlü tarihsel profil ({best_score:.0f}/100)."
             )
         elif best_score >= score + 10:
             parts.append(
-                f"Buna karşılık hissenin daha güçlü tarihsel profili {best_code}/{best_period} ({best_score:.0f}/100); mevcut sinyal ikincil teyit niteliğinde okunmalı."
+                f"Hissenin daha güçlü tarihsel profili {best_code}/{best_period} ({best_score:.0f}/100)."
             )
         else:
             parts.append(
                 f"Hissenin en güçlü tarihsel profili {best_code}/{best_period} ({best_score:.0f}/100); mevcut profil buna yakın fakat lider değil."
             )
 
-    # Keep Telegram cards readable; the first four/five sentences carry the signal.
     return " ".join(parts[:5])
 
 
@@ -275,7 +286,6 @@ def _profile_lines(hit: dict[str, str], profiles: dict[str, Any]) -> list[str]:
     symbol, period, code = hit["symbol"], hit["period"], hit["code"]
     profile = (((profiles.get("periods") or {}).get(period) or {}).get(symbol) or {}).get(code)
     best = (profiles.get("best_by_symbol") or {}).get(symbol)
-    early_best = (profiles.get("best_early_warning_by_symbol") or {}).get(symbol)
 
     title = f"<b>{html.escape(symbol)} · {html.escape(code)} · {html.escape(period)}</b>"
     if profile is None:
@@ -296,10 +306,7 @@ def _profile_lines(hit: dict[str, str], profiles: dict[str, Any]) -> list[str]:
         confidence = html.escape(str(profile.get("confidence", "-")))
         rank, rank_total = _stock_rank(profiles, symbol, period, code)
 
-        if period == "15m":
-            title += f" — {score:.0f}/100 · <b>ERKEN UYARI</b>"
-        else:
-            title += f" — {score:.0f}/100 · <b>{label}</b>"
+        title += f" — {score:.0f}/100 · <b>{label}</b>"
         lines = [title]
         if events:
             success_text = "-" if net_positive is None else f"%{float(net_positive):.0f}"
@@ -327,34 +334,32 @@ def _profile_lines(hit: dict[str, str], profiles: dict[str, Any]) -> list[str]:
                 lines.append(f"\n<b>Analist değerlendirmesi:</b> {html.escape(commentary)}")
         else:
             lines.append("Olgunlaşmış ileri-performans örneği henüz yok.")
-        if period == "15m":
-            lines.append("15m puanı işlem onayı değil; izleme/erken uyarı geçmişidir.")
 
     if best:
         lines.append(
             f"En güçlü tarihsel profil: <b>{html.escape(str(best['code']))} · {html.escape(str(best['period']))} · {float(best['quality_score']):.0f}/100</b>"
         )
-    elif early_best:
-        lines.append(
-            f"En güçlü erken uyarı: <b>{html.escape(str(early_best['code']))} · 15m · {float(early_best['quality_score']):.0f}/100</b>"
-        )
     return lines
 
 
-def build_messages(hits: list[dict[str, str]], profiles: dict[str, Any], max_items: int = 3) -> list[str]:
-    messages = []
+def build_messages(
+    hits: list[dict[str, str]], profiles: dict[str, Any], max_items: int = 3
+) -> list[str]:
+    messages: list[str] = []
     grouped: dict[str, list[dict[str, str]]] = {}
     for hit in _dedupe(hits):
         grouped.setdefault(hit["period"], []).append(hit)
 
-    for period in sorted(grouped, key=lambda value: PERIOD_ORDER.get(value, 99)):
+    for period in sorted(grouped, key=lambda value: PERIOD_ORDER[value]):
         items = grouped[period]
         for start in range(0, len(items), max_items):
             chunk = items[start : start + max_items]
             body = [f"📚 <b>TARİHSEL PROFİL · {html.escape(period)}</b>"]
             for hit in chunk:
                 body.append("\n" + "\n".join(_profile_lines(hit, profiles)))
-            body.append("\n<i>Getiriler sonraki mum açılışından ölçülür; %0,20 tur maliyeti düşülür. Geçmiş performans geleceği garanti etmez.</i>")
+            body.append(
+                "\n<i>Getiriler sonraki mum açılışından ölçülür; %0,20 tur maliyeti düşülür. Geçmiş performans geleceği garanti etmez.</i>"
+            )
             messages.append("\n".join(body))
     return messages
 
@@ -380,7 +385,10 @@ def main() -> int:
     if args.output:
         destination = Path(args.output)
         destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_text(json.dumps({"hits": hits, "messages": messages}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        destination.write_text(
+            json.dumps({"hits": hits, "messages": messages}, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
 
     print(json.dumps({"hits": len(hits), "messages": len(messages)}, ensure_ascii=False))
     if args.dry_run:
