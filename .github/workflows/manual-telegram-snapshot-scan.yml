@@ -82,7 +82,7 @@ jobs:
           test -s data/market_data.sqlite
           python -m json.tool state.json > /dev/null
 
-      - name: Mevcut 9 zaman dilimi taramasini calistir ve Telegram'a gonder
+      - name: 1H 4H 1D 1W taramalarini calistir ve Telegram'a gonder
         env:
           DISABLE_TELEGRAM: "false"
           MARKET_DATA_DB: ${{ github.workspace }}/data/market_data.sqlite
@@ -94,6 +94,7 @@ jobs:
           python parallel_snapshot_scan.py \
             --db "${MARKET_DATA_DB}" \
             --market bist \
+            --periods "1H,4H,1D,1W" \
             --state state.json \
             --summary data/manual_telegram_scan_results.json
 
