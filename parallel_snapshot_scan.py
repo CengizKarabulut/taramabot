@@ -1,4 +1,4 @@
-"""SQLite snapshot uzerinde yalnizca 1H, 4H, 1D ve 1W taramalarini paralel calistir."""
+"""SQLite snapshot uzerinde yalnizca 1H, 4H, 1D ve 1W taramalarini calistir."""
 
 from __future__ import annotations
 
@@ -28,6 +28,20 @@ def telegram_enabled() -> bool:
 
 def period_slug(period: str) -> str:
     return period.lower().replace("m", "min").replace("h", "hour")
+
+
+def parse_periods(value: str) -> tuple[str, ...]:
+    requested = tuple(
+        dict.fromkeys(item.strip().upper() for item in value.split(",") if item.strip())
+    )
+    if not requested:
+        raise argparse.ArgumentTypeError("En az bir zaman dilimi gerekli")
+    unknown = [period for period in requested if period not in PERIODS]
+    if unknown:
+        raise argparse.ArgumentTypeError(
+            "Desteklenmeyen zaman dilimi: " + ", ".join(unknown) + ". Yalnizca 1H,4H,1D,1W kullanilir."
+        )
+    return requested
 
 
 def prepare_state(base_state: Path, target: Path) -> None:
@@ -161,16 +175,19 @@ def run_parallel(args: argparse.Namespace) -> None:
     base_state = args.state.resolve()
     send_telegram = telegram_enabled()
     use_state = not args.no_state
+    selected_periods = args.periods
 
     # A previous command in the same workspace must never suppress a new run.
     integrated_flag = (repository / INTEGRATED_DECISION_FLAG).resolve()
     integrated_flag.unlink(missing_ok=True)
 
+    print("Calisacak zaman dilimleri:", ", ".join(selected_periods))
+
     with tempfile.TemporaryDirectory(prefix="taramabot-parallel-") as temp_name:
         temp_dir = Path(temp_name)
         processes = []
 
-        for period in PERIODS:
+        for period in selected_periods:
             slug = period_slug(period)
             result_path = temp_dir / f"result-{slug}.json"
             state_path = temp_dir / f"state-{slug}.json"
@@ -229,9 +246,6 @@ def run_parallel(args: argparse.Namespace) -> None:
                 merged = merge_states(merged, load_state(worker["state_path"]))
             write_state(base_state, merged)
 
-        # The database may deliberately retain old/delisted rows for continuity.
-        # If current XUTUM discovery is healthy, prevent those rows from leaking
-        # into user-facing scan results. If discovery fails, keep the snapshot.
         allowed_symbols = _trusted_bist_symbols(args.market)
         for worker in processes:
             _filter_result_file(worker["result_path"], allowed_symbols)
@@ -249,7 +263,6 @@ def run_parallel(args: argparse.Namespace) -> None:
         )
 
         if send_telegram:
-            # 1) A-I + KARAR tek tarama paketi ve ortak sinyal ozeti.
             subprocess.run(
                 [sys.executable, "main.py", "summary", *result_paths],
                 cwd=repository,
@@ -257,7 +270,6 @@ def run_parallel(args: argparse.Namespace) -> None:
                 check=True,
             )
             _mark_integrated_decision(repository, result_paths)
-            # 2) Ayni turda cikan A-I hisselerinin tarihsel profili.
             _send_historical_profiles(repository, result_paths)
 
 
@@ -267,6 +279,12 @@ def main() -> None:
     parser.add_argument("--market", default="bist")
     parser.add_argument("--state", default=Path("state.json"), type=Path)
     parser.add_argument("--summary", default=Path("data/latest_scan_results.json"), type=Path)
+    parser.add_argument(
+        "--periods",
+        type=parse_periods,
+        default=PERIODS,
+        help="Virgulle ayrilmis 1H,4H,1D,1W alt kumesi. Varsayilan: tumu.",
+    )
     parser.add_argument("--no-state", action="store_true")
     run_parallel(parser.parse_args())
 
