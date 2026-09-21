@@ -1,4 +1,8 @@
-"""SQLite piyasa verisi snapshot'ini tam veya artimli gunceller."""
+"""SQLite piyasa verisi snapshot'ini tam veya artimli gunceller.
+
+Tarama katmani yalnizca 1H, 4H, 1D ve 1W kullanir. 15m veri sadece artimli
+1H/4H/gunluk mum uretiminin ic kaynagidir ve tarama sonucu olarak kullanilmaz.
+"""
 
 from __future__ import annotations
 
@@ -19,7 +23,7 @@ from bist_timeframes import (
     resample_daily,
 )
 from config import BARS_TO_FETCH, BIST_STOCKS, TV_PASSWORD, TV_USERNAME
-from market_data_store import MarketDataStore
+from market_data_store import INTERNAL_SOURCE_PERIOD, MarketDataStore, SCAN_PERIODS
 
 
 logging.basicConfig(
@@ -29,18 +33,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 TZ_TURKEY = ZoneInfo("Europe/Istanbul")
 
+# 15m is deliberately internal. The remaining entries are the only scan periods.
 PERIOD_INTERVALS = {
-    "15m": Interval.in_15_minute,
-    "30m": Interval.in_30_minute,
-    "45m": Interval.in_45_minute,
+    INTERNAL_SOURCE_PERIOD: Interval.in_15_minute,
     "1H": Interval.in_1_hour,
-    "2H": Interval.in_2_hour,
     "4H": Interval.in_4_hour,
     "1D": Interval.in_daily,
     "1W": Interval.in_weekly,
-    "1M": Interval.in_monthly,
 }
-DERIVED_INTRADAY_PERIODS = ("30m", "45m", "1H", "2H", "4H")
+DERIVED_INTRADAY_PERIODS = ("1H", "4H")
 MIN_REASONABLE_BIST_UNIVERSE = 400
 
 
@@ -101,7 +102,7 @@ class MarketDataRefresher:
 
     @staticmethod
     def _snapshot_symbols(store: MarketDataStore) -> list[str]:
-        symbols = store.list_symbols("BIST", "15m")
+        symbols = store.list_symbols("BIST", INTERNAL_SOURCE_PERIOD)
         if not symbols:
             symbols = store.list_symbols("BIST", "1D")
         return _normalise_symbols(symbols)
@@ -111,7 +112,7 @@ class MarketDataRefresher:
 
         ``config.BIST_STOCKS`` is populated from borsapy at import time, but an
         intermittent borsapy failure can leave only the small static fallback
-        list.  Never let that shrink a healthy 500+ symbol snapshot.  A
+        list. Never let that shrink a healthy 500+ symbol snapshot. A
         sufficiently complete discovered list is unioned only to pick up new
         listings.
         """
@@ -153,14 +154,15 @@ class MarketDataRefresher:
         return discovered
 
     def full_refresh(self, store: MarketDataStore) -> dict:
-        """Tum periyotlarda dogrudan TradingView verisiyle kurtarma snapshot'i olustur."""
+        """Supported periods plus the internal 15m source are rebuilt directly."""
         period_stats = {}
         symbols = self._resolve_refresh_symbols(store, allow_empty_snapshot=True)
         total_symbols = len(symbols)
 
         for period, interval in PERIOD_INTERVALS.items():
             success = 0
-            logger.info("%s tam veri yenilemesi basladi (%s sembol).", period, total_symbols)
+            label = "internal source" if period == INTERNAL_SOURCE_PERIOD else "scan"
+            logger.info("%s %s veri yenilemesi basladi (%s sembol).", period, label, total_symbols)
             for position, symbol in enumerate(symbols, start=1):
                 frame = self._fetch(symbol, interval, BARS_TO_FETCH)
                 if frame is not None:
@@ -183,10 +185,11 @@ class MarketDataRefresher:
 
         store.set_metadata("last_full_refresh", datetime.now(TZ_TURKEY).isoformat())
         store.set_metadata("last_refresh_mode", "full")
+        store.set_metadata("scan_periods", list(SCAN_PERIODS))
         return period_stats
 
     def intraday_refresh(self, store: MarketDataStore, recent_bars: int = 64) -> dict:
-        """Yalnizca yakin 15m mumlarini indirip ust periyotlarin guncel mumlarini turet."""
+        """Fetch recent 15m bars and refresh only 1H, 4H, 1D and 1W."""
         symbols = self._resolve_refresh_symbols(store, allow_empty_snapshot=False)
         total_symbols = len(symbols)
         current_daily_symbols = store.symbol_count("BIST", "1D")
@@ -197,7 +200,7 @@ class MarketDataRefresher:
             )
 
         success = 0
-        logger.info("Artimli 15m veri yenilemesi basladi (%s sembol).", total_symbols)
+        logger.info("Artimli 15m kaynak veri yenilemesi basladi (%s sembol).", total_symbols)
         for position, symbol in enumerate(symbols, start=1):
             frame_15m = self._fetch(symbol, Interval.in_15_minute, recent_bars)
             if frame_15m is None:
@@ -213,7 +216,7 @@ class MarketDataRefresher:
             store.upsert_dataframe(
                 symbol,
                 "BIST",
-                "15m",
+                INTERNAL_SOURCE_PERIOD,
                 frame_15m,
                 max_bars=BARS_TO_FETCH,
             )
@@ -243,19 +246,11 @@ class MarketDataRefresher:
             )
             if daily_history is not None:
                 weekly = resample_calendar(daily_history.tail(14), "1W")
-                monthly = resample_calendar(daily_history.tail(62), "1M")
                 store.upsert_dataframe(
                     symbol,
                     "BIST",
                     "1W",
                     weekly,
-                    max_bars=BARS_TO_FETCH,
-                )
-                store.upsert_dataframe(
-                    symbol,
-                    "BIST",
-                    "1M",
-                    monthly,
                     max_bars=BARS_TO_FETCH,
                 )
 
@@ -269,7 +264,8 @@ class MarketDataRefresher:
         store.set_metadata("last_intraday_refresh", datetime.now(TZ_TURKEY).isoformat())
         store.set_metadata("last_refresh_mode", "intraday")
         store.set_metadata("last_refresh_universe_size", str(total_symbols))
-        return {"15m": {"success": success, "total": total_symbols}}
+        store.set_metadata("scan_periods", list(SCAN_PERIODS))
+        return {INTERNAL_SOURCE_PERIOD: {"success": success, "total": total_symbols}}
 
     def run(self, mode: str, manifest_path: str, recent_bars: int = 64) -> dict:
         with MarketDataStore(self.database_path) as store:
