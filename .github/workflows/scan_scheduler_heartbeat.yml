@@ -67,14 +67,17 @@ jobs:
               fi
 
               runs_json="$(gh api "repos/${REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/runs?per_page=100")"
-              covered="$(printf '%s' "${runs_json}" | jq --arg since "${slot_utc}" --arg title "Snapshot Tarama · ${schedule_expr}" --arg period "Snapshot Tarama · intraday_once" '[.workflow_runs[] | select(.created_at >= $since) | select(.display_title == $title or .display_title == $period)] | length')"
+              # Yalnizca ilgili dogrudan cron kosusunu kapsama olarak kabul et.
+              # Genel "intraday_once" basligi farkli zaman dilimlerini birbirine
+              # karistirabildigi icin burada bilerek kullanilmaz.
+              covered="$(printf '%s' "${runs_json}" | jq --arg since "${slot_utc}" --arg title "Snapshot Tarama · ${schedule_expr}" '[.workflow_runs[] | select(.created_at >= $since) | select(.display_title == $title) | select(.status == "queued" or .status == "in_progress" or .conclusion == "success")] | length')"
               if [ "${covered}" -gt 0 ]; then
-                echo "${slot_key} (${period}) zaten kapsanmis."
+                echo "${slot_key} (${period}) basarili/aktif cron kosusuyla kapsanmis."
                 mark_done "${slot_key}"
                 continue
               fi
 
-              echo "Eksik slot bulundu: ${slot_key} (${period}); kurtarma kosusu baslatiliyor."
+              echo "Eksik veya basarisiz slot bulundu: ${slot_key} (${period}); kurtarma kosusu baslatiliyor."
               gh workflow run "${TARGET_WORKFLOW}" --repo "${REPOSITORY}" --ref main -f mode=intraday_once -f periods="${period}" -f send_telegram=true
               mark_done "${slot_key}"
             done < <(python - <<'PY'
