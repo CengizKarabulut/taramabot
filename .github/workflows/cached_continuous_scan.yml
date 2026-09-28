@@ -1,5 +1,5 @@
 name: StockMarketLab Zaman Dilimi Snapshot Taramasi
-run-name: "Snapshot Tarama · ${{ github.event.schedule || inputs.mode || github.event_name }}"
+run-name: "Snapshot Tarama · ${{ github.event.schedule || inputs.periods || inputs.mode || github.event_name }}"
 
 on:
   schedule:
