@@ -72,19 +72,36 @@ jobs:
               fi
 
               runs_json="$(gh api "repos/${REPOSITORY}/actions/workflows/${TARGET_WORKFLOW}/runs?per_page=100")"
-              # Yalnizca ilgili dogrudan cron kosusunu kapsama olarak kabul et.
-              # Genel "intraday_once" basligi farkli zaman dilimlerini birbirine
-              # karistirabildigi icin burada bilerek kullanilmaz.
-              covered="$(printf '%s' "${runs_json}" | jq --arg since "${slot_utc}" --arg title "Snapshot Tarama · ${schedule_expr}" '[.workflow_runs[] | select(.created_at >= $since) | select(.display_title == $title) | select(.status == "queued" or .status == "in_progress" or .conclusion == "success")] | length')"
-              if [ "${covered}" -gt 0 ]; then
-                echo "${slot_key} (${period}) basarili/aktif cron kosusuyla kapsanmis."
+              direct_title="Snapshot Tarama · ${schedule_expr}"
+              recovery_title="Snapshot Tarama · ${period}"
+
+              success_count="$(printf '%s' "${runs_json}" | jq \
+                --arg since "${slot_utc}" \
+                --arg direct "${direct_title}" \
+                --arg recovery "${recovery_title}" \
+                '[.workflow_runs[] | select(.created_at >= $since) | select(.display_title == $direct or .display_title == $recovery) | select(.conclusion == "success")] | length')"
+
+              if [ "${success_count}" -gt 0 ]; then
+                echo "${slot_key} (${period}) basarili bir kosuyla tamamlanmis."
                 mark_done "${slot_key}"
+                continue
+              fi
+
+              active_count="$(printf '%s' "${runs_json}" | jq \
+                --arg since "${slot_utc}" \
+                --arg direct "${direct_title}" \
+                --arg recovery "${recovery_title}" \
+                '[.workflow_runs[] | select(.created_at >= $since) | select(.display_title == $direct or .display_title == $recovery) | select(.status == "queued" or .status == "in_progress")] | length')"
+
+              if [ "${active_count}" -gt 0 ]; then
+                echo "${slot_key} (${period}) aktif/kuyrukta; ikinci kosu acilmiyor."
                 continue
               fi
 
               echo "Eksik veya basarisiz slot bulundu: ${slot_key} (${period}); kurtarma kosusu baslatiliyor."
               gh workflow run "${TARGET_WORKFLOW}" --repo "${REPOSITORY}" --ref main -f mode=intraday_once -f periods="${period}" -f send_telegram=true
-              mark_done "${slot_key}"
+              # Burada tamamlandi diye isaretleme yapilmaz. Sonraki kontrol,
+              # kurtarma kosusunun gercekten success olup olmadigini dogrular.
             done < <(python - <<'PY'
           from datetime import datetime, timedelta
           from zoneinfo import ZoneInfo
@@ -111,8 +128,8 @@ jobs:
               (19,0,"1W","0 16 * * 1-5"),
           ]
 
-          # Ana cron'a 6 dakika öncelik ver; zincir bir süre kesilirse aynı gün
-          # içindeki son 90 dakikalık slotları da geriye dönük tamamlayabilsin.
+          # Ana cron'a 6 dakika oncelik ver; zincir bir sure kesilirse ayni gun
+          # icindeki son 90 dakikalik slotlari da geriye donuk tamamlayabilsin.
           min_age = timedelta(minutes=6)
           max_age = timedelta(minutes=90)
           for hour, minute, period, expression in slots:
