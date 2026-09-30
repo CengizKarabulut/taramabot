@@ -5764,6 +5764,24 @@
       "price": 30.9,
       "detected_at": "2026-09-28T14:58:38+03:00",
       "is_full": false
+    },
+    "TABGD_4H": {
+      "time": "2026-09-30T06:00:00",
+      "price": 217.1,
+      "detected_at": "2026-09-30T13:13:37+03:00",
+      "is_full": false
+    },
+    "AHGAZ_4H": {
+      "time": "2026-09-30T10:00:00",
+      "price": 43.28,
+      "detected_at": "2026-09-30T16:46:38+03:00",
+      "is_full": true
+    },
+    "BERA_1D": {
+      "time": "2026-09-30T06:00:00",
+      "price": 11.73,
+      "detected_at": "2026-09-30T17:31:29+03:00",
+      "is_full": false
     }
   },
   "last_sent_rsi": {
@@ -12408,9 +12426,9 @@
       "detected_at": "2026-09-08T17:08:10+03:00"
     },
     "SKYMD_4H": {
-      "time": "2026-09-08T10:00:00",
-      "price": 17.31,
-      "detected_at": "2026-09-08T17:08:13+03:00"
+      "time": "2026-09-30T10:00:00",
+      "price": 19.06,
+      "detected_at": "2026-09-30T16:46:38+03:00"
     },
     "ALKLC_45m": {
       "time": "2026-09-08T13:30:00",
@@ -13946,6 +13964,21 @@
       "time": "2026-09-29T06:00:00",
       "price": 4.48,
       "detected_at": "2026-09-29T18:18:39+03:00"
+    },
+    "TUCLK_4H": {
+      "time": "2026-09-30T10:00:00",
+      "price": 4.81,
+      "detected_at": "2026-09-30T16:46:38+03:00"
+    },
+    "TUCLK_1D": {
+      "time": "2026-09-30T06:00:00",
+      "price": 4.76,
+      "detected_at": "2026-09-30T17:09:25+03:00"
+    },
+    "SKYMD_1D": {
+      "time": "2026-09-30T06:00:00",
+      "price": 19.43,
+      "detected_at": "2026-09-30T17:31:29+03:00"
     }
   },
   "last_sent_new_scan": {
@@ -15526,9 +15559,9 @@
       "detected_at": "2026-09-09T16:08:45+03:00"
     },
     "AHGAZ_1H": {
-      "time": "2026-09-21T14:00:00",
-      "price": 41.76,
-      "detected_at": "2026-09-21T18:07:57+03:00"
+      "time": "2026-09-30T13:00:00",
+      "price": 43.4,
+      "detected_at": "2026-09-30T16:34:18+03:00"
     },
     "ALCTL_1H": {
       "time": "2026-07-28T14:00:00",
@@ -15561,9 +15594,9 @@
       "detected_at": "2026-09-15T18:09:19+03:00"
     },
     "ENERY_1H": {
-      "time": "2026-09-11T14:00:00",
-      "price": 12.16,
-      "detected_at": "2026-09-11T18:25:27+03:00"
+      "time": "2026-09-30T13:00:00",
+      "price": 13.29,
+      "detected_at": "2026-09-30T16:58:35+03:00"
     },
     "GRTHO_1H": {
       "time": "2026-09-10T13:00:00",
@@ -16261,9 +16294,9 @@
       "detected_at": "2026-09-09T16:08:45+03:00"
     },
     "SKYMD_1H": {
-      "time": "2026-09-28T14:00:00",
-      "price": 17.54,
-      "detected_at": "2026-09-28T18:14:24+03:00"
+      "time": "2026-09-30T07:00:00",
+      "price": 19.32,
+      "detected_at": "2026-09-30T10:33:55+03:00"
     },
     "SNGYO_1H": {
       "time": "2026-08-28T09:00:00",
@@ -16401,9 +16434,9 @@
       "detected_at": "2026-07-21T17:11:16+03:00"
     },
     "AKFIS_4H": {
-      "time": "2026-08-24T06:00:00",
-      "price": 17.45,
-      "detected_at": "2026-08-24T13:01:42+03:00"
+      "time": "2026-09-30T10:00:00",
+      "price": 16.9,
+      "detected_at": "2026-09-30T16:46:38+03:00"
     },
     "ALARK_4H": {
       "time": "2026-09-11T06:00:00",
@@ -18766,9 +18799,9 @@
       "detected_at": "2026-08-21T16:43:20+03:00"
     },
     "TUCLK_1H": {
-      "time": "2026-09-23T14:00:00",
-      "price": 4.17,
-      "detected_at": "2026-09-23T17:48:13+03:00"
+      "time": "2026-09-30T13:00:00",
+      "price": 4.78,
+      "detected_at": "2026-09-30T16:58:35+03:00"
     },
     "BIZIM_4H": {
       "time": "2026-09-09T10:00:00",
@@ -20211,9 +20244,9 @@
       "detected_at": "2026-08-18T12:21:24+03:00"
     },
     "AKFIS_1H": {
-      "time": "2026-09-29T13:00:00",
-      "price": 16.13,
-      "detected_at": "2026-09-29T17:14:37+03:00"
+      "time": "2026-09-30T08:00:00",
+      "price": 16.46,
+      "detected_at": "2026-09-30T11:34:11+03:00"
     },
     "BESTE_1H": {
       "time": "2026-09-08T08:00:00",
@@ -20771,9 +20804,9 @@
       "detected_at": "2026-08-26T12:37:29+03:00"
     },
     "SKYMD_4H": {
-      "time": "2026-09-29T06:00:00",
-      "price": 18.12,
-      "detected_at": "2026-09-29T13:14:02+03:00"
+      "time": "2026-09-30T10:00:00",
+      "price": 18.95,
+      "detected_at": "2026-09-30T14:43:54+03:00"
     },
     "SUNTK_1D": {
       "time": "2026-07-31T06:00:00",
@@ -26551,9 +26584,9 @@
       "detected_at": "2026-09-07T13:37:54+03:00"
     },
     "TUCLK_4H": {
-      "time": "2026-09-29T06:00:00",
-      "price": 4.34,
-      "detected_at": "2026-09-29T11:14:11+03:00"
+      "time": "2026-09-30T10:00:00",
+      "price": 4.81,
+      "detected_at": "2026-09-30T16:46:38+03:00"
     },
     "NETAS_1W": {
       "time": "2026-09-07T06:00:00",
@@ -27691,9 +27724,9 @@
       "detected_at": "2026-08-28T21:38:51+03:00"
     },
     "SKYMD_1D": {
-      "time": "2026-09-28T06:00:00",
-      "price": 17.28,
-      "detected_at": "2026-09-28T18:05:29+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 18.84,
+      "detected_at": "2026-09-30T12:58:32+03:00"
     },
     "KONYA_30m": {
       "time": "2026-09-11T12:30:00",
@@ -30046,9 +30079,14 @@
       "detected_at": "2026-09-25T10:37:57+03:00"
     },
     "TUCLK_1D": {
-      "time": "2026-09-29T06:00:00",
-      "price": 4.33,
-      "detected_at": "2026-09-29T12:59:36+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 4.36,
+      "detected_at": "2026-09-30T14:58:00+03:00"
+    },
+    "MASFN_1H": {
+      "time": "2026-09-30T07:00:00",
+      "price": 38.72,
+      "detected_at": "2026-09-30T10:33:55+03:00"
     }
   },
   "last_sent_rsi_macd": {
@@ -33133,9 +33171,9 @@
       "detected_at": "2026-09-09T12:24:26+03:00"
     },
     "AKFIS_4H": {
-      "time": "2026-08-24T06:00:00",
-      "price": 17.45,
-      "detected_at": "2026-08-24T13:01:42+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 17.16,
+      "detected_at": "2026-09-30T13:13:37+03:00"
     },
     "BAHKM_4H": {
       "time": "2026-08-20T06:00:00",
@@ -33403,9 +33441,9 @@
       "detected_at": "2026-08-26T10:00:01+03:00"
     },
     "ENJSA_4H": {
-      "time": "2026-09-09T06:00:00",
-      "price": 117.8,
-      "detected_at": "2026-09-09T11:22:01+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 110.2,
+      "detected_at": "2026-09-30T11:13:01+03:00"
     },
     "VAKBN_1D": {
       "time": "2026-08-26T06:00:00",
@@ -33748,9 +33786,9 @@
       "detected_at": "2026-09-14T18:09:18+03:00"
     },
     "SKYMD_1D": {
-      "time": "2026-09-10T06:00:00",
-      "price": 17.58,
-      "detected_at": "2026-09-10T15:23:29+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 19.43,
+      "detected_at": "2026-09-30T17:31:29+03:00"
     },
     "ISSEN_15m": {
       "time": "2026-09-04T14:45:00",
@@ -35066,6 +35104,21 @@
       "time": "2026-09-29T06:00:00",
       "price": 7.48,
       "detected_at": "2026-09-29T17:00:55+03:00"
+    },
+    "TUCLK_4H": {
+      "time": "2026-09-30T06:00:00",
+      "price": 4.63,
+      "detected_at": "2026-09-30T11:13:01+03:00"
+    },
+    "TUCLK_1D": {
+      "time": "2026-09-30T06:00:00",
+      "price": 4.76,
+      "detected_at": "2026-09-30T17:09:25+03:00"
+    },
+    "AKFIS_1D": {
+      "time": "2026-09-30T06:00:00",
+      "price": 16.9,
+      "detected_at": "2026-09-30T18:58:40+03:00"
     }
   },
   "last_sent_ema": {
@@ -36631,9 +36684,9 @@
       "detected_at": "2026-08-10T12:07:40+03:00"
     },
     "AHGAZ_1H": {
-      "time": "2026-09-21T14:00:00",
-      "price": 41.76,
-      "detected_at": "2026-09-21T18:07:57+03:00"
+      "time": "2026-09-30T13:00:00",
+      "price": 43.4,
+      "detected_at": "2026-09-30T16:34:18+03:00"
     },
     "AHSGY_1H": {
       "time": "2026-07-23T07:00:00",
@@ -36681,9 +36734,9 @@
       "detected_at": "2026-09-14T16:52:53+03:00"
     },
     "ENERY_1H": {
-      "time": "2026-09-04T10:00:00",
-      "price": 10.68,
-      "detected_at": "2026-09-04T12:36:48+03:00"
+      "time": "2026-09-30T13:00:00",
+      "price": 13.29,
+      "detected_at": "2026-09-30T16:58:35+03:00"
     },
     "EREGL_1H": {
       "time": "2026-09-11T14:00:00",
@@ -36856,9 +36909,9 @@
       "detected_at": "2026-08-27T12:03:34+03:00"
     },
     "AKFIS_1D": {
-      "time": "2026-08-28T06:00:00",
-      "price": 18.65,
-      "detected_at": "2026-08-28T21:38:51+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 16.9,
+      "detected_at": "2026-09-30T18:58:40+03:00"
     },
     "AKSUE_15m": {
       "time": "2026-09-14T14:45:00",
@@ -37306,9 +37359,9 @@
       "detected_at": "2026-09-07T18:07:04+03:00"
     },
     "AKFIS_1H": {
-      "time": "2026-09-29T13:00:00",
-      "price": 16.13,
-      "detected_at": "2026-09-29T17:14:37+03:00"
+      "time": "2026-09-30T08:00:00",
+      "price": 16.46,
+      "detected_at": "2026-09-30T11:34:11+03:00"
     },
     "ALARK_1H": {
       "time": "2026-09-11T08:00:00",
@@ -37506,9 +37559,9 @@
       "detected_at": "2026-07-01T15:17:31+03:00"
     },
     "AKFIS_4H": {
-      "time": "2026-08-24T06:00:00",
-      "price": 17.45,
-      "detected_at": "2026-08-24T13:01:42+03:00"
+      "time": "2026-09-30T10:00:00",
+      "price": 16.9,
+      "detected_at": "2026-09-30T16:46:38+03:00"
     },
     "ALARK_4H": {
       "time": "2026-09-11T06:00:00",
@@ -38071,9 +38124,9 @@
       "detected_at": "2026-07-16T18:20:43+03:00"
     },
     "AKSEN_1H": {
-      "time": "2026-08-06T10:00:00",
-      "price": 97.75,
-      "detected_at": "2026-08-06T14:05:22+03:00"
+      "time": "2026-09-30T14:00:00",
+      "price": 74.4,
+      "detected_at": "2026-09-30T18:04:07+03:00"
     },
     "ALCAR_1H": {
       "time": "2026-09-10T14:00:00",
@@ -39011,9 +39064,9 @@
       "detected_at": "2026-09-09T12:54:38+03:00"
     },
     "TRMET_1H": {
-      "time": "2026-09-11T12:00:00",
-      "price": 141.0,
-      "detected_at": "2026-09-11T16:08:15+03:00"
+      "time": "2026-09-30T14:00:00",
+      "price": 136.1,
+      "detected_at": "2026-09-30T18:04:07+03:00"
     },
     "GMTAS_4H": {
       "time": "2026-09-25T06:00:00",
@@ -39766,9 +39819,9 @@
       "detected_at": "2026-09-07T18:22:15+03:00"
     },
     "TUCLK_1H": {
-      "time": "2026-09-25T07:00:00",
-      "price": 4.17,
-      "detected_at": "2026-09-25T10:27:38+03:00"
+      "time": "2026-09-30T07:00:00",
+      "price": 4.56,
+      "detected_at": "2026-09-30T10:33:55+03:00"
     },
     "MAKIM_4H": {
       "time": "2026-07-07T10:00:00",
@@ -40706,9 +40759,9 @@
       "detected_at": "2026-09-16T13:07:34+03:00"
     },
     "ENERY_4H": {
-      "time": "2026-09-03T10:00:00",
-      "price": 10.37,
-      "detected_at": "2026-09-03T16:40:43+03:00"
+      "time": "2026-09-30T10:00:00",
+      "price": 13.32,
+      "detected_at": "2026-09-30T16:46:38+03:00"
     },
     "HATSN_4H": {
       "time": "2026-09-10T06:00:00",
@@ -41776,9 +41829,9 @@
       "detected_at": "2026-09-09T12:54:38+03:00"
     },
     "SKYMD_4H": {
-      "time": "2026-09-28T14:00:00",
-      "price": 17.4,
-      "detected_at": "2026-09-28T18:43:21+03:00"
+      "time": "2026-09-30T10:00:00",
+      "price": 18.95,
+      "detected_at": "2026-09-30T14:43:54+03:00"
     },
     "TNZTP_4H": {
       "time": "2026-09-11T06:00:00",
@@ -48171,9 +48224,9 @@
       "detected_at": "2026-08-28T21:38:51+03:00"
     },
     "SKYMD_1D": {
-      "time": "2026-09-28T06:00:00",
-      "price": 17.28,
-      "detected_at": "2026-09-28T18:05:29+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 18.84,
+      "detected_at": "2026-09-30T12:58:32+03:00"
     },
     "RODRG_30m": {
       "time": "2026-09-04T11:30:00",
@@ -49371,9 +49424,9 @@
       "detected_at": "2026-09-08T11:10:46+03:00"
     },
     "TUCLK_4H": {
-      "time": "2026-09-29T06:00:00",
-      "price": 4.34,
-      "detected_at": "2026-09-29T11:14:11+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 4.63,
+      "detected_at": "2026-09-30T11:13:01+03:00"
     },
     "EUREN_1H": {
       "time": "2026-09-09T11:00:00",
@@ -50931,9 +50984,19 @@
       "detected_at": "2026-09-28T17:55:06+03:00"
     },
     "TUCLK_1D": {
-      "time": "2026-09-29T06:00:00",
-      "price": 4.33,
-      "detected_at": "2026-09-29T12:59:36+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 4.36,
+      "detected_at": "2026-09-30T14:58:00+03:00"
+    },
+    "MASFN_1H": {
+      "time": "2026-09-30T07:00:00",
+      "price": 38.72,
+      "detected_at": "2026-09-30T10:33:55+03:00"
+    },
+    "TUCLK_1W": {
+      "time": "2026-09-28T06:00:00",
+      "price": 4.55,
+      "detected_at": "2026-09-30T10:43:57+03:00"
     }
   },
   "last_sent_macd_cross": {
@@ -58123,9 +58186,9 @@
       "detected_at": "2026-08-20T12:19:35+03:00"
     },
     "AKFIS_4H": {
-      "time": "2026-08-24T06:00:00",
-      "price": 17.45,
-      "detected_at": "2026-08-24T13:01:42+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 17.16,
+      "detected_at": "2026-09-30T13:13:37+03:00"
     },
     "BAHKM_4H": {
       "time": "2026-08-20T06:00:00",
@@ -59408,9 +59471,9 @@
       "detected_at": "2026-09-04T17:09:20+03:00"
     },
     "SKYMD_1D": {
-      "time": "2026-09-10T06:00:00",
-      "price": 17.58,
-      "detected_at": "2026-09-10T15:23:29+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 19.43,
+      "detected_at": "2026-09-30T17:31:29+03:00"
     },
     "ISSEN_15m": {
       "time": "2026-09-04T14:45:00",
@@ -59828,9 +59891,9 @@
       "detected_at": "2026-09-08T17:08:10+03:00"
     },
     "SKYMD_4H": {
-      "time": "2026-09-29T06:00:00",
-      "price": 18.12,
-      "detected_at": "2026-09-29T13:14:02+03:00"
+      "time": "2026-09-30T10:00:00",
+      "price": 18.95,
+      "detected_at": "2026-09-30T14:43:54+03:00"
     },
     "AVHOL_45m": {
       "time": "2026-09-11T14:15:00",
@@ -61141,6 +61204,16 @@
       "time": "2026-09-24T06:00:00",
       "price": 6.67,
       "detected_at": "2026-09-24T16:02:07+03:00"
+    },
+    "TUCLK_4H": {
+      "time": "2026-09-30T10:00:00",
+      "price": 4.81,
+      "detected_at": "2026-09-30T16:46:38+03:00"
+    },
+    "TUCLK_1D": {
+      "time": "2026-09-30T06:00:00",
+      "price": 4.76,
+      "detected_at": "2026-09-30T17:09:25+03:00"
     }
   },
   "last_sent_h8": {
@@ -68050,9 +68123,9 @@
       "detected_at": "2026-09-07T16:38:01+03:00"
     },
     "AKFIS_4H": {
-      "time": "2026-08-20T06:00:00",
-      "price": 16.93,
-      "detected_at": "2026-08-20T12:27:46+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 17.16,
+      "detected_at": "2026-09-30T13:13:37+03:00"
     },
     "BAHKM_4H": {
       "time": "2026-08-20T06:00:00",
@@ -69290,9 +69363,9 @@
       "detected_at": "2026-09-14T17:25:17+03:00"
     },
     "SKYMD_1D": {
-      "time": "2026-09-10T06:00:00",
-      "price": 17.58,
-      "detected_at": "2026-09-10T15:23:29+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 19.43,
+      "detected_at": "2026-09-30T17:31:29+03:00"
     },
     "KRPLS_2H": {
       "time": "2026-09-04T14:00:00",
@@ -70848,6 +70921,21 @@
       "time": "2026-09-29T06:00:00",
       "price": 18.12,
       "detected_at": "2026-09-29T13:14:02+03:00"
+    },
+    "TUCLK_4H": {
+      "time": "2026-09-30T10:00:00",
+      "price": 4.81,
+      "detected_at": "2026-09-30T16:46:38+03:00"
+    },
+    "TUCLK_1D": {
+      "time": "2026-09-30T06:00:00",
+      "price": 4.76,
+      "detected_at": "2026-09-30T17:09:25+03:00"
+    },
+    "AKFIS_1D": {
+      "time": "2026-09-30T06:00:00",
+      "price": 16.9,
+      "detected_at": "2026-09-30T18:58:40+03:00"
     }
   },
   "last_sent_i9": {
@@ -75121,9 +75209,9 @@
       "detected_at": "2026-09-07T16:38:01+03:00"
     },
     "AKFIS_4H": {
-      "time": "2026-08-20T06:00:00",
-      "price": 16.93,
-      "detected_at": "2026-08-20T12:27:46+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 17.16,
+      "detected_at": "2026-09-30T13:13:37+03:00"
     },
     "BAHKM_4H": {
       "time": "2026-08-20T06:00:00",
@@ -75356,9 +75444,9 @@
       "detected_at": "2026-08-31T19:33:45+03:00"
     },
     "AKFIS_1D": {
-      "time": "2026-08-21T06:00:00",
-      "price": 17.28,
-      "detected_at": "2026-08-24T10:03:47+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 16.9,
+      "detected_at": "2026-09-30T18:58:40+03:00"
     },
     "BRSAN_2H": {
       "time": "2026-08-24T08:00:00",
@@ -75606,9 +75694,9 @@
       "detected_at": "2026-09-08T18:24:18+03:00"
     },
     "ENJSA_4H": {
-      "time": "2026-09-09T06:00:00",
-      "price": 117.8,
-      "detected_at": "2026-09-09T11:22:01+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 110.2,
+      "detected_at": "2026-09-30T11:13:01+03:00"
     },
     "MARBL_4H": {
       "time": "2026-08-26T06:00:00",
@@ -76141,9 +76229,9 @@
       "detected_at": "2026-09-14T17:25:17+03:00"
     },
     "SKYMD_1D": {
-      "time": "2026-09-10T06:00:00",
-      "price": 17.58,
-      "detected_at": "2026-09-10T15:23:29+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 19.43,
+      "detected_at": "2026-09-30T17:31:29+03:00"
     },
     "ISSEN_15m": {
       "time": "2026-09-04T14:45:00",
@@ -77786,14 +77874,19 @@
       "detected_at": "2026-09-25T12:52:55+03:00"
     },
     "TUCLK_1D": {
-      "time": "2026-09-29T06:00:00",
-      "price": 4.33,
-      "detected_at": "2026-09-29T12:59:36+03:00"
+      "time": "2026-09-30T06:00:00",
+      "price": 4.76,
+      "detected_at": "2026-09-30T17:09:25+03:00"
     },
     "SKYMD_4H": {
       "time": "2026-09-29T06:00:00",
       "price": 18.12,
       "detected_at": "2026-09-29T13:14:02+03:00"
+    },
+    "TUCLK_4H": {
+      "time": "2026-09-30T10:00:00",
+      "price": 4.81,
+      "detected_at": "2026-09-30T16:46:38+03:00"
     }
   },
   "last_successful_scans": {
@@ -271697,6 +271790,539 @@
       "bar_time": "2026-09-29T15:00:00",
       "detected_at": "2026-09-29T18:34:27+03:00",
       "price": 16.3
+    },
+    {
+      "symbol": "MASFN",
+      "period": "1H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T07:00:00",
+      "detected_at": "2026-09-30T10:33:55+03:00",
+      "price": 38.72
+    },
+    {
+      "symbol": "MASFN",
+      "period": "1H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T07:00:00",
+      "detected_at": "2026-09-30T10:33:55+03:00",
+      "price": 38.72
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "1H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T07:00:00",
+      "detected_at": "2026-09-30T10:33:55+03:00",
+      "price": 19.32
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "1H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T07:00:00",
+      "detected_at": "2026-09-30T10:33:55+03:00",
+      "price": 4.56
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "1H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T07:00:00",
+      "detected_at": "2026-09-30T10:33:55+03:00",
+      "price": 4.56
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "1W",
+      "strategy": "ema",
+      "bar_time": "2026-09-28T06:00:00",
+      "detected_at": "2026-09-30T10:43:57+03:00",
+      "price": 4.55
+    },
+    {
+      "symbol": "ENJSA",
+      "period": "4H",
+      "strategy": "rsi_macd",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T11:13:01+03:00",
+      "price": 110.2
+    },
+    {
+      "symbol": "ENJSA",
+      "period": "4H",
+      "strategy": "i9",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T11:13:01+03:00",
+      "price": 110.2
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "4H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T11:13:01+03:00",
+      "price": 19.45
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "4H",
+      "strategy": "macd_cross",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T11:13:01+03:00",
+      "price": 19.45
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "rsi",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T11:13:01+03:00",
+      "price": 4.63
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T11:13:01+03:00",
+      "price": 4.63
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "rsi_macd",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T11:13:01+03:00",
+      "price": 4.63
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T11:13:01+03:00",
+      "price": 4.63
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "macd_cross",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T11:13:01+03:00",
+      "price": 4.63
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "h8",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T11:13:01+03:00",
+      "price": 4.63
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "i9",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T11:13:01+03:00",
+      "price": 4.63
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "1H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T08:00:00",
+      "detected_at": "2026-09-30T11:34:11+03:00",
+      "price": 16.46
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "1H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T08:00:00",
+      "detected_at": "2026-09-30T11:34:11+03:00",
+      "price": 16.46
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "1D",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T12:58:32+03:00",
+      "price": 18.84
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "1D",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T12:58:32+03:00",
+      "price": 18.84
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "4H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T13:13:37+03:00",
+      "price": 17.16
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "4H",
+      "strategy": "rsi_macd",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T13:13:37+03:00",
+      "price": 17.16
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "4H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T13:13:37+03:00",
+      "price": 17.16
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "4H",
+      "strategy": "macd_cross",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T13:13:37+03:00",
+      "price": 17.16
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "4H",
+      "strategy": "h8",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T13:13:37+03:00",
+      "price": 17.16
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "4H",
+      "strategy": "i9",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T13:13:37+03:00",
+      "price": 17.16
+    },
+    {
+      "symbol": "TABGD",
+      "period": "4H",
+      "strategy": "smi_macd",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T13:13:37+03:00",
+      "price": 217.1,
+      "is_full": false
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "4H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T14:43:54+03:00",
+      "price": 18.95
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "4H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T14:43:54+03:00",
+      "price": 18.95
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "4H",
+      "strategy": "macd_cross",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T14:43:54+03:00",
+      "price": 18.95
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "1D",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T14:58:00+03:00",
+      "price": 4.36
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "1D",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T14:58:00+03:00",
+      "price": 4.36
+    },
+    {
+      "symbol": "AHGAZ",
+      "period": "1H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T13:00:00",
+      "detected_at": "2026-09-30T16:34:18+03:00",
+      "price": 43.4
+    },
+    {
+      "symbol": "AHGAZ",
+      "period": "1H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T13:00:00",
+      "detected_at": "2026-09-30T16:34:18+03:00",
+      "price": 43.4
+    },
+    {
+      "symbol": "AHGAZ",
+      "period": "4H",
+      "strategy": "smi_macd",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T16:46:38+03:00",
+      "price": 43.28,
+      "is_full": true
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "4H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T16:46:38+03:00",
+      "price": 16.9
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "4H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T16:46:38+03:00",
+      "price": 16.9
+    },
+    {
+      "symbol": "ENERY",
+      "period": "4H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T16:46:38+03:00",
+      "price": 13.32
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "4H",
+      "strategy": "rsi",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T16:46:38+03:00",
+      "price": 19.06
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "rsi",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T16:46:38+03:00",
+      "price": 4.81
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T16:46:38+03:00",
+      "price": 4.81
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "macd_cross",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T16:46:38+03:00",
+      "price": 4.81
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "h8",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T16:46:38+03:00",
+      "price": 4.81
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "4H",
+      "strategy": "i9",
+      "bar_time": "2026-09-30T10:00:00",
+      "detected_at": "2026-09-30T16:46:38+03:00",
+      "price": 4.81
+    },
+    {
+      "symbol": "ENERY",
+      "period": "1H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T13:00:00",
+      "detected_at": "2026-09-30T16:58:35+03:00",
+      "price": 13.29
+    },
+    {
+      "symbol": "ENERY",
+      "period": "1H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T13:00:00",
+      "detected_at": "2026-09-30T16:58:35+03:00",
+      "price": 13.29
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "1H",
+      "strategy": "new_scan",
+      "bar_time": "2026-09-30T13:00:00",
+      "detected_at": "2026-09-30T16:58:35+03:00",
+      "price": 4.78
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "1D",
+      "strategy": "rsi",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T17:09:25+03:00",
+      "price": 4.76
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "1D",
+      "strategy": "rsi_macd",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T17:09:25+03:00",
+      "price": 4.76
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "1D",
+      "strategy": "macd_cross",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T17:09:25+03:00",
+      "price": 4.76
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "1D",
+      "strategy": "h8",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T17:09:25+03:00",
+      "price": 4.76
+    },
+    {
+      "symbol": "TUCLK",
+      "period": "1D",
+      "strategy": "i9",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T17:09:25+03:00",
+      "price": 4.76
+    },
+    {
+      "symbol": "BERA",
+      "period": "1D",
+      "strategy": "smi_macd",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T17:31:29+03:00",
+      "price": 11.73,
+      "is_full": false
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "1D",
+      "strategy": "rsi",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T17:31:29+03:00",
+      "price": 19.43
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "1D",
+      "strategy": "rsi_macd",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T17:31:29+03:00",
+      "price": 19.43
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "1D",
+      "strategy": "macd_cross",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T17:31:29+03:00",
+      "price": 19.43
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "1D",
+      "strategy": "h8",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T17:31:29+03:00",
+      "price": 19.43
+    },
+    {
+      "symbol": "SKYMD",
+      "period": "1D",
+      "strategy": "i9",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T17:31:29+03:00",
+      "price": 19.43
+    },
+    {
+      "symbol": "AKSEN",
+      "period": "1H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T14:00:00",
+      "detected_at": "2026-09-30T18:04:07+03:00",
+      "price": 74.4
+    },
+    {
+      "symbol": "TRMET",
+      "period": "1H",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T14:00:00",
+      "detected_at": "2026-09-30T18:04:07+03:00",
+      "price": 136.1
+    },
+    {
+      "symbol": "LMKDC",
+      "period": "1H",
+      "strategy": "decision",
+      "bar_time": "2026-09-30T14:00:00",
+      "detected_at": "2026-09-30T18:04:15+03:00",
+      "price": 23.32,
+      "setup": "TREND DEVAMI",
+      "score": 80
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "1D",
+      "strategy": "rsi_macd",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T18:58:40+03:00",
+      "price": 16.9
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "1D",
+      "strategy": "ema",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T18:58:40+03:00",
+      "price": 16.9
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "1D",
+      "strategy": "h8",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T18:58:40+03:00",
+      "price": 16.9
+    },
+    {
+      "symbol": "AKFIS",
+      "period": "1D",
+      "strategy": "i9",
+      "bar_time": "2026-09-30T06:00:00",
+      "detected_at": "2026-09-30T18:58:40+03:00",
+      "price": 16.9
     }
   ],
   "decision_panel": {
@@ -273052,6 +273678,13 @@
       "detected_at": "2026-09-28T18:14:40+03:00",
       "setup": "TREND DEVAMI",
       "score": 95
+    },
+    "LMKDC_1H": {
+      "time": "2026-09-30T14:00:00",
+      "price": 23.32,
+      "detected_at": "2026-09-30T18:04:15+03:00",
+      "setup": "TREND DEVAMI",
+      "score": 80
     }
   }
 }
